@@ -27,6 +27,9 @@ export default function RegisterScreen() {
   });
   const [errors, setErrors] = useState<Partial<Record<keyof RegisterData, string>>>({});
 
+
+  console.log(formData);
+
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof RegisterData, string>> = {};
 
@@ -192,6 +195,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 100,
   },
   content: {
     flex: 1,
