@@ -1,0 +1,210 @@
+---
+alwaysApply: true
+---
+# Karwa Design System
+
+<!--
+  SETUP:
+  1. Replace [APP_NAME]
+  2. Update colors to match your brand
+  3. Adjust any values as needed
+  4. Delete this comment
+-->
+
+## Brand Keywords
+<!-- How should your app FEEL? Pick 3-5 words -->
+- [KEYWORD_1]
+- [KEYWORD_2]
+- [KEYWORD_3]
+
+---
+
+## Color Palette
+
+### Primary Colors
+| Name | Hex | Usage |
+|------|-----|-------|
+| Background | `#FDFCFD` | Screen backgrounds |
+| Primary | `#227CC5` | Buttons, links, accents |
+| Text | `#2E2E2E` | Primary text, headings |
+| Secondary | `#5F6368` | Captions, placeholders |
+
+### Semantic Colors
+| Name | Hex | Usage |
+|------|-----|-------|
+| Success | `#43A661` | Success states |
+| Danger | `#153871` | Errors, destructive actions |
+| Warning | `#F2C94C` | Warnings |
+
+### In Code
+const colors = {
+  background: '#FDFCFD',
+  primary: '#227CC5',
+  text: '#2E2E2E',
+  secondary: '#5F6368',
+  success: '#43A661',
+  danger: '#153871',
+  warning: '#F2C94C',
+
+  // Base
+  white: '#FDFCFD',
+  border: '#D5D7D7',
+
+  // Supporting blues
+  blueDark: '#153871',
+  blueMid: '#1C5FA3',
+  blue: '#227CC5',
+  blueLight: '#4A9AD6',
+  blueSoft: '#7BBCE8',
+
+  // Supporting greens
+  greenDark: '#2F7F56',
+  green: '#43A661',
+  greenSoft: '#5FBF7A',
+  greenLight: '#72BB55',
+  greenPale: '#9AD98B',
+
+  // Neutrals
+  gray900: '#2E2E2E',
+  gray700: '#5F6368',
+  gray500: '#8E9093',
+  gray400: '#B4B5B6',
+  gray300: '#D5D7D7',
+  gray100: '#F4F4F4',
+};
+
+---
+
+## Typography
+
+| Name | Size | Weight | Usage |
+|------|------|--------|-------|
+| title | 28px | Bold | Screen titles |
+| heading | 24px | Bold | Section headers |
+| body | 16px | Regular | Body text, inputs |
+| caption | 14px | Regular | Timestamps, hints |
+| small | 12px | Regular | Labels, badges |
+
+---
+
+## Spacing
+
+Use multiples of 8:
+
+| Name | Value | Usage |
+|------|-------|-------|
+| xs | 4px | Icon gaps |
+| sm | 8px | Related elements |
+| md | 16px | Default gap |
+| lg | 24px | Screen padding |
+| xl | 32px | Sections |
+
+### Common Values
+- Screen padding: 24px
+- Card padding: 16px
+- Input/Button height: 48px
+- Gap between elements: 16px
+- Gap between cards: 12px
+
+---
+
+## Border Radius
+
+| Name | Value | Usage |
+|------|-------|-------|
+| sm | 4px | Tags, badges |
+| md | 8px | Buttons, inputs, cards |
+| lg | 16px | Modals |
+| full | 9999px | Pills, avatars |
+
+---
+
+## Shadows
+
+### Subtle (cards)
+shadowColor: '#000',
+shadowOffset: { width: 0, height: 2 },
+shadowOpacity: 0.05,
+shadowRadius: 8,
+elevation: 2,
+
+### Medium (modals)
+shadowColor: '#000',
+shadowOffset: { width: 0, height: 4 },
+shadowOpacity: 0.1,
+shadowRadius: 12,
+elevation: 4,
+
+---
+
+## Component Styles
+
+### Primary Button
+backgroundColor: '#227CC5',
+paddingVertical: 14,
+paddingHorizontal: 24,
+borderRadius: 8,
+minHeight: 48,
+
+// Text
+color: '#FDFCFD',
+fontSize: 16,
+fontWeight: '600',
+
+### Secondary Button (Outline)
+backgroundColor: 'transparent',
+borderWidth: 1.5,
+borderColor: '#227CC5',
+
+// Text
+color: '#227CC5',
+
+### Text Input
+backgroundColor: '#FDFCFD',
+borderWidth: 1,
+borderColor: '#D5D7D7',  // Focused: '#227CC5', Error: '#153871'
+borderRadius: 8,
+paddingHorizontal: 16,
+paddingVertical: 14,
+fontSize: 16,
+
+### Card
+backgroundColor: '#FDFCFD',
+borderRadius: 12,
+padding: 16,
+// Add subtle shadow
+
+---
+
+## Screen Layouts
+
+### Auth Screens
+flex: 1,
+backgroundColor: '#FDFCFD',
+paddingHorizontal: 24,
+justifyContent: 'center',
+
+### Main Screens
+flex: 1,
+backgroundColor: '#FDFCFD',
+paddingHorizontal: 24,
+
+---
+
+## State Screens
+
+### Loading
+- Center an ActivityIndicator
+- Color: primary (#227CC5)
+
+### Empty
+- Center content
+- Large emoji/icon (48-64px)
+- Message in secondary color
+- Optional action button
+
+### Error
+- Center content
+- Error icon in danger color
+- Error message
+- "Try Again" button
