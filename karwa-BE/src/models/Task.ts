@@ -87,6 +87,8 @@ taskSchema.index({ posterId: 1 });
 taskSchema.index({ status: 1 });
 taskSchema.index({ type: 1 });
 taskSchema.index({ createdAt: -1 }); // For marketplace sorting
+taskSchema.index({ money: 1 }); // For money range filtering
+taskSchema.index({ location: 'text' }); // For location search
 
 const Task = mongoose.model<ITask>('Task', taskSchema);
 

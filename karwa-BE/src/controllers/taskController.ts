@@ -111,7 +111,7 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
 
 export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { status, type } = req.query;
+    const { status, type, location, minMoney, maxMoney } = req.query;
 
     // Build query
     const query: Record<string, unknown> = {};
@@ -126,6 +126,22 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
     // Filter by type if provided
     if (type) {
       query.type = type;
+    }
+
+    // Filter by location (case-insensitive partial match)
+    if (location && typeof location === 'string') {
+      query.location = { $regex: location.trim(), $options: 'i' };
+    }
+
+    // Filter by money range
+    if (minMoney || maxMoney) {
+      query.money = {};
+      if (minMoney) {
+        (query.money as Record<string, number>).$gte = Number(minMoney);
+      }
+      if (maxMoney) {
+        (query.money as Record<string, number>).$lte = Number(maxMoney);
+      }
     }
 
     // Get tasks, sorted by newest first

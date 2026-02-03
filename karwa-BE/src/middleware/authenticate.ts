@@ -3,7 +3,7 @@ import { verifyToken } from '../utils/token';
 import User from '../models/User';
 import { CustomeRequest } from '../types/http';
 
-export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const q = req as CustomeRequest
     const authHeader = req.headers.authorization;
