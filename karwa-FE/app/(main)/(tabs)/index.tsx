@@ -90,7 +90,7 @@ export default function HomeScreen() {
 
       <FlatList
         data={tasks}
-        keyExtractor={(item) => String((item as any)._id)}
+        keyExtractor={(item) => String(item._id)}
         renderItem={({ item }) => <TaskCard task={item} />}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
