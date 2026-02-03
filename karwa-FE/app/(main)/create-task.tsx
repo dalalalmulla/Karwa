@@ -14,7 +14,7 @@ import { useRouter } from "expo-router";
 import { colors, spacing, typography, borderRadius } from "@/constants/theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { createTask } from "@/src/api/tasks";
+import { createTaskApi } from "@/src/api/taskCalls";
 import type { CreateTaskData, TaskType } from "@/src/types/taskTypes";
 
 const TASK_TYPES: { value: TaskType; label: string }[] = [
@@ -68,7 +68,7 @@ export default function CreateTaskScreen() {
   };
 
   const mutation = useMutation({
-    mutationFn: (data: CreateTaskData) => createTask(data),
+    mutationFn: (data: CreateTaskData) => createTaskApi(data),
     onSuccess: () => {
       Alert.alert("Success", "Task created successfully!", [
         {
