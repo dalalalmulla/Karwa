@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { colors, spacing, typography } from '@/constants/theme';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Logo from '@/components/ui/Logo';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -24,7 +27,7 @@ export default function HomeScreen() {
         </Text>
         <Button
           title="Explore Tasks"
-          onPress={() => console.log('Explore tasks')}
+          onPress={() => router.push('/tasks-list')}
           style={styles.button}
         />
       </Card>

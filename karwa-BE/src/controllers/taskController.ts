@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Task from '../models/Task';
+import Application from '../models/Application';
 // import '../types/express'; // Ensure Express Request type extensions are loaded
 import { CustomeRequest } from '../types/http';
 
@@ -178,6 +179,157 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       error: 'Failed to fetch tasks',
+    });
+  }
+};
+
+// Get task by ID with details
+export const getTaskById = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const customReq = req as CustomeRequest;
+    const userId = customReq.user?._id;
+    const { taskId } = req.params;
+
+    // Validate taskId format
+    if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid task ID format',
+      });
+      return;
+    }
+
+    // Get task with populated poster info including rating
+    const task = await Task.findById(taskId).populate('posterId', 'firstName lastName email rating');
+
+    if (!task) {
+      res.status(404).json({
+        success: false,
+        error: 'Task not found',
+      });
+      return;
+    }
+
+    // Handle populated posterId
+    let poster: { _id: string; firstName?: string; lastName?: string; email: string; rating?: number };
+
+    if (task.posterId && typeof task.posterId === 'object' && 'email' in task.posterId) {
+      const user = task.posterId as unknown as {
+        _id: mongoose.Types.ObjectId;
+        firstName?: string;
+        lastName?: string;
+        email: string;
+        rating?: number;
+      };
+      poster = {
+        _id: user._id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        rating: user.rating || 0,
+      };
+    } else {
+      // Fallback if not populated (shouldn't happen, but handle it)
+      poster = {
+        _id: task.posterId.toString(),
+        email: '',
+        rating: 0,
+      };
+    }
+
+    // Check if current user has applied to this task
+    let hasApplied = false;
+    if (userId) {
+      const application = await Application.findOne({
+        workerId: userId,
+        taskId: task._id,
+      });
+      hasApplied = !!application;
+    }
+
+    // Get applications list (only if user is the poster)
+    let applications: Array<{
+      _id: string;
+      workerId: {
+        _id: string;
+        firstName?: string;
+        lastName?: string;
+        email: string;
+      };
+      status: string;
+      createdAt: Date;
+    }> = [];
+
+    const isPoster = userId && task.posterId.toString() === userId;
+    if (isPoster) {
+      const taskApplications = await Application.find({ taskId: task._id })
+        .populate('workerId', 'firstName lastName email')
+        .sort({ createdAt: -1 });
+
+      applications = taskApplications.map((app) => {
+        const worker = app.workerId as unknown as {
+          _id: mongoose.Types.ObjectId;
+          firstName?: string;
+          lastName?: string;
+          email: string;
+        };
+
+        return {
+          _id: app._id.toString(),
+          workerId: {
+            _id: worker._id.toString(),
+            firstName: worker.firstName,
+            lastName: worker.lastName,
+            email: worker.email,
+          },
+          status: app.status,
+          createdAt: app.createdAt,
+        };
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        task: {
+          _id: task._id,
+          title: task.title,
+          description: task.description,
+          pictures: task.pictures,
+          money: task.money,
+          location: task.location,
+          type: task.type,
+          points: task.points,
+          status: task.status,
+          poster: {
+            _id: poster._id,
+            firstName: poster.firstName,
+            lastName: poster.lastName,
+            email: poster.email,
+            rating: poster.rating || 0,
+          },
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+          hasApplied,
+          applications: isPoster ? applications : undefined,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Get task by ID error:', error);
+
+    // Handle Mongoose cast errors (invalid ObjectId)
+    if (error instanceof mongoose.Error.CastError) {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid task ID',
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch task details',
     });
   }
 };

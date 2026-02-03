@@ -6,6 +6,7 @@ export interface IUser extends Document {
   firstName?: string;
   lastName?: string;
   civilId?: string;
+  rating?: number; // Average rating (0-5)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +40,12 @@ const userSchema = new Schema<IUser>(
       trim: true,
       unique: true,
       sparse: true, // Allows multiple null values
+    },
+    rating: {
+      type: Number,
+      default: 0,
+      min: [0, 'Rating cannot be negative'],
+      max: [5, 'Rating cannot exceed 5'],
     },
   },
   {
