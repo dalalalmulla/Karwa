@@ -6,6 +6,7 @@ export interface IUser extends Document {
   firstName?: string;
   lastName?: string;
   civilId?: string;
+  rating?: number; // Worker rating (0-5), used when displaying applicants
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +40,12 @@ const userSchema = new Schema<IUser>(
       trim: true,
       unique: true,
       sparse: true, // Allows multiple null values
+    },
+    rating: {
+      type: Number,
+      min: [0, 'Rating must be at least 0'],
+      max: [5, 'Rating cannot exceed 5'],
+      default: null,
     },
   },
   {

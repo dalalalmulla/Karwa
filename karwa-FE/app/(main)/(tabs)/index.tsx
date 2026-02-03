@@ -1,11 +1,13 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { colors, spacing, typography } from '@/constants/theme';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Logo from '@/components/ui/Logo';
+import React from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { useRouter } from "expo-router";
+import { colors, spacing, typography } from "@/constants/theme";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import Logo from "@/components/ui/Logo";
 
 export default function HomeScreen() {
+  const router = useRouter();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -19,12 +21,12 @@ export default function HomeScreen() {
       <Card style={styles.card}>
         <Text style={styles.cardTitle}>Get Started</Text>
         <Text style={styles.cardText}>
-          Start earning by completing daily tasks. Each task is backed by standardized agreements
-          and secure communication.
+          Start earning by completing daily tasks. Each task is backed by
+          standardized agreements and secure communication.
         </Text>
         <Button
           title="Explore Tasks"
-          onPress={() => console.log('Explore tasks')}
+          onPress={() => router.push("/(main)/tasks")}
           style={styles.button}
         />
       </Card>
@@ -50,12 +52,12 @@ export default function HomeScreen() {
       <Card style={styles.card}>
         <Text style={styles.cardTitle}>Your Reputation</Text>
         <Text style={styles.cardText}>
-          Build your reputation through quality work. Higher reputation means better task matching and
-          more opportunities.
+          Build your reputation through quality work. Higher reputation means
+          better task matching and more opportunities.
         </Text>
         <Button
           title="View Profile"
-          onPress={() => console.log('View profile')}
+          onPress={() => console.log("View profile")}
           variant="secondary"
           style={styles.button}
         />
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
   },
   header: {
     marginBottom: spacing.xl,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logoContainer: {
     marginBottom: spacing.md,
@@ -111,8 +113,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   step: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.md,
   },
   stepNumber: {
@@ -122,8 +124,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     color: colors.white,
     ...typography.body,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
     lineHeight: 32,
   },
   stepText: {

@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export type TaskType = 'indoor' | 'outdoor' | 'home_service' | 'car_service';
-export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type TaskStatus = 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export interface ITask extends Document {
   title: string;
@@ -13,6 +13,7 @@ export interface ITask extends Document {
   points: number; // Auto-generated from backend
   status: TaskStatus;
   posterId: mongoose.Types.ObjectId; // Reference to User who created the task
+  assignedWorkerId?: mongoose.Types.ObjectId; // Reference to User assigned (only one)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -66,8 +67,8 @@ const taskSchema = new Schema<ITask>(
     status: {
       type: String,
       enum: {
-        values: ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
-        message: 'Status must be one of: OPEN, IN_PROGRESS, COMPLETED, CANCELLED',
+        values: ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+        message: 'Status must be one of: OPEN, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED',
       },
       default: 'OPEN',
     },
@@ -75,6 +76,11 @@ const taskSchema = new Schema<ITask>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Poster ID is required'],
+    },
+    assignedWorkerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
     },
   },
   {
@@ -86,6 +92,7 @@ const taskSchema = new Schema<ITask>(
 taskSchema.index({ posterId: 1 });
 taskSchema.index({ status: 1 });
 taskSchema.index({ type: 1 });
+taskSchema.index({ assignedWorkerId: 1 });
 taskSchema.index({ createdAt: -1 }); // For marketplace sorting
 
 const Task = mongoose.model<ITask>('Task', taskSchema);
