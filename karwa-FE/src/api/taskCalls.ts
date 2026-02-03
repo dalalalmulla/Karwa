@@ -38,6 +38,9 @@ export type GetTasksResponse = {
 export type GetTasksParams = {
   status?: TaskStatus;
   type?: TaskType;
+  location?: string;
+  minMoney?: number;
+  maxMoney?: number;
 };
 
 export const getTasksApi = async (params?: GetTasksParams) => {

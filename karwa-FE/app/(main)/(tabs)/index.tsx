@@ -1,10 +1,15 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 
 import { colors, spacing, typography } from "@/constants/theme";
 import Card from "@/components/ui/Card";
-import { getTasksApi, type Task } from "@/src/api/taskCalls";
+import TaskFilters from "@/components/TaskFilters";
+import {
+  getTasksApi,
+  type Task,
+  type GetTasksParams,
+} from "@/src/api/taskCalls";
 
 type TasksResponse = {
   success: boolean;
@@ -39,10 +44,12 @@ function TaskCard({ task }: { task: Task }) {
 }
 
 export default function HomeScreen() {
+  const [filters, setFilters] = useState<GetTasksParams>({});
+
   const { data, isLoading, isRefetching, refetch, error } =
     useQuery<TasksResponse>({
-      queryKey: ["tasks", "open"],
-      queryFn: () => getTasksApi() as unknown as Promise<TasksResponse>,
+      queryKey: ["tasks", "open", filters],
+      queryFn: () => getTasksApi(filters) as unknown as Promise<TasksResponse>,
     });
 
   // الباك يرجّع OPEN افتراضيًا، بس نخلي فلتر إضافي للأمان
@@ -51,13 +58,22 @@ export default function HomeScreen() {
     return list.filter((t) => t.status === "OPEN");
   }, [data]);
 
+  const handleFiltersChange = (newFilters: GetTasksParams) => {
+    setFilters(newFilters);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Browse Tasks</Text>
-        <Text style={styles.headerSubtitle}>
-          Open tasks available الآن ({tasks.length})
-        </Text>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Browse Tasks</Text>
+            <Text style={styles.headerSubtitle}>
+              Open tasks available ({tasks.length})
+            </Text>
+          </View>
+          <TaskFilters filters={filters} onApply={handleFiltersChange} />
+        </View>
       </View>
 
       {error ? (
@@ -110,6 +126,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.md,
+  },
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  headerTextContainer: {
+    flex: 1,
+    marginRight: spacing.md,
   },
   headerTitle: {
     ...typography.title,
