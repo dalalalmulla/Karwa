@@ -1,9 +1,19 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+
+// Get base URL based on platform
+const getBaseURL = () => {
+  if (Platform.OS === 'android') {
+    // return 'http://10.0.2.2:8000/api'; // Android emulator
+    return 'http://192.168.8.109:8000/api'; // Android emulator
+  }
+  return 'http://localhost:8000/api'; // iOS simulator / web
+};
 
 // Create axios instance with base URL
 const instance = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: getBaseURL(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
