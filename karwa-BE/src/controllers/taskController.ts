@@ -113,15 +113,21 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
 
 export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { status, type } = req.query;
+    const q = req as CustomeRequest;
+    const { status, type, posterId: posterIdParam } = req.query;
 
     // Build query
     const query: Record<string, unknown> = {};
 
-    // Filter by status (default to OPEN for marketplace)
+    // Filter by poster (e.g. ?posterId=me for current user's tasks as poster)
+    if (posterIdParam === 'me' && q.user?._id) {
+      query.posterId = q.user._id;
+    }
+
+    // Filter by status (default to OPEN for marketplace when no posterId=me)
     if (status) {
       query.status = status;
-    } else {
+    } else if (!query.posterId) {
       query.status = 'OPEN'; // Default to showing open tasks in marketplace
     }
 
@@ -440,6 +446,82 @@ export const assignWorker = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+export const markCompleteByWorker = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const workerId = q.user?._id;
+    if (!workerId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
+      return;
+    }
+
+    const { id: taskId } = req.params;
+    if (!taskId || !mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ success: false, error: 'Valid task ID is required' });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ success: false, error: 'Task not found' });
+      return;
+    }
+    if (!task.assignedWorkerId || task.assignedWorkerId.toString() !== workerId) {
+      res.status(403).json({
+        success: false,
+        error: 'Only the assigned worker can mark the task complete',
+      });
+      return;
+    }
+    if (task.status !== 'ASSIGNED' && task.status !== 'IN_PROGRESS') {
+      res.status(400).json({
+        success: false,
+        error: 'Task can only be marked complete when assigned or in progress',
+      });
+      return;
+    }
+
+    task.status = 'PENDING_CONFIRMATION';
+    await task.save();
+
+    const updated = await Task.findById(taskId)
+      .populate('posterId', 'firstName lastName email')
+      .populate('assignedWorkerId', 'firstName lastName email rating');
+
+    const posterFormatted = formatPopulatedUser(updated!.posterId);
+    const assignedWorkerFormatted = updated!.assignedWorkerId
+      ? formatPopulatedUser(updated!.assignedWorkerId)
+      : undefined;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        task: {
+          _id: updated!._id,
+          title: updated!.title,
+          description: updated!.description,
+          pictures: updated!.pictures,
+          money: updated!.money,
+          location: updated!.location,
+          type: updated!.type,
+          points: updated!.points,
+          status: updated!.status,
+          posterId: posterFormatted,
+          assignedWorkerId: assignedWorkerFormatted,
+          createdAt: updated!.createdAt,
+          updatedAt: updated!.updatedAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Mark complete by worker error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to mark task complete',
+    });
+  }
+};
+
 export const confirmCompletion = async (req: Request, res: Response): Promise<void> => {
   try {
     const q = req as CustomeRequest;
@@ -464,16 +546,27 @@ export const confirmCompletion = async (req: Request, res: Response): Promise<vo
       res.status(403).json({ success: false, error: 'Only the poster can confirm completion' });
       return;
     }
-    if (task.status !== 'ASSIGNED' && task.status !== 'IN_PROGRESS') {
+    if (
+      task.status !== 'ASSIGNED' &&
+      task.status !== 'IN_PROGRESS' &&
+      task.status !== 'PENDING_CONFIRMATION'
+    ) {
       res.status(400).json({
         success: false,
-        error: 'Task can only be completed when assigned or in progress',
+        error: 'Task can only be completed when assigned, in progress, or pending confirmation',
       });
       return;
     }
 
     task.status = 'COMPLETED';
     await task.save();
+
+    // Add task points to the assigned worker when poster confirms
+    if (task.assignedWorkerId) {
+      await User.findByIdAndUpdate(task.assignedWorkerId, {
+        $inc: { points: task.points },
+      });
+    }
 
     const updated = await Task.findById(taskId)
       .populate('posterId', 'firstName lastName email')

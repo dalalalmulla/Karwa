@@ -11,7 +11,7 @@ import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { colors, spacing, typography } from "@/constants/theme";
 import Card from "@/components/ui/Card";
-import { getTasks } from "@/src/api/tasks";
+import { getTasks, type Task } from "@/src/api/tasks";
 
 export default function TasksListScreen() {
   const router = useRouter();
@@ -25,6 +25,13 @@ export default function TasksListScreen() {
     queryKey: ["tasks", "OPEN"],
     queryFn: () => getTasks({ status: "OPEN" }),
   });
+
+  const { data: pendingTasks } = useQuery({
+    queryKey: ["tasks", "posterId=me", "PENDING_CONFIRMATION"],
+    queryFn: () => getTasks({ posterId: "me", status: "PENDING_CONFIRMATION" }),
+  });
+
+  const hasPending = pendingTasks && pendingTasks.length > 0;
 
   if (isLoading) {
     return (
@@ -57,6 +64,35 @@ export default function TasksListScreen() {
       >
         <Text style={styles.backText}>← Back</Text>
       </TouchableOpacity>
+      {hasPending && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Pending your confirmation</Text>
+          <Text style={styles.subtitle}>
+            Worker marked these complete. Confirm to close and rate.
+          </Text>
+          {pendingTasks!.map((task: Task) => (
+            <TouchableOpacity
+              key={task._id}
+              activeOpacity={0.7}
+              onPress={() =>
+                router.push(
+                  `/(main)/task/${task._id}` as Parameters<
+                    typeof router.push
+                  >[0]
+                )
+              }
+            >
+              <Card style={styles.pendingCard}>
+                <Text style={styles.taskTitle}>{task.title}</Text>
+                <Text style={styles.taskMeta}>
+                  {task.location} · {task.money} KWD · {task.status}
+                </Text>
+              </Card>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+
       <Text style={styles.title}>Open tasks</Text>
       <Text style={styles.subtitle}>
         Tap a task to view details and assign a worker
@@ -70,7 +106,11 @@ export default function TasksListScreen() {
           <TouchableOpacity
             key={task._id}
             activeOpacity={0.7}
-            onPress={() => router.push(`/(main)/task/${task._id}`)}
+            onPress={() =>
+              router.push(
+                `/(main)/task/${task._id}` as Parameters<typeof router.push>[0]
+              )
+            }
           >
             <Card style={styles.card}>
               <Text style={styles.taskTitle}>{task.title}</Text>
@@ -137,6 +177,19 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.secondary,
     marginBottom: spacing.lg,
+  },
+  section: {
+    marginBottom: spacing.xl,
+  },
+  sectionTitle: {
+    ...typography.heading,
+    color: colors.text,
+    marginBottom: spacing.sm,
+  },
+  pendingCard: {
+    marginBottom: spacing.md,
+    borderLeftWidth: 4,
+    borderLeftColor: colors.warning,
   },
   card: {
     marginBottom: spacing.md,

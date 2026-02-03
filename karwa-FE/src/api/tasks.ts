@@ -48,7 +48,11 @@ export interface AssignWorkerResponse {
   };
 }
 
-export const getTasks = async (params?: { status?: string; type?: string }): Promise<Task[]> => {
+export const getTasks = async (params?: {
+  status?: string;
+  type?: string;
+  posterId?: string;
+}): Promise<Task[]> => {
   const response = await instance.get<{ success: boolean; data: { tasks: Task[] } }>('/tasks', {
     params,
   });
@@ -79,6 +83,19 @@ export const assignWorker = async (
 export const applyToTask = async (taskId: string): Promise<void> => {
   const response = await instance.post<{ success: boolean }>(`/tasks/${taskId}/apply`);
   if (!response.data.success) throw new Error('Failed to apply to task');
+};
+
+export const markCompleteByWorker = async (
+  taskId: string
+): Promise<AssignWorkerResponse['data']> => {
+  const response = await instance.patch<AssignWorkerResponse>(
+    `/tasks/${taskId}/mark-complete`
+  );
+  if (!response.data.success) {
+    const err = response.data as { success: false; error?: string };
+    throw new Error(err.error || 'Failed to mark task complete');
+  }
+  return response.data.data;
 };
 
 export const confirmCompletion = async (

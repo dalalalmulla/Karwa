@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export type TaskType = 'indoor' | 'outdoor' | 'home_service' | 'car_service';
-export type TaskStatus = 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type TaskStatus = 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'PENDING_CONFIRMATION' | 'COMPLETED' | 'CANCELLED';
 
 export interface ITask extends Document {
   title: string;
@@ -67,8 +67,8 @@ const taskSchema = new Schema<ITask>(
     status: {
       type: String,
       enum: {
-        values: ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
-        message: 'Status must be one of: OPEN, ASSIGNED, IN_PROGRESS, COMPLETED, CANCELLED',
+        values: ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'PENDING_CONFIRMATION', 'COMPLETED', 'CANCELLED'],
+        message: 'Status must be one of: OPEN, ASSIGNED, IN_PROGRESS, PENDING_CONFIRMATION, COMPLETED, CANCELLED',
       },
       default: 'OPEN',
     },

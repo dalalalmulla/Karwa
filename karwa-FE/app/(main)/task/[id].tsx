@@ -18,6 +18,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import {
   getTaskById,
   assignWorker,
+  markCompleteByWorker,
   confirmCompletion,
   submitRating,
   type Task,
@@ -31,6 +32,15 @@ function getPosterId(task: Task): string {
     "_id" in task.posterId
     ? (task.posterId as TaskUser)._id
     : String(task.posterId);
+}
+
+function getAssignedWorkerId(task: Task): string | undefined {
+  if (!task.assignedWorkerId) return undefined;
+  return typeof task.assignedWorkerId === "object" &&
+    task.assignedWorkerId !== null &&
+    "_id" in task.assignedWorkerId
+    ? (task.assignedWorkerId as TaskUser)._id
+    : String(task.assignedWorkerId);
 }
 
 function getApplicantName(applicantId: TaskUser): string {
@@ -117,6 +127,36 @@ export default function TaskDetailScreen() {
 
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
 
+  const markCompleteMutation = useMutation({
+    mutationFn: (taskId: string) => markCompleteByWorker(taskId),
+    onSuccess: (_, taskId) => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+    },
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
+      Alert.alert(
+        "Mark complete failed",
+        err.response?.data?.error ||
+          err.message ||
+          "Could not mark task complete"
+      );
+    },
+  });
+
+  const handleMarkComplete = () => {
+    if (!id) return;
+    Alert.alert(
+      "Mark complete",
+      "Mark this task as complete? The poster will be notified to confirm.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Mark complete",
+          onPress: () => markCompleteMutation.mutate(id),
+        },
+      ]
+    );
+  };
+
   const handleConfirmCompletion = () => {
     if (!id) return;
     Alert.alert(
@@ -178,15 +218,21 @@ export default function TaskDetailScreen() {
 
   const { task, applicants, hasRatedByPoster } = data;
   const isPoster = user?._id && getPosterId(task) === user._id;
+  const isWorker = !!user?._id && getAssignedWorkerId(task) === user._id;
   const isAssigned = task.status === "ASSIGNED";
   const canAssign = isPoster && !isAssigned && applicants.length > 0;
+  const canMarkComplete =
+    isWorker && (task.status === "ASSIGNED" || task.status === "IN_PROGRESS");
   const canConfirm =
     isPoster &&
-    (task.status === "ASSIGNED" || task.status === "IN_PROGRESS") &&
+    (task.status === "ASSIGNED" ||
+      task.status === "IN_PROGRESS" ||
+      task.status === "PENDING_CONFIRMATION") &&
     !!task.assignedWorkerId;
   const isCompleted = task.status === "COMPLETED";
   const showRatingFlow =
     isPoster && isCompleted && task.assignedWorkerId && !hasRatedByPoster;
+  const isPendingConfirmation = task.status === "PENDING_CONFIRMATION";
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -299,6 +345,31 @@ export default function TaskDetailScreen() {
           ) : (
             <Text style={styles.bodyText}>Worker assigned</Text>
           )}
+        </Card>
+      )}
+
+      {canMarkComplete && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Mark complete</Text>
+          <Text style={styles.bodyText}>
+            Finished the work? Mark the task complete so the poster can confirm.
+          </Text>
+          <Button
+            title="Mark complete"
+            onPress={handleMarkComplete}
+            style={styles.confirmButton}
+            loading={markCompleteMutation.isPending}
+            disabled={markCompleteMutation.isPending}
+          />
+        </Card>
+      )}
+
+      {isPendingConfirmation && isWorker && (
+        <Card style={styles.card}>
+          <Text style={styles.pendingText}>
+            Task is pending the poster&apos;s confirmation. You will receive
+            points once they confirm.
+          </Text>
         </Card>
       )}
 
@@ -530,6 +601,11 @@ const styles = StyleSheet.create({
   ratingThanks: {
     ...typography.body,
     color: colors.success,
+    textAlign: "center",
+  },
+  pendingText: {
+    ...typography.body,
+    color: colors.secondary,
     textAlign: "center",
   },
 });
