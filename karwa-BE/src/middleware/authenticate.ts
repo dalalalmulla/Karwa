@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/token';
 import User from '../models/User';
+import { CustomeRequest } from '../types/http';
 
 export const authenticate = async (
   req: Request,
@@ -8,6 +9,7 @@ export const authenticate = async (
   next: NextFunction
 ): Promise<void> => {
   try {
+    const q = req as CustomeRequest
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -24,7 +26,7 @@ export const authenticate = async (
 
     // Optionally fetch user from database to ensure they still exist
     const user = await User.findById(decoded.userId).select('-password');
-    
+
     if (!user) {
       res.status(401).json({
         success: false,
@@ -34,7 +36,7 @@ export const authenticate = async (
     }
 
     // Attach user to request object
-    req.user = {
+    q.user = {
       _id: user._id.toString(),
       email: user.email,
     };
