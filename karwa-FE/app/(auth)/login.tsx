@@ -9,6 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useAuth } from "../../src/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
 import { loginUser, LoginData } from "../../src/api/auth";
@@ -27,7 +28,14 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginData) => loginUser(data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Save token to SecureStore
+      try {
+        await SecureStore.setItemAsync("token", data.token);
+      } catch (error) {
+        console.error("Error saving token:", error);
+      }
+
       // Set token and user in AuthContext
       setToken(data.token);
       setUser(data.user);

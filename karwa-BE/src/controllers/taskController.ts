@@ -354,6 +354,7 @@ export const applyToTask = async (req: Request, res: Response): Promise<void> =>
       success: false,
       error: 'Failed to apply to task',
     });
+    return;
   }
 };
 
@@ -519,6 +520,7 @@ export const markCompleteByWorker = async (req: Request, res: Response): Promise
       success: false,
       error: 'Failed to mark task complete',
     });
+    return;
   }
 };
 
