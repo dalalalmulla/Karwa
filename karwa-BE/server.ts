@@ -6,6 +6,7 @@ import { errorHandler } from './src/middleware/errorHandler';
 import authRoutes from './src/routes/auth';
 import taskRoutes from './src/routes/tasks';
 import applicationRoutes from './src/routes/applications';
+import ratingRoutes from './src/routes/ratings';
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,7 @@ app.get('/health', (req: Request, res: Response) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/applications', applicationRoutes);
+app.use('/api/ratings', ratingRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
