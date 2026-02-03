@@ -3,9 +3,7 @@ import mongoose from 'mongoose';
 import User from '../models/User';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/token';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import { CustomeRequest } from '../types/http';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -178,7 +176,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userId } = (req as Request & { user?: { userId?: string } }).user || {}
+    const q = req as CustomeRequest
+    const userId = q.user?._id;
 
     if (!userId) {
       res.status(401).json({
