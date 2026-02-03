@@ -15,6 +15,7 @@ import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import RatingModal from '@/components/RatingModal';
 import { getTaskById } from '@/src/api/tasks';
 import { applyToTask } from '@/src/api/applications';
 
@@ -23,6 +24,11 @@ export default function TaskDetailsScreen() {
   const queryClient = useQueryClient();
   const { taskId } = useLocalSearchParams<{ taskId: string }>();
   const [showApplications, setShowApplications] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState<{
+    userId: string;
+    userName: string;
+  } | null>(null);
 
   // Fetch task details
   const {
@@ -65,6 +71,11 @@ export default function TaskDetailsScreen() {
         },
       ]
     );
+  };
+
+  const handleRateUser = (userId: string, userName: string) => {
+    setRatingTarget({ userId, userName });
+    setShowRatingModal(true);
   };
 
   if (isLoading) {
@@ -130,6 +141,7 @@ export default function TaskDetailsScreen() {
   };
 
   return (
+    <>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
@@ -294,7 +306,73 @@ export default function TaskDetailsScreen() {
           </Text>
         </Card>
       )}
+
+      {/* Rating Section - Worker rates poster (only if task is COMPLETED) */}
+      {!isPoster && task.status === 'COMPLETED' && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Rate the Poster</Text>
+          <Text style={styles.ratingDescription}>
+            Share your experience working with {posterName}
+          </Text>
+          <Button
+            title="Rate Poster"
+            onPress={() => handleRateUser(task.poster._id, posterName)}
+            style={styles.ratingButton}
+          />
+        </Card>
+      )}
+
+      {/* Rating Section - Poster rates workers (only if task is COMPLETED) */}
+      {isPoster && task.status === 'COMPLETED' && task.applications && task.applications.length > 0 && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Rate Workers</Text>
+          <Text style={styles.ratingDescription}>
+            Rate the workers who completed this task
+          </Text>
+          {task.applications
+            .filter((app) => app.status === 'ACCEPTED')
+            .map((app) => {
+              const workerName =
+                app.workerId.firstName || app.workerId.lastName
+                  ? `${app.workerId.firstName || ''} ${app.workerId.lastName || ''}`.trim()
+                  : app.workerId.email;
+              return (
+                <View key={app._id} style={styles.ratingItem}>
+                  <View style={styles.ratingItemInfo}>
+                    <Text style={styles.ratingItemName}>{workerName}</Text>
+                    <Text style={styles.ratingItemEmail}>{app.workerId.email}</Text>
+                  </View>
+                  <Button
+                    title="Rate"
+                    onPress={() => handleRateUser(app.workerId._id, workerName)}
+                    variant="secondary"
+                    style={styles.ratingItemButton}
+                  />
+                </View>
+              );
+            })}
+        </Card>
+      )}
     </ScrollView>
+
+    {/* Rating Modal - Outside ScrollView */}
+    {ratingTarget && (
+      <RatingModal
+        visible={showRatingModal}
+        onClose={() => {
+          setShowRatingModal(false);
+          setRatingTarget(null);
+        }}
+        taskId={taskId!}
+        ratedUserId={ratingTarget.userId}
+        ratedUserName={ratingTarget.userName}
+        onRatingSubmitted={() => {
+          // Refetch task to update ratings
+          queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+        }}
+      />
+    )}
+    </>
   );
 }
 
@@ -485,6 +563,38 @@ const styles = StyleSheet.create({
     color: colors.secondary,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  ratingDescription: {
+    ...typography.body,
+    color: colors.secondary,
+    marginBottom: spacing.md,
+  },
+  ratingButton: {
+    marginTop: spacing.sm,
+  },
+  ratingItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  ratingItemInfo: {
+    flex: 1,
+  },
+  ratingItemName: {
+    ...typography.body,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  ratingItemEmail: {
+    ...typography.caption,
+    color: colors.secondary,
+  },
+  ratingItemButton: {
+    minWidth: 80,
   },
 });
 
