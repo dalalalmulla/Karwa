@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,8 @@ import { useAuth } from "@/src/context/AuthContext";
 import {
   getTaskById,
   assignWorker,
+  confirmCompletion,
+  submitRating,
   type Task,
   type Applicant,
   type TaskUser,
@@ -84,6 +86,52 @@ export default function TaskDetailScreen() {
     );
   };
 
+  const confirmMutation = useMutation({
+    mutationFn: (taskId: string) => confirmCompletion(taskId),
+    onSuccess: (_, taskId) => {
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
+    },
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
+      Alert.alert(
+        "Confirm failed",
+        err.response?.data?.error ||
+          err.message ||
+          "Could not confirm completion"
+      );
+    },
+  });
+
+  const rateMutation = useMutation({
+    mutationFn: ({ taskId, rating }: { taskId: string; rating: number }) =>
+      submitRating(taskId, rating),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["task", variables.taskId] });
+    },
+    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
+      Alert.alert(
+        "Rating failed",
+        err.response?.data?.error || err.message || "Could not submit rating"
+      );
+    },
+  });
+
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+
+  const handleConfirmCompletion = () => {
+    if (!id) return;
+    Alert.alert(
+      "Confirm completion",
+      "Mark this task as officially completed?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Confirm",
+          onPress: () => confirmMutation.mutate(id),
+        },
+      ]
+    );
+  };
+
   if (!id) {
     return (
       <View style={styles.center}>
@@ -128,10 +176,17 @@ export default function TaskDetailScreen() {
     );
   }
 
-  const { task, applicants } = data;
+  const { task, applicants, hasRatedByPoster } = data;
   const isPoster = user?._id && getPosterId(task) === user._id;
   const isAssigned = task.status === "ASSIGNED";
   const canAssign = isPoster && !isAssigned && applicants.length > 0;
+  const canConfirm =
+    isPoster &&
+    (task.status === "ASSIGNED" || task.status === "IN_PROGRESS") &&
+    !!task.assignedWorkerId;
+  const isCompleted = task.status === "COMPLETED";
+  const showRatingFlow =
+    isPoster && isCompleted && task.assignedWorkerId && !hasRatedByPoster;
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -244,6 +299,70 @@ export default function TaskDetailScreen() {
           ) : (
             <Text style={styles.bodyText}>Worker assigned</Text>
           )}
+        </Card>
+      )}
+
+      {canConfirm && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Confirm completion</Text>
+          <Text style={styles.bodyText}>
+            When the work is done, confirm to close the task officially.
+          </Text>
+          <Button
+            title="Confirm completion"
+            onPress={handleConfirmCompletion}
+            style={styles.confirmButton}
+            loading={confirmMutation.isPending}
+            disabled={confirmMutation.isPending}
+          />
+        </Card>
+      )}
+
+      {showRatingFlow && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Rate the worker</Text>
+          <Text style={styles.ratingPrompt}>
+            How was the work? Select a rating from 1 to 5.
+          </Text>
+          <View style={styles.ratingRow}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <TouchableOpacity
+                key={n}
+                style={[
+                  styles.ratingOption,
+                  selectedRating === n && styles.ratingOptionSelected,
+                ]}
+                onPress={() => setSelectedRating(n)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.ratingOptionText,
+                    selectedRating === n && styles.ratingOptionTextSelected,
+                  ]}
+                >
+                  {n}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+          <Button
+            title="Submit rating"
+            onPress={() =>
+              selectedRating != null &&
+              id &&
+              rateMutation.mutate({ taskId: id, rating: selectedRating })
+            }
+            style={styles.confirmButton}
+            loading={rateMutation.isPending}
+            disabled={rateMutation.isPending || selectedRating == null}
+          />
+        </Card>
+      )}
+
+      {isCompleted && hasRatedByPoster && (
+        <Card style={styles.card}>
+          <Text style={styles.ratingThanks}>Thanks for rating the worker.</Text>
         </Card>
       )}
     </ScrollView>
@@ -373,5 +492,44 @@ const styles = StyleSheet.create({
   bodyText: {
     ...typography.body,
     color: colors.text,
+  },
+  confirmButton: {
+    marginTop: spacing.md,
+  },
+  ratingPrompt: {
+    ...typography.body,
+    color: colors.secondary,
+    marginBottom: spacing.md,
+  },
+  ratingRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  ratingOption: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.gray100,
+    borderWidth: 2,
+    borderColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  ratingOptionSelected: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  ratingOptionText: {
+    ...typography.heading,
+    color: colors.text,
+  },
+  ratingOptionTextSelected: {
+    color: colors.white,
+  },
+  ratingThanks: {
+    ...typography.body,
+    color: colors.success,
+    textAlign: "center",
   },
 });

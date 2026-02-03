@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import Task from '../models/Task';
 import Application from '../models/Application';
+import Rating from '../models/Rating';
+import User from '../models/User';
 import { CustomeRequest } from '../types/http';
 
 // Helper function to calculate points based on money amount
@@ -202,6 +204,7 @@ function formatPopulatedUser(user: unknown): { _id: string; firstName?: string; 
 
 export const getTaskById = async (req: Request, res: Response): Promise<void> => {
   try {
+    const q = req as CustomeRequest;
     const { id } = req.params;
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ success: false, error: 'Valid task ID is required' });
@@ -215,6 +218,12 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
     if (!task) {
       res.status(404).json({ success: false, error: 'Task not found' });
       return;
+    }
+
+    let hasRatedByPoster = false;
+    if (q.user?._id) {
+      const ratingExists = await Rating.exists({ taskId: id, raterId: q.user._id });
+      hasRatedByPoster = !!ratingExists;
     }
 
     const applications = await Application.find({ taskId: id, status: 'PENDING' })
@@ -263,6 +272,7 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
           updatedAt: task.updatedAt,
         },
         applicants: applicantsFormatted,
+        hasRatedByPoster,
       },
     });
   } catch (error) {
@@ -426,6 +436,156 @@ export const assignWorker = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({
       success: false,
       error: 'Failed to assign worker',
+    });
+  }
+};
+
+export const confirmCompletion = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const posterId = q.user?._id;
+    if (!posterId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
+      return;
+    }
+
+    const { id: taskId } = req.params;
+    if (!taskId || !mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ success: false, error: 'Valid task ID is required' });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ success: false, error: 'Task not found' });
+      return;
+    }
+    if (task.posterId.toString() !== posterId) {
+      res.status(403).json({ success: false, error: 'Only the poster can confirm completion' });
+      return;
+    }
+    if (task.status !== 'ASSIGNED' && task.status !== 'IN_PROGRESS') {
+      res.status(400).json({
+        success: false,
+        error: 'Task can only be completed when assigned or in progress',
+      });
+      return;
+    }
+
+    task.status = 'COMPLETED';
+    await task.save();
+
+    const updated = await Task.findById(taskId)
+      .populate('posterId', 'firstName lastName email')
+      .populate('assignedWorkerId', 'firstName lastName email rating');
+
+    const posterFormatted = formatPopulatedUser(updated!.posterId);
+    const assignedWorkerFormatted = updated!.assignedWorkerId
+      ? formatPopulatedUser(updated!.assignedWorkerId)
+      : undefined;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        task: {
+          _id: updated!._id,
+          title: updated!.title,
+          description: updated!.description,
+          pictures: updated!.pictures,
+          money: updated!.money,
+          location: updated!.location,
+          type: updated!.type,
+          points: updated!.points,
+          status: updated!.status,
+          posterId: posterFormatted,
+          assignedWorkerId: assignedWorkerFormatted,
+          createdAt: updated!.createdAt,
+          updatedAt: updated!.updatedAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Confirm completion error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to confirm completion',
+    });
+  }
+};
+
+export const submitRating = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const posterId = q.user?._id;
+    if (!posterId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
+      return;
+    }
+
+    const { id: taskId } = req.params;
+    let { rating: score } = req.body;
+
+    if (!taskId || !mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ success: false, error: 'Valid task ID is required' });
+      return;
+    }
+    const numScore = Number(score);
+    if (!Number.isFinite(numScore) || numScore < 1 || numScore > 5) {
+      res.status(400).json({ success: false, error: 'Rating must be a number between 1 and 5' });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ success: false, error: 'Task not found' });
+      return;
+    }
+    if (task.posterId.toString() !== posterId) {
+      res.status(403).json({ success: false, error: 'Only the poster can rate the worker' });
+      return;
+    }
+    if (task.status !== 'COMPLETED') {
+      res.status(400).json({ success: false, error: 'Task must be completed before rating' });
+      return;
+    }
+    const workerId = task.assignedWorkerId;
+    if (!workerId) {
+      res.status(400).json({ success: false, error: 'No assigned worker to rate' });
+      return;
+    }
+
+    const roundedScore = Math.round(numScore);
+    await Rating.findOneAndUpdate(
+      { taskId },
+      {
+        taskId: new mongoose.Types.ObjectId(taskId),
+        raterId: new mongoose.Types.ObjectId(posterId),
+        ratedUserId: workerId,
+        score: roundedScore,
+      },
+      { upsert: true, new: true }
+    );
+
+    const [avgResult] = await Rating.aggregate([
+      { $match: { ratedUserId: workerId } },
+      { $group: { _id: null, avg: { $avg: '$score' } } },
+    ]);
+    const newRating = avgResult?.avg != null ? Math.round(avgResult.avg * 10) / 10 : null;
+    await User.findByIdAndUpdate(workerId, { rating: newRating });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: 'Rating submitted',
+        rating: roundedScore,
+        workerRating: newRating,
+      },
+    });
+  } catch (error) {
+    console.error('Submit rating error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to submit rating',
     });
   }
 };

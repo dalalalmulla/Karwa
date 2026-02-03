@@ -37,6 +37,7 @@ export interface GetTaskByIdResponse {
   data: {
     task: Task;
     applicants: Applicant[];
+    hasRatedByPoster?: boolean;
   };
 }
 
@@ -78,4 +79,30 @@ export const assignWorker = async (
 export const applyToTask = async (taskId: string): Promise<void> => {
   const response = await instance.post<{ success: boolean }>(`/tasks/${taskId}/apply`);
   if (!response.data.success) throw new Error('Failed to apply to task');
+};
+
+export const confirmCompletion = async (
+  taskId: string
+): Promise<AssignWorkerResponse['data']> => {
+  const response = await instance.patch<AssignWorkerResponse>(`/tasks/${taskId}/complete`);
+  if (!response.data.success) {
+    const err = response.data as { success: false; error?: string };
+    throw new Error(err.error || 'Failed to confirm completion');
+  }
+  return response.data.data;
+};
+
+export const submitRating = async (
+  taskId: string,
+  rating: number
+): Promise<{ message: string; rating: number; workerRating: number | null }> => {
+  const response = await instance.post<{
+    success: boolean;
+    data: { message: string; rating: number; workerRating: number | null };
+  }>(`/tasks/${taskId}/rate`, { rating });
+  if (!response.data.success) {
+    const err = response.data as { success: false; error?: string };
+    throw new Error(err.error || 'Failed to submit rating');
+  }
+  return response.data.data;
 };

@@ -5,6 +5,8 @@ import {
   getTaskById,
   applyToTask,
   assignWorker,
+  confirmCompletion,
+  submitRating,
 } from '../controllers/taskController';
 import { authenticate } from '../middleware/authenticate';
 
@@ -16,6 +18,8 @@ router.get('/', authenticate, getTasks);
 router.get('/:id', authenticate, getTaskById);
 router.post('/:id/apply', authenticate, applyToTask);
 router.patch('/:id/assign', authenticate, assignWorker);
+router.patch('/:id/complete', authenticate, confirmCompletion);
+router.post('/:id/rate', authenticate, submitRating);
 
 export default router;
 
