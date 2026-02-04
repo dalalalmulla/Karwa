@@ -1,19 +1,82 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  RefreshControl,
+  Alert
+} from "react-native";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Logo from '@/components/ui/Logo';
+
+import { useAuth } from "@/src/context/AuthContext";
+import { getTasksApi } from "@/src/api/taskCalls";
+import {
+  getNotificationsApi,
+  markAllNotificationsReadApi,
+} from "@/src/api/notificationCalls";
+import type { Task } from "@/src/types/taskTypes";
+import type { Notification } from "@/src/types/notificationTypes";
+import { colors, spacing, typography } from "@/constants/theme";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
 import { getCurrentUser } from '@/src/api/auth';
-import { useAuth } from '@/src/context/AuthContext';
+
+
+type TasksResponse = {
+  success: boolean;
+  data?: { tasks: Task[] };
+  error?: string;
+};
 
 export default function ProfileScreen() {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const router = useRouter();
   const { logout, token } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const {
+    data: tasksData,
+    isRefetching: isTasksRefetching,
+    refetch: refetchTasks,
+    isLoading: isTasksLoading,
+    error: tasksError,
+  } = useQuery<TasksResponse>({
+    queryKey: ["my-tasks"],
+    queryFn: () => getTasksApi({}) as unknown as Promise<TasksResponse>,
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
+  });
+
+  const {
+    data: notificationsData,
+    isRefetching: isNotificationsRefetching,
+    refetch: refetchNotifications,
+    isLoading: isNotificationsLoading,
+  } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => getNotificationsApi({ limit: 50 }),
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
+  });
+
+  const notifications: Notification[] = useMemo(() => {
+    return notificationsData?.success
+      ? notificationsData.data?.notifications ?? []
+      : [];
+  }, [notificationsData]);
+
+  const unreadCount = notificationsData?.data?.unreadCount ?? 0;
+
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllNotificationsReadApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
 
   // Redirect to login if no token
   useEffect(() => {
@@ -23,7 +86,7 @@ export default function ProfileScreen() {
     }
   }, [token, router]);
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading: currentUserLoading, error, refetch } = useQuery({
     queryKey: ['currentUser'],
     queryFn: getCurrentUser,
     retry: 1,
@@ -42,294 +105,326 @@ export default function ProfileScreen() {
     }
   };
 
-  const getFullName = () => {
-    const firstName = data?.user.firstName || '';
-    const lastName = data?.user.lastName || '';
-    if (firstName || lastName) {
-      return `${firstName} ${lastName}`.trim();
-    }
-    return 'Not provided';
+  const tasks: Task[] = useMemo(() => {
+    return tasksData?.success ? tasksData.data?.tasks ?? [] : [];
+  }, [tasksData]);
+
+  const stats = tasks.reduce(
+    (acc, task) => {
+      if (task.status === "COMPLETED") acc.completed += 1;
+      else if (task.status === "IN_PROGRESS") acc.inProgress += 1;
+      else if (task.status === "OPEN") acc.open += 1;
+      else if (task.status === "CANCELLED") acc.cancelled += 1;
+      return acc;
+    },
+    { completed: 0, inProgress: 0, open: 0, cancelled: 0 }
+  );
+
+  const handleMarkAllRead = () => {
+    markAllReadMutation.mutate();
   };
 
-  if (isLoading) {
+  const handleRefresh = () => {
+    refetchTasks();
+    refetchNotifications();
+  };
+
+  const displayName = useMemo(() => {
+    const anyUser = user as {
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    };
+    if (anyUser?.firstName && anyUser?.lastName) {
+      return `${anyUser.firstName} ${anyUser.lastName}`;
+    }
+    return anyUser?.name ?? anyUser?.email ?? "User";
+  }, [user]);
+
+  const userRating = useMemo(() => {
+    const anyUser = user as { rating?: number };
+    return anyUser?.rating ?? null;
+  }, [user]);
+
+  const renderNotification = ({ item }: { item: Notification }) => {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
+      <View style={[styles.notifItem, !item.read && styles.notifUnread]}>
+        <View style={styles.notifTopRow}>
+          <Text style={styles.notifTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+          {!item.read && <Text style={styles.badge}>NEW</Text>}
+        </View>
+        <Text style={styles.notifMsg} numberOfLines={2}>
+          {item.message}
+        </Text>
+        <Text style={styles.notifDate}>
+          {new Date(item.createdAt).toLocaleString()}
+        </Text>
       </View>
     );
-  }
-
-  if (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    const isNetworkError = errorMessage.includes('Network') || errorMessage.includes('timeout') || errorMessage.includes('ECONNREFUSED');
-    const isAuthError = errorMessage.includes('Authentication') || errorMessage.includes('token') || errorMessage.includes('401');
-    
-    return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Failed to load profile</Text>
-          <Text style={styles.errorText}>
-            {errorMessage}
-          </Text>
-          {isAuthError && (
-            <View style={styles.networkHelp}>
-              <Text style={styles.helpTitle}>Authentication Required:</Text>
-              <Text style={styles.helpText}>• Your session may have expired</Text>
-              <Text style={styles.helpText}>• Please login again to continue</Text>
-            </View>
-          )}
-          {isNetworkError && (
-            <View style={styles.networkHelp}>
-              <Text style={styles.helpTitle}>Troubleshooting:</Text>
-              <Text style={styles.helpText}>• Make sure backend server is running</Text>
-              <Text style={styles.helpText}>• Ensure your device is on the same WiFi network</Text>
-            </View>
-          )}
-          {isAuthError ? (
-            <Button
-              title="Go to Login"
-              onPress={() => router.replace('/(auth)/login')}
-              style={styles.retryButton}
-            />
-          ) : (
-            <>
-              <Button
-                title="Retry"
-                onPress={() => refetch()}
-                style={styles.retryButton}
-              />
-              <Button
-                title="Go Back"
-                onPress={() => router.back()}
-                variant="secondary"
-                style={styles.backButton}
-              />
-            </>
-          )}
-        </View>
-      </ScrollView>
-    );
-  }
-
-  const notificationCount = data?.user.notificationCount ?? 0;
-  const hasNotifications = notificationCount > 0;
-
-  const handleNotificationPress = () => {
-    // Navigate to notifications screen or show notifications
-    Alert.alert('Notifications', `You have ${notificationCount} new update${notificationCount !== 1 ? 's' : ''}`);
-    // TODO: Navigate to notifications screen when implemented
-    // router.push('/notifications');
   };
+
+  const isRefreshing = isTasksRefetching || isNotificationsRefetching;
+  const isLoading = isTasksLoading || isNotificationsLoading;
+
+  const ListHeader = () => (
+    <>
+      {/* Profile Header */}
+      <View style={styles.profileHeader}>
+        <View style={styles.profileInfo}>
+          <Text style={styles.name}>{displayName}</Text>
+          <Text style={styles.rating}>
+            {userRating !== null ? `⭐ ${userRating.toFixed(1)}` : "⭐ No rating yet"}
+          </Text>
+        </View>
+        {unreadCount > 0 && (
+          <View style={styles.unreadPill}>
+            <Text style={styles.unreadText}>{unreadCount}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Stats */}
+      <View style={styles.stats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.open}</Text>
+          <Text style={styles.statLabel}>Open</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.inProgress}</Text>
+          <Text style={styles.statLabel}>Active</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.completed}</Text>
+          <Text style={styles.statLabel}>Done</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.cancelled}</Text>
+          <Text style={styles.statLabel}>Cancelled</Text>
+        </View>
+      </View>
+
+      {/* Notifications Header */}
+      <View style={styles.notifHeader}>
+        <Text style={styles.notifHeaderTitle}>Notifications</Text>
+        {unreadCount > 0 && (
+          <TouchableOpacity
+            onPress={handleMarkAllRead}
+            disabled={markAllReadMutation.isPending}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.markReadText}>
+              {markAllReadMutation.isPending ? "..." : "Mark all read"}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      {tasksError && (
+        <Text style={styles.errorText}>
+          {(tasksError as Error).message || "Failed to load"}
+        </Text>
+      )}
+    </>
+  );
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.logoContainer}>
-            <Logo size={80} />
-          </View>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={handleNotificationPress}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="notifications" size={24} color={colors.text} />
-            {hasNotifications && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </Text>
-              </View>
-            )}
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.name}>{getFullName()}</Text>
-        <Text style={styles.subtitle}>{data?.user.email || 'N/A'}</Text>
-      </View>
-
-      <Card style={styles.card}>
-        <View style={styles.statRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Rating Average</Text>
-            <Text style={styles.statValue}>
-              ⭐ {data?.user.ratingAverage !== undefined 
-                ? data.user.ratingAverage.toFixed(1) 
-                : '0.0'}
+    <WatermarkBackground style={styles.container}>
+      <FlatList
+        data={notifications}
+        keyExtractor={(item) => item._id}
+        renderItem={renderNotification}
+        ListHeaderComponent={ListHeader}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>
+              {isLoading ? "Loading..." : "No notifications"}
+            </Text>
+            <Text style={styles.emptySub}>
+              {isLoading ? "Please wait" : "You're all caught up!"}
             </Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Completed Tasks</Text>
-            <Text style={styles.statValue}>
-              {data?.user.completedTasksCount ?? 0}
-            </Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Earned Points</Text>
-            <Text style={styles.statValue}>
-              {data?.user.earnedPoints ?? 0}
-            </Text>
-          </View>
-        </View>
-      </Card>
-
-      <Button
-        title={isLoggingOut ? 'Logging out...' : 'Logout'}
-        onPress={handleLogout}
-        variant="secondary"
-        style={styles.logoutButton}
-        disabled={isLoggingOut}
+        }
       />
-    </ScrollView>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
-  content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+  listContent: {
     paddingBottom: spacing.xl,
   },
-  loadingContainer: {
+
+  // Profile Header
+  profileHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.surface,
+  },
+  profileInfo: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    gap: spacing.md,
-  },
-  loadingText: {
-    ...typography.body,
-    color: colors.secondary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-    gap: spacing.md,
-  },
-  errorTitle: {
-    ...typography.heading,
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  errorText: {
-    ...typography.body,
-    color: colors.secondary,
-    textAlign: 'center',
-    marginBottom: spacing.md,
-  },
-  retryButton: {
-    marginTop: spacing.md,
-  },
-  backButton: {
-    marginTop: spacing.sm,
-  },
-  networkHelp: {
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    backgroundColor: colors.gray100,
-    borderRadius: borderRadius.md,
-    width: '100%',
-  },
-  helpTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  helpText: {
-    ...typography.caption,
-    color: colors.secondary,
-    marginBottom: spacing.xs,
-  },
-  header: {
-    marginBottom: spacing.xl,
-    alignItems: 'center',
-  },
-  headerTop: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  notificationButton: {
-    position: 'relative',
-    padding: spacing.sm,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.gray100,
-  },
-  badge: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: colors.error || '#FF3B30',
-    borderRadius: borderRadius.full,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '700',
   },
   name: {
     ...typography.title,
     color: colors.text,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
   },
-  subtitle: {
-    ...typography.body,
-    color: colors.secondary,
-    textAlign: 'center',
+  rating: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
-  card: {
-    marginBottom: spacing.md,
+  unreadPill: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.sm,
   },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+  unreadText: {
+    ...typography.small,
+    color: colors.white,
+    fontWeight: "700",
+  },
+
+  // Stats
+  stats: {
+    flexDirection: "row",
+    backgroundColor: colors.surface,
     paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   statItem: {
     flex: 1,
-    alignItems: 'center',
-  },
-  statLabel: {
-    ...typography.caption,
-    color: colors.secondary,
-    marginBottom: spacing.xs,
-  },
-  statValue: {
-    ...typography.heading,
-    color: colors.text,
-    fontSize: 20,
+    alignItems: "center",
   },
   statDivider: {
     width: 1,
-    height: 40,
     backgroundColor: colors.border,
   },
-  logoutButton: {
-    marginTop: spacing.lg,
+  statNumber: {
+    ...typography.heading,
+    color: colors.primary,
+  },
+  statLabel: {
+    ...typography.small,
+    color: colors.textMuted,
+    marginTop: 2,
+  },
+
+  // Notifications Header
+  notifHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background,
+  },
+  notifHeaderTitle: {
+    ...typography.heading,
+    color: colors.text,
+  },
+  markReadText: {
+    ...typography.caption,
+    color: colors.primary,
+    fontWeight: "600",
+  },
+
+  // Notification Items
+  notifItem: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  notifUnread: {
+    borderColor: colors.primary,
+    borderLeftWidth: 3,
+  },
+  notifTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.xs,
+  },
+  notifTitle: {
+    ...typography.body,
+    color: colors.text,
+    fontWeight: "600",
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  badge: {
+    ...typography.small,
+    color: colors.white,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontWeight: "700",
+    overflow: "hidden",
+  },
+  notifMsg: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+    lineHeight: 18,
+  },
+  notifDate: {
+    ...typography.small,
+    color: colors.textMuted,
+  },
+
+  // Empty State
+  empty: {
+    paddingTop: spacing.xl * 2,
+    alignItems: "center",
+    paddingHorizontal: spacing.md,
+  },
+  emptyTitle: {
+    ...typography.heading,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  emptySub: {
+    ...typography.body,
+    color: colors.textSecondary,
+    textAlign: "center",
+  },
+
+  errorText: {
+    ...typography.caption,
+    color: colors.danger,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
   },
 });

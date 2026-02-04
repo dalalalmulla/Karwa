@@ -1,6 +1,6 @@
 import axios from "axios";
+import { Platform } from "react-native";
 import { getToken } from "../utils/token";
-import { Platform } from 'react-native';
 
 // Get base URL based on platform - same as axios.ts
 const getBaseURL = () => {
@@ -15,6 +15,8 @@ const getBaseURL = () => {
 };
 
 export const api = axios.create({
+  baseURL: getBaseURL(),
+  timeout: 10000,
   baseURL: getBaseURL(),
   timeout: 10000,
   headers: {

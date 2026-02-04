@@ -15,6 +15,7 @@ import { colors, spacing, typography } from "@/constants/theme";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
 import { useAuth } from "@/src/context/AuthContext";
 import {
   getTaskById,
@@ -187,29 +188,29 @@ export default function TaskDetailScreen() {
 
   if (!id) {
     return (
-      <View style={styles.center}>
+      <WatermarkBackground style={styles.center}>
         <Text style={styles.errorText}>Missing task ID</Text>
         <Button
           title="Go back"
           onPress={() => router.back()}
           variant="secondary"
         />
-      </View>
+      </WatermarkBackground>
     );
   }
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <WatermarkBackground style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading task...</Text>
-      </View>
+      </WatermarkBackground>
     );
   }
 
   if (isError || !data) {
     return (
-      <View style={styles.center}>
+      <WatermarkBackground style={styles.center}>
         <Text style={styles.errorText}>
           {(error as Error)?.message || "Failed to load task"}
         </Text>
@@ -225,7 +226,7 @@ export default function TaskDetailScreen() {
           variant="secondary"
           style={styles.mt}
         />
-      </View>
+      </WatermarkBackground>
     );
   }
 
@@ -248,20 +249,21 @@ export default function TaskDetailScreen() {
   const isPendingConfirmation = task.status === "PENDING_CONFIRMATION";
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <TouchableOpacity
-        style={styles.backRow}
-        onPress={() => router.back()}
-        activeOpacity={0.7}
-      >
-        <IconSymbol
-          name="chevron.right"
-          size={24}
-          color={colors.primary}
-          style={styles.backChevron}
-        />
-        <Text style={styles.backText}>Back</Text>
-      </TouchableOpacity>
+    <WatermarkBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <TouchableOpacity
+          style={styles.backRow}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <IconSymbol
+            name="chevron.right"
+            size={24}
+            color={colors.primary}
+            style={styles.backChevron}
+          />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
 
       <Card style={styles.card}>
         <View style={styles.statusBadge}>
@@ -464,14 +466,14 @@ export default function TaskDetailScreen() {
           <Text style={styles.ratingThanks}>Thanks for rating the worker.</Text>
         </Card>
       )}
-    </ScrollView>
+      </ScrollView>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -482,7 +484,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.background,
     padding: spacing.lg,
   },
   loadingText: {

@@ -11,6 +11,7 @@ import { useRouter } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
 import { colors, spacing, typography } from "@/constants/theme";
 import Card from "@/components/ui/Card";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
 import { getTasks, type Task } from "@/src/api/tasks";
 
 export default function TasksListScreen() {
@@ -35,28 +36,29 @@ export default function TasksListScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <WatermarkBackground style={styles.center}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading tasks...</Text>
-      </View>
+      </WatermarkBackground>
     );
   }
 
   if (isError) {
     return (
-      <View style={styles.center}>
+      <WatermarkBackground style={styles.center}>
         <Text style={styles.errorText}>
           {(error as Error)?.message || "Failed to load tasks"}
         </Text>
         <TouchableOpacity onPress={() => refetch()} style={styles.linkButton}>
           <Text style={styles.linkText}>Try again</Text>
         </TouchableOpacity>
-      </View>
+      </WatermarkBackground>
     );
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <WatermarkBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <TouchableOpacity
         style={styles.backRow}
         onPress={() => router.back()}
@@ -121,14 +123,14 @@ export default function TasksListScreen() {
           </TouchableOpacity>
         ))
       )}
-    </ScrollView>
+      </ScrollView>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: spacing.lg,
@@ -139,7 +141,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: colors.background,
     padding: spacing.lg,
   },
   loadingText: {

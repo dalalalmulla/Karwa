@@ -1,46 +1,39 @@
 import React from "react";
-import { StyleSheet, TouchableOpacity } from "react-native";
-import { Tabs, useRouter } from "expo-router";
+import { StyleSheet } from "react-native";
+import { Tabs } from "expo-router";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colors } from "@/constants/theme";
+import { colors, spacing } from "@/constants/theme";
+import { useQuery } from "@tanstack/react-query";
+import { getNotificationsApi } from "@/src/api/notificationCalls";
 
 export default function TabLayout() {
-  const router = useRouter();
+  const { data: notificationsData } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => getNotificationsApi({ limit: 50 }),
+    refetchInterval: 15000,
+  });
+
+  const unreadCount = notificationsData?.data?.unreadCount ?? 0;
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray500,
-        headerShown: true,
+        tabBarInactiveTintColor: colors.textMuted,
+        headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: styles.tabBar,
-        headerStyle: { backgroundColor: colors.background },
-        headerTitleStyle: { color: colors.text },
+        tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: "Browse Tasks",
-          tabBarLabel: "Home",
+          title: "Home",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
-          headerRight: () => (
-            <TouchableOpacity
-              onPress={() => router.push("/(main)/create-task")}
-              style={styles.headerRight}
-              hitSlop={10}
-            >
-              {/* إذا IconSymbol ما يدعم "plus" غيريه إلى "plus.circle.fill" */}
-              <IconSymbol size={22} name="plus" color={colors.text} />
-              {/* fallback إذا احتجتي:
-              <Text style={styles.plusText}>+</Text>
-              */}
-            </TouchableOpacity>
+            <AntDesign name="home" size={22} color={color} />
           ),
         }}
       />
@@ -60,10 +53,11 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarLabel: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <AntDesign name="profile" size={22} color={color} />
           ),
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: styles.badge,
         }}
       />
     </Tabs>
@@ -72,16 +66,24 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderTopColor: colors.border,
+    borderTopWidth: 1,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs,
+    height: 56,
   },
-  headerRight: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+  tabBarLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    marginTop: -2,
   },
-  plusText: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.text,
+  badge: {
+    backgroundColor: colors.primary,
+    color: colors.white,
+    fontSize: 10,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
   },
 });
