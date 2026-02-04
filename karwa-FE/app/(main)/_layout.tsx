@@ -1,33 +1,11 @@
-import { Stack } from 'expo-router';
-import React from 'react';
-import { colors } from '@/constants/theme';
+import { Stack } from "expo-router";
 
 export default function MainLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen 
-        name="profile" 
-        options={{ 
-          headerShown: true,
-          title: 'Profile',
-          presentation: 'card',
-          headerStyle: {
-            backgroundColor: colors.background,
-          },
-          headerTintColor: colors.text,
-          headerTitleStyle: {
-            fontWeight: '700',
-          },
-          contentStyle: {
-            backgroundColor: colors.background,
-          },
-        }} 
-      />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="tasks" />
+      <Stack.Screen name="task/[id]" />
     </Stack>
   );
 }
-

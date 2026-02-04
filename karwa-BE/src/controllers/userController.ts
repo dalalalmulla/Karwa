@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import User from '../models/User';
 import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/token';
+import { CustomeRequest } from '../types/http';
 
 // Try to import Rating and Application models if they exist
 let Rating: any = null;
@@ -20,11 +21,11 @@ try {
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, name, civilId } = req.body;
-    
+
     // Handle name field - split into firstName and lastName if provided
     let finalFirstName = firstName;
     let finalLastName = lastName;
-    
+
     if (name && !firstName && !lastName) {
       const nameParts = name.trim().split(/\s+/);
       finalFirstName = nameParts[0] || '';
@@ -85,7 +86,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    
+
     // Handle Mongoose validation errors
     if (error instanceof mongoose.Error.ValidationError) {
       const errors = Object.values(error.errors).map((e) => e.message);
@@ -95,7 +96,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     // Handle duplicate key error
     if ((error as { code?: number }).code === 11000) {
       res.status(409).json({
@@ -104,7 +105,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to register user. Please try again.',
@@ -127,7 +128,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Find user and include password for comparison
     const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
-    
+
     if (!user) {
       res.status(401).json({
         success: false,
@@ -138,7 +139,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Compare password
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
       res.status(401).json({
         success: false,
@@ -168,7 +169,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error('Login error:', error);
-    
+
     // Handle Mongoose validation errors
     if (error instanceof mongoose.Error.ValidationError) {
       const errors = Object.values(error.errors).map((e) => e.message);
@@ -178,7 +179,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to login. Please try again.',
@@ -188,7 +189,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user?._id;
+    const q = req as CustomeRequest
+    const userId = q.user?._id;
 
     if (!userId) {
       res.status(401).json({
@@ -269,7 +271,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
     });
   } catch (error) {
     console.error('Get current user error:', error);
-    
+
     // Handle Mongoose cast errors (invalid ObjectId)
     if (error instanceof mongoose.Error.CastError) {
       res.status(400).json({
@@ -278,7 +280,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
       });
       return;
     }
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to fetch user data',

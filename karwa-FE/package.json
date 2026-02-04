@@ -3,7 +3,7 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "expo start -c",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -16,7 +16,6 @@
     "@react-navigation/native": "^7.1.8",
     "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.4",
-    "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
     "expo-font": "~14.0.11",
     "expo-haptics": "~15.0.8",
@@ -43,6 +42,7 @@
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "expo": "^54.0.33",
     "typescript": "~5.9.2"
   },
   "private": true

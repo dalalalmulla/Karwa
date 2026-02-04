@@ -2,11 +2,12 @@
   "name": "karwa-backend",
   "version": "1.0.0",
   "description": "Backend API for Karwa - Task management and secondary income platform",
-  "main": "dist/server.ts",
+  "main": "server.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "start": "nodemon server.ts",
     "lint": "eslint src --ext .ts"
   },
   "keywords": [

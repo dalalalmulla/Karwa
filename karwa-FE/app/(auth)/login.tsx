@@ -9,9 +9,11 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import { useAuth } from "../../src/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
-import { loginUser, LoginData } from "../../src/api/auth";
+import { loginApi } from "../../src/api/authCalls";
+import type { LoginPayload } from "../../src/api/authCalls";
 import { colors, spacing, typography } from "@/constants/theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -21,28 +23,37 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visiblePassword, setVisiblePassword] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof LoginData, string>>>({});
+
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof LoginPayload, string>>
+  >({});
+
   const { setToken, setUser } = useAuth();
   const router = useRouter();
 
   const loginMutation = useMutation({
-    mutationFn: (data: LoginData) => loginUser(data),
-    onSuccess: (data) => {
-      // Set token and user in AuthContext
-      setToken(data.token);
-      setUser(data.user);
+    mutationFn: (data: LoginPayload) => loginApi(data),
+    onSuccess: (res) => {
+      if (!res.success || !res.data) {
+        Alert.alert("Login Failed", res.error || "An error occurred");
+        return;
+      }
 
-      // Navigate to main app
+      setToken(res.data.token);
+      setUser(res.data.user);
+
       router.replace("/(main)/(tabs)");
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
+      const message =
+        error instanceof Error ? error.message : "An error occurred";
       console.log("Login Error Details:", error);
-      Alert.alert("Login Failed", error.message || "An error occurred");
+      Alert.alert("Login Failed", message);
     },
   });
 
   const handleLogin = () => {
-    const newErrors: Partial<Record<keyof LoginData, string>> = {};
+    const newErrors: Partial<Record<keyof LoginPayload, string>> = {};
 
     if (!email.trim()) {
       newErrors.email = "Email is required";
@@ -61,13 +72,10 @@ export default function Login() {
     }
   };
 
-  const handleChange = (field: keyof LoginData, value: string) => {
-    if (field === "email") {
-      setEmail(value);
-    } else if (field === "password") {
-      setPassword(value);
-    }
-    // Clear error when user starts typing
+  const handleChange = (field: keyof LoginPayload, value: string) => {
+    if (field === "email") setEmail(value);
+    if (field === "password") setPassword(value);
+
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
@@ -82,6 +90,7 @@ export default function Login() {
         <View style={styles.logoContainer}>
           <Logo size={120} />
         </View>
+
         <View>
           <Text style={styles.headerTitle}>Welcome Back</Text>
           <Text style={styles.headerSubtitle}>
@@ -114,7 +123,7 @@ export default function Login() {
 
             <TouchableOpacity
               style={styles.eyeButton}
-              onPress={() => setVisiblePassword(!visiblePassword)}
+              onPress={() => setVisiblePassword((v) => !v)}
             >
               <Text style={styles.eyeButtonText}>
                 {visiblePassword ? "Hide" : "Show"} Password

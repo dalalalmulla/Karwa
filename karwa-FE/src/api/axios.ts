@@ -1,5 +1,15 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+
+// Get base URL based on platform
+const getBaseURL = () => {
+  if (Platform.OS === 'android') {
+    // return 'http://10.0.2.2:8000/api'; // Android emulator
+    return 'http://192.168.13.238:8000/api'; // Android emulator
+  }
+  return 'http://192.168.13.238:8000/api'; // iOS simulator / web
+};
 
 // Create axios instance with base URL
 // For iOS Simulator: use your Mac's IP address (run: ipconfig getifaddr en0)

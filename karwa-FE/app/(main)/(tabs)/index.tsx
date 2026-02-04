@@ -8,46 +8,83 @@ import Logo from '@/components/ui/Logo';
 
 export default function HomeScreen() {
   const router = useRouter();
+import React, { useMemo, useState } from "react";
+import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { useQuery } from "@tanstack/react-query";
+
+import { colors, spacing, typography } from "@/constants/theme";
+import Card from "@/components/ui/Card";
+import TaskFilters from "@/components/TaskFilters";
+import {
+  getTasksApi,
+  type Task,
+  type GetTasksParams,
+} from "@/src/api/taskCalls";
+
+type TasksResponse = {
+  success: boolean;
+  data?: { tasks: Task[] };
+  error?: string;
+};
+
+function TaskCard({ task }: { task: Task }) {
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Logo size={100} />
+    <Card style={styles.card}>
+      <View style={styles.cardTopRow}>
+        <Text style={styles.title} numberOfLines={1}>
+          {task.title}
+        </Text>
+        <View style={styles.pointsPill}>
+          <Text style={styles.pointsText}>{task.points} pts</Text>
         </View>
-        <Text style={styles.title}>Welcome to Karwa</Text>
-        <Text style={styles.subtitle}>Your tasks, your income, your way</Text>
       </View>
 
-      <Card style={styles.card}>
-        <Text style={styles.cardTitle}>Get Started</Text>
-        <Text style={styles.cardText}>
-          Start earning by completing daily tasks. Each task is backed by standardized agreements
-          and secure communication.
-        </Text>
-        <Button
-          title="Explore Tasks"
-          onPress={() => console.log('Explore tasks')}
-          style={styles.button}
-        />
-      </Card>
+      <Text style={styles.desc} numberOfLines={2}>
+        {task.description}
+      </Text>
 
-      <Card style={styles.card}>
-        <Text style={styles.cardTitle}>How It Works</Text>
-        <View style={styles.stepContainer}>
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>1</Text>
-            <Text style={styles.stepText}>Browse available tasks</Text>
+      <View style={styles.metaRow}>
+        <Text style={styles.metaText}>💰 {task.money} KWD</Text>
+        <Text style={styles.metaText} numberOfLines={1}>
+          📍 {task.location}
+        </Text>
+      </View>
+    </Card>
+  );
+}
+
+export default function HomeScreen() {
+  const [filters, setFilters] = useState<GetTasksParams>({});
+
+  const { data, isLoading, isRefetching, refetch, error } =
+    useQuery<TasksResponse>({
+      queryKey: ["tasks", "open", filters],
+      queryFn: () => getTasksApi(filters) as unknown as Promise<TasksResponse>,
+    });
+
+  // الباك يرجّع OPEN افتراضيًا، بس نخلي فلتر إضافي للأمان
+  const tasks: Task[] = useMemo(() => {
+    const list = data?.success ? data.data?.tasks ?? [] : [];
+    return list.filter((t) => t.status === "OPEN");
+  }, [data]);
+
+  const handleFiltersChange = (newFilters: GetTasksParams) => {
+    setFilters(newFilters);
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerRow}>
+          <View style={styles.headerTextContainer}>
+            <Text style={styles.headerTitle}>Browse Tasks</Text>
+            <Text style={styles.headerSubtitle}>
+              Open tasks available ({tasks.length})
+            </Text>
           </View>
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>2</Text>
-            <Text style={styles.stepText}>Accept and complete tasks</Text>
-          </View>
-          <View style={styles.step}>
-            <Text style={styles.stepNumber}>3</Text>
-            <Text style={styles.stepText}>Earn income securely</Text>
-          </View>
+          <TaskFilters filters={filters} onApply={handleFiltersChange} />
         </View>
-      </Card>
+      </View>
 
       <Card style={styles.lastCard}>
         <Text style={styles.cardTitle}>Your Reputation</Text>
@@ -67,6 +104,44 @@ export default function HomeScreen() {
         </View>
       </Card>
     </ScrollView>
+      {error ? (
+        <Card style={styles.errorCard}>
+          <Text style={styles.errorTitle}>Failed to load tasks</Text>
+          <Text style={styles.errorText}>
+            {(error as Error).message || "Unknown error"}
+          </Text>
+          <Text style={styles.errorHint} onPress={() => refetch()}>
+            Tap to retry
+          </Text>
+        </Card>
+      ) : null}
+
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => String(item._id)}
+        renderItem={({ item }) => <TaskCard task={item} />}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        }
+        initialNumToRender={8}
+        windowSize={10}
+        maxToRenderPerBatch={8}
+        updateCellsBatchingPeriod={50}
+        removeClippedSubviews
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>
+              {isLoading ? "Loading..." : "No open tasks right now"}
+            </Text>
+            <Text style={styles.emptySub}>
+              {isLoading ? "Please wait" : "Pull to refresh"}
+            </Text>
+          </View>
+        }
+      />
+    </View>
   );
 }
 
@@ -75,27 +150,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  content: {
+  header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl + 100, // Extra padding to ensure button is visible above tab bar
+    paddingBottom: spacing.md,
   },
-  header: {
-    marginBottom: spacing.xl,
-    alignItems: 'center',
+  headerRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
-  logoContainer: {
-    marginBottom: spacing.md,
+  headerTextContainer: {
+    flex: 1,
+    marginRight: spacing.md,
   },
-  title: {
+  headerTitle: {
     ...typography.title,
     color: colors.text,
-    marginBottom: spacing.sm,
   },
-  subtitle: {
+  headerSubtitle: {
     ...typography.body,
     color: colors.secondary,
+    marginTop: spacing.xs,
   },
+
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+
   card: {
     marginBottom: spacing.md,
   },
@@ -103,11 +187,30 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl + 20, // Extra margin for last card to ensure button visibility
   },
   cardTitle: {
-    ...typography.heading,
-    color: colors.text,
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.md,
     marginBottom: spacing.sm,
   },
-  cardText: {
+  title: {
+    ...typography.heading,
+    color: colors.text,
+    flex: 1,
+  },
+  pointsPill: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 999,
+    backgroundColor: colors.border,
+  },
+  pointsText: {
+    ...typography.small,
+    color: colors.text,
+    fontWeight: "700",
+  },
+  desc: {
     ...typography.body,
     color: colors.secondary,
     marginBottom: spacing.md,
@@ -132,22 +235,48 @@ const styles = StyleSheet.create({
   step: {
     flexDirection: 'row',
     alignItems: 'center',
+  metaRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     gap: spacing.md,
   },
-  stepNumber: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    color: colors.white,
-    ...typography.body,
-    fontWeight: '700',
-    textAlign: 'center',
-    lineHeight: 32,
-  },
-  stepText: {
+  metaText: {
     ...typography.body,
     color: colors.text,
     flex: 1,
+  },
+
+  empty: {
+    paddingTop: spacing.xl,
+    alignItems: "center",
+  },
+  emptyTitle: {
+    ...typography.heading,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  emptySub: {
+    ...typography.body,
+    color: colors.secondary,
+  },
+
+  errorCard: {
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  errorTitle: {
+    ...typography.heading,
+    color: colors.text,
+    marginBottom: spacing.xs,
+  },
+  errorText: {
+    ...typography.body,
+    color: colors.secondary,
+    marginBottom: spacing.sm,
+  },
+  errorHint: {
+    ...typography.body,
+    color: colors.primary,
+    fontWeight: "700",
   },
 });

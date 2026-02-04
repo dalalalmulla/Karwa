@@ -1,10 +1,10 @@
 import { Stack } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import * as SecureStore from "expo-secure-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { AuthContext } from "../src/context/AuthContext";
 import type { User } from "../src/types/userTypes";
+import { getToken, clearToken } from "../src/utils/token";
 
 const queryClient = new QueryClient();
 
@@ -14,21 +14,30 @@ export default function RootLayout() {
 
   useEffect(() => {
     const loadToken = async () => {
-      const savedToken = await SecureStore.getItemAsync("token");
-      if (savedToken) setToken(savedToken);
+      const storedToken = await getToken();
+      if (storedToken) {
+        setToken(storedToken);
+      }
     };
-    loadToken();
+
+    void loadToken();
   }, []);
 
   const logout = async () => {
-    await SecureStore.deleteItemAsync("token");
+    await clearToken();
     setToken(null);
     setUser(null);
   };
 
   const authValue = useMemo(
-    () => ({ token, user, setToken, setUser, logout }),
-    [token, user]
+    () => ({
+      token,
+      user,
+      setToken,
+      setUser,
+      logout,
+    }),
+    [token, user],
   );
 
   return (
