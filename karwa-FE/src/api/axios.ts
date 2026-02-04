@@ -3,13 +3,13 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 // Get base URL based on platform
-const getBaseURL = () => {
-  if (Platform.OS === 'android') {
-    // return 'http://10.0.2.2:8000/api'; // Android emulator
-    return 'http://192.168.13.238:8000/api'; // Android emulator
-  }
-  return 'http://192.168.13.238:8000/api'; // iOS simulator / web
-};
+// const getBaseURL = () => {
+//   if (Platform.OS === 'android') {
+//     // return 'http://10.0.2.2:8000/api'; // Android emulator
+//     return 'http://192.168.13.238:8000/api'; // Android emulator
+//   }
+//   return 'http://192.168.13.238:8000/api'; // iOS simulator / web
+// };
 
 // Create axios instance with base URL
 // For iOS Simulator: use your Mac's IP address (run: ipconfig getifaddr en0)
@@ -23,10 +23,10 @@ const getBaseURL = () => {
     // Replace with your Mac's IP: run 'ipconfig getifaddr en0' in terminal
     // For Android Emulator, use '10.0.2.2'
     // For Physical Device, use your Mac's IP address
-    return 'http://192.168.3.170:8000/api'; // Replace with your Mac's IP
+    return 'http://192.168.13.238:8000/api'; // Replace with your Mac's IP
   }
   // Production URL
-  return 'http://localhost:8000/api';
+  return 'http://192.168.13.238:8000/api';
 };
 
 const instance = axios.create({

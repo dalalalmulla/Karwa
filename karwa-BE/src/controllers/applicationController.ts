@@ -96,10 +96,10 @@ export const applyToTask = async (req: Request, res: Response): Promise<void> =>
                 application: {
                     _id: application._id,
                     workerId: {
-                        _id: (application.workerId as unknown as { _id: mongoose.Types.ObjectId })._id.toString(),
-                        firstName: (application.workerId as unknown as { firstName?: string }).firstName,
-                        lastName: (application.workerId as unknown as { lastName?: string }).lastName,
-                        email: (application.workerId as unknown as { email: string }).email,
+                        _id: (application.applicantId as unknown as { _id: mongoose.Types.ObjectId })._id.toString(),
+                        firstName: (application.applicantId as unknown as { firstName?: string }).firstName,
+                        lastName: (application.applicantId as unknown as { lastName?: string }).lastName,
+                        email: (application.applicantId as unknown as { email: string }).email,
                     },
                     taskId: application.taskId.toString(),
                     status: application.status,
@@ -191,10 +191,10 @@ export const getTaskApplications = async (req: Request, res: Response): Promise<
                 applications: applications.map((app) => ({
                     _id: app._id,
                     workerId: {
-                        _id: (app.workerId as unknown as { _id: mongoose.Types.ObjectId })._id.toString(),
-                        firstName: (app.workerId as unknown as { firstName?: string }).firstName,
-                        lastName: (app.workerId as unknown as { lastName?: string }).lastName,
-                        email: (app.workerId as unknown as { email: string }).email,
+                        _id: (app.applicantId as unknown as { _id: mongoose.Types.ObjectId })._id.toString(),
+                        firstName: (app.applicantId as unknown as { firstName?: string }).firstName,
+                        lastName: (app.applicantId as unknown as { lastName?: string }).lastName,
+                        email: (app.applicantId as unknown as { email: string }).email,
                     },
                     taskId: app.taskId.toString(),
                     status: app.status,
@@ -260,7 +260,7 @@ export const getMyApplications = async (req: Request, res: Response): Promise<vo
                         updatedAt: Date;
                     };
 
-                    const worker = app.workerId as unknown as {
+                    const worker = app.applicantId as unknown as {
                         _id: mongoose.Types.ObjectId;
                         firstName?: string;
                         lastName?: string;
