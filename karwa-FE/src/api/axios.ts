@@ -17,16 +17,11 @@ import { Platform } from 'react-native';
 // For Physical Device: use your Mac's IP address on the same network
 // For localhost: use localhost (only works for web)
 const getBaseURL = () => {
-  // Check if running on iOS Simulator or Android Emulator
-  if (__DEV__) {
-    // For iOS Simulator, use Mac's IP address
-    // Replace with your Mac's IP: run 'ipconfig getifaddr en0' in terminal
-    // For Android Emulator, use '10.0.2.2'
-    // For Physical Device, use your Mac's IP address
-    return 'http://192.168.13.180:8000/api'; // Replace with your Mac's IP
+  if (Platform.OS === 'android') {
+    // return 'http://10.0.2.2:8000/api'; // Android emulator
+    return 'http://192.168.6.120:8000/api'; // Android emulator
   }
-  // Production URL
-  return 'http://192.168.13.180:8000/api';
+  return 'http://192.168.6.120:8000/api'; // iOS simulator / web
 };
 
 const instance = axios.create({
@@ -76,4 +71,5 @@ instance.interceptors.response.use(
   }
 );
 
+export { getBaseURL };
 export default instance;
