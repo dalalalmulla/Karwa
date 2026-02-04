@@ -1,11 +1,18 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '@/constants/theme';
+import React from "react";
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  ViewStyle,
+  TextStyle,
+} from "react-native";
+import { colors, spacing, borderRadius, typography } from "@/constants/theme";
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
@@ -15,13 +22,13 @@ interface ButtonProps {
 export default function Button({
   title,
   onPress,
-  variant = 'primary',
+  variant = "primary",
   loading = false,
   disabled = false,
   style,
   textStyle,
 }: ButtonProps) {
-  const isPrimary = variant === 'primary';
+  const isPrimary = variant === "primary";
   const isDisabled = disabled || loading;
 
   return (
@@ -33,16 +40,21 @@ export default function Button({
       ]}
       onPress={onPress}
       disabled={isDisabled}
-      activeOpacity={0.7}>
+      activeOpacity={0.7}
+    >
       {loading ? (
-        <ActivityIndicator color={isPrimary ? colors.white : colors.primary} />
+        <ActivityIndicator
+          color={isPrimary ? colors.white : colors.primary}
+          size="small"
+        />
       ) : (
         <Text
           style={[
             isPrimary ? styles.primaryText : styles.secondaryText,
             isDisabled && styles.disabledText,
             textStyle,
-          ]}>
+          ]}
+        >
           {title}
         </Text>
       )}
@@ -53,33 +65,33 @@ export default function Button({
 const styles = StyleSheet.create({
   primaryButton: {
     backgroundColor: colors.primary,
-    paddingVertical: 14,
+    paddingVertical: spacing.sm + 4,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.md,
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center",
   },
   secondaryButton: {
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     borderWidth: 1.5,
     borderColor: colors.primary,
-    paddingVertical: 14,
+    paddingVertical: spacing.sm + 4,
     paddingHorizontal: spacing.lg,
     borderRadius: borderRadius.md,
-    minHeight: 48,
-    justifyContent: 'center',
-    alignItems: 'center',
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center",
   },
   primaryText: {
     color: colors.white,
     fontSize: typography.body.fontSize,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   secondaryText: {
     color: colors.primary,
     fontSize: typography.body.fontSize,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   disabled: {
     opacity: 0.5,

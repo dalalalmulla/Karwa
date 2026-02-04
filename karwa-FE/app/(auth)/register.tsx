@@ -14,6 +14,7 @@ import { colors, spacing, typography } from "@/constants/theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
 import { register, RegisterData } from "@/src/api/auth";
 
 export default function RegisterScreen() {
@@ -100,7 +101,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <WatermarkBackground style={styles.container}>
       {showToast && (
         <View style={styles.toast}>
           <Text style={styles.toastText}>Registration successful!</Text>
@@ -110,9 +111,8 @@ export default function RegisterScreen() {
         style={StyleSheet.absoluteFill}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
+        <View
+          style={styles.scrollContent}
         >
           <View style={styles.content}>
             <View style={styles.logoContainer}>
@@ -191,16 +191,15 @@ export default function RegisterScreen() {
               </View>
             </View>
           </View>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
-    </View>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   toast: {
     position: "absolute",

@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { TextInput, View, Text, StyleSheet, TextInputProps, ViewStyle } from 'react-native';
-import { colors, spacing, borderRadius, typography } from '@/constants/theme';
+import React, { useState } from "react";
+import {
+  TextInput,
+  View,
+  Text,
+  StyleSheet,
+  TextInputProps,
+  ViewStyle,
+} from "react-native";
+import { colors, spacing, borderRadius, typography } from "@/constants/theme";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -40,7 +47,7 @@ export default function Input({
           hasError && styles.inputError,
           style,
         ]}
-        placeholderTextColor={colors.secondary}
+        placeholderTextColor={colors.textMuted}
         onFocus={handleFocus}
         onBlur={handleBlur}
         {...props}
@@ -56,20 +63,20 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: typography.caption.fontSize,
-    fontWeight: '500',
+    fontWeight: "500",
     color: colors.text,
     marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: 14,
+    paddingVertical: spacing.sm + 4,
     fontSize: typography.body.fontSize,
     color: colors.text,
-    minHeight: 48,
+    minHeight: 44,
   },
   inputFocused: {
     borderColor: colors.primary,
