@@ -6,6 +6,8 @@ export interface IUser extends Document {
   firstName?: string;
   lastName?: string;
   civilId?: string;
+  rating?: number; // Worker rating (0-5), used when displaying applicants
+  points?: number; // Earned from completed tasks (added when poster confirms)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,14 +42,22 @@ const userSchema = new Schema<IUser>(
       unique: true,
       sparse: true, // Allows multiple null values
     },
+    rating: {
+      type: Number,
+      min: [0, 'Rating must be at least 0'],
+      max: [5, 'Rating cannot exceed 5'],
+      default: null,
+    },
+    points: {
+      type: Number,
+      min: [0, 'Points cannot be negative'],
+      default: 0,
+    },
   },
   {
     timestamps: true,
   }
 );
-
-// Index for faster email lookups
-userSchema.index({ email: 1 });
 
 const User = mongoose.model<IUser>('User', userSchema);
 

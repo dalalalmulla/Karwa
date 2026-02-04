@@ -13,6 +13,7 @@ export interface ITask extends Document {
   points: number;
   status: TaskStatus;
   posterId: mongoose.Types.ObjectId;
+  assignedWorkerId?: mongoose.Types.ObjectId; // Reference to User assigned (only one)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,6 +66,11 @@ const taskSchema = new Schema<ITask>(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Poster ID is required'],
+    },
+    assignedWorkerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
     },
   },
   {

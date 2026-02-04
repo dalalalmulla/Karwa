@@ -9,6 +9,8 @@ export default function MainLayout() {
         headerShown: false,
       }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="tasks" />
+      <Stack.Screen name="task/[id]" />
       <Stack.Screen 
         name="create-task" 
         options={{ 

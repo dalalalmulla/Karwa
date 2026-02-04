@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,53 +7,58 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
-} from 'react-native';
-import { useMutation } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import { colors, spacing, typography } from '@/constants/theme';
-import Input from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
-import Logo from '@/components/ui/Logo';
-import { register, RegisterData } from '@/src/api/auth';
+} from "react-native";
+import { useMutation } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import { colors, spacing, typography } from "@/constants/theme";
+import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import Logo from "@/components/ui/Logo";
+import { register, RegisterData } from "@/src/api/auth";
 
 export default function RegisterScreen() {
   const router = useRouter();
   const [formData, setFormData] = useState<RegisterData>({
-    name: '',
-    email: '',
-    civilId: '',
-    password: '',
-    confirmPassword: '',
+    name: "",
+    email: "",
+    civilId: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [errors, setErrors] = useState<Partial<Record<keyof RegisterData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof RegisterData, string>>
+  >({});
+  const [showToast, setShowToast] = useState(false);
+
+  console.log(formData);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof RegisterData, string>> = {};
 
     if (!formData.name?.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = "Please enter a valid email address";
     }
 
     if (!formData.civilId?.trim()) {
-      newErrors.civilId = 'Civil ID is required';
+      newErrors.civilId = "Civil ID is required";
     }
 
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password';
+      newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -62,19 +67,14 @@ export default function RegisterScreen() {
 
   const mutation = useMutation({
     mutationFn: (data: RegisterData) => register(data),
-    onSuccess: (data) => {
-      Alert.alert('Success', 'Registration successful!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            // Navigate to main app or login
-            router.replace('/(main)/(tabs)');
-          },
-        },
-      ]);
+    onSuccess: () => {
+      setShowToast(true);
+      setTimeout(() => {
+        router.replace("/(main)/(tabs)");
+      }, 2000);
     },
     onError: (error: Error) => {
-      Alert.alert('Registration Failed', error.message || 'Please try again');
+      Alert.alert("Registration Failed", error.message || "Please try again");
     },
   });
 
@@ -100,88 +100,100 @@ export default function RegisterScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled">
-        <View style={styles.content}>
-          <View style={styles.logoContainer}>
-            <Logo size={120} />
-          </View>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up to start earning with Karwa</Text>
+    <View style={styles.container}>
+      {showToast && (
+        <View style={styles.toast}>
+          <Text style={styles.toastText}>Registration successful!</Text>
+        </View>
+      )}
+      <KeyboardAvoidingView
+        style={StyleSheet.absoluteFill}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            <View style={styles.logoContainer}>
+              <Logo size={120} />
+            </View>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>
+              Sign up to start earning with Karwa
+            </Text>
 
-          <View style={styles.form}>
-            <Input
-              label="Full Name"
-              placeholder="Enter your full name"
-              value={formData.name}
-              onChangeText={(value) => handleChange('name', value)}
-              error={errors.name}
-              autoCapitalize="words"
-            />
+            <View style={styles.form}>
+              <Input
+                label="Full Name"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChangeText={(value) => handleChange("name", value)}
+                error={errors.name}
+                autoCapitalize="words"
+              />
 
-            <Input
-              label="Email"
-              placeholder="Enter your email"
-              value={formData.email}
-              onChangeText={(value) => handleChange('email', value)}
-              error={errors.email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-            />
+              <Input
+                label="Email"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChangeText={(value) => handleChange("email", value)}
+                error={errors.email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+              />
 
-            <Input
-              label="Civil ID"
-              placeholder="Enter your Civil ID"
-              value={formData.civilId}
-              onChangeText={(value) => handleChange('civilId', value)}
-              error={errors.civilId}
-              keyboardType="numeric"
-            />
+              <Input
+                label="Civil ID"
+                placeholder="Enter your Civil ID"
+                value={formData.civilId}
+                onChangeText={(value) => handleChange("civilId", value)}
+                error={errors.civilId}
+                keyboardType="numeric"
+              />
 
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              value={formData.password}
-              onChangeText={(value) => handleChange('password', value)}
-              error={errors.password}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+              <Input
+                label="Password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChangeText={(value) => handleChange("password", value)}
+                error={errors.password}
+                secureTextEntry
+                autoCapitalize="none"
+              />
 
-            <Input
-              label="Confirm Password"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChangeText={(value) => handleChange('confirmPassword', value)}
-              error={errors.confirmPassword}
-              secureTextEntry
-              autoCapitalize="none"
-            />
+              <Input
+                label="Confirm Password"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChangeText={(value) => handleChange("confirmPassword", value)}
+                error={errors.confirmPassword}
+                secureTextEntry
+                autoCapitalize="none"
+              />
 
-            <Button
-              title="Register"
-              onPress={handleSubmit}
-              loading={mutation.isPending}
-              style={styles.submitButton}
-            />
+              <Button
+                title="Register"
+                onPress={handleSubmit}
+                loading={mutation.isPending}
+                style={styles.submitButton}
+              />
 
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Already have an account? </Text>
-              <Text
-                style={styles.footerLink}
-                onPress={() => router.push('/(auth)/login')}>
-                Login
-              </Text>
+              <View style={styles.footer}>
+                <Text style={styles.footerText}>Already have an account? </Text>
+                <Text
+                  style={styles.footerLink}
+                  onPress={() => router.push("/(auth)/login")}
+                >
+                  Login
+                </Text>
+              </View>
             </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
@@ -190,8 +202,26 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  toast: {
+    position: "absolute",
+    top: spacing.lg,
+    left: spacing.lg,
+    right: spacing.lg,
+    backgroundColor: colors.success,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: 8,
+    zIndex: 1000,
+    alignItems: "center",
+  },
+  toastText: {
+    ...typography.body,
+    color: colors.white,
+    fontWeight: "600",
+  },
   scrollContent: {
     flexGrow: 1,
+    paddingBottom: 100,
   },
   content: {
     flex: 1,
@@ -200,7 +230,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
   logoContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: spacing.xl,
   },
   title: {
@@ -220,8 +250,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: spacing.lg,
   },
   footerText: {
@@ -231,6 +261,6 @@ const styles = StyleSheet.create({
   footerLink: {
     ...typography.body,
     color: colors.primary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
