@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
@@ -126,72 +127,66 @@ export default function ProfileScreen() {
     );
   }
 
+  const notificationCount = data?.user.notificationCount ?? 0;
+  const hasNotifications = notificationCount > 0;
+
+  const handleNotificationPress = () => {
+    // Navigate to notifications screen or show notifications
+    Alert.alert('Notifications', `You have ${notificationCount} new update${notificationCount !== 1 ? 's' : ''}`);
+    // TODO: Navigate to notifications screen when implemented
+    // router.push('/notifications');
+  };
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
-        <View style={styles.logoContainer}>
-          <Logo size={80} />
+        <View style={styles.headerTop}>
+          <View style={styles.logoContainer}>
+            <Logo size={80} />
+          </View>
+          <TouchableOpacity 
+            style={styles.notificationButton}
+            onPress={handleNotificationPress}
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="notifications" size={24} color={colors.text} />
+            {hasNotifications && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {notificationCount > 99 ? '99+' : notificationCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
-        <Text style={styles.title}>Profile</Text>
-        <Text style={styles.subtitle}>Your account information</Text>
+        <Text style={styles.name}>{getFullName()}</Text>
+        <Text style={styles.subtitle}>{data?.user.email || 'N/A'}</Text>
       </View>
 
       <Card style={styles.card}>
-        <Text style={styles.cardTitle}>Personal Information</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Name</Text>
-          <Text style={styles.infoValue}>{getFullName()}</Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Email</Text>
-          <Text style={styles.infoValue}>{data?.user.email || 'N/A'}</Text>
-        </View>
-      </Card>
-
-      <Card style={styles.card}>
-        <Text style={styles.cardTitle}>Performance</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Rating Average</Text>
-          <Text style={styles.infoValue}>
-            {data?.user.ratingAverage !== undefined 
-              ? data.user.ratingAverage.toFixed(1) 
-              : '0.0'}
-          </Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Completed Tasks</Text>
-          <Text style={styles.infoValue}>
-            {data?.user.completedTasksCount ?? 0}
-          </Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Earned Points</Text>
-          <Text style={styles.infoValue}>
-            {data?.user.earnedPoints ?? 0}
-          </Text>
-        </View>
-      </Card>
-
-      <Card style={styles.card}>
-        <Text style={styles.cardTitle}>Account Details</Text>
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>User ID</Text>
-          <Text style={styles.infoValue} numberOfLines={1}>
-            {data?.user._id || 'N/A'}
-          </Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Member Since</Text>
-          <Text style={styles.infoValue}>{formatDate(data?.user.createdAt)}</Text>
-        </View>
-        <View style={styles.divider} />
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Last Updated</Text>
-          <Text style={styles.infoValue}>{formatDate(data?.user.updatedAt)}</Text>
+        <View style={styles.statRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Rating Average</Text>
+            <Text style={styles.statValue}>
+              ⭐ {data?.user.ratingAverage !== undefined 
+                ? data.user.ratingAverage.toFixed(1) 
+                : '0.0'}
+            </Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Completed Tasks</Text>
+            <Text style={styles.statValue}>
+              {data?.user.completedTasksCount ?? 0}
+            </Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statLabel}>Earned Points</Text>
+            <Text style={styles.statValue}>
+              {data?.user.earnedPoints ?? 0}
+            </Text>
+          </View>
         </View>
       </Card>
 
@@ -274,48 +269,80 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
     alignItems: 'center',
   },
-  logoContainer: {
+  headerTop: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: spacing.md,
   },
-  title: {
+  logoContainer: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  notificationButton: {
+    position: 'relative',
+    padding: spacing.sm,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.gray100,
+  },
+  badge: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: colors.error || '#FF3B30',
+    borderRadius: borderRadius.full,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xs,
+    borderWidth: 2,
+    borderColor: colors.background,
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  name: {
     ...typography.title,
     color: colors.text,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
     ...typography.body,
     color: colors.secondary,
+    textAlign: 'center',
   },
   card: {
     marginBottom: spacing.md,
   },
-  cardTitle: {
+  statRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statLabel: {
+    ...typography.caption,
+    color: colors.secondary,
+    marginBottom: spacing.xs,
+  },
+  statValue: {
     ...typography.heading,
     color: colors.text,
-    marginBottom: spacing.md,
+    fontSize: 20,
   },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-  },
-  infoLabel: {
-    ...typography.body,
-    color: colors.secondary,
-    flex: 1,
-  },
-  infoValue: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: '500',
-    flex: 2,
-    textAlign: 'right',
-  },
-  divider: {
-    height: 1,
+  statDivider: {
+    width: 1,
+    height: 40,
     backgroundColor: colors.border,
-    marginVertical: spacing.xs,
   },
   logoutButton: {
     marginTop: spacing.lg,

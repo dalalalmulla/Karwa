@@ -23,10 +23,10 @@ const getBaseURL = () => {
     // Replace with your Mac's IP: run 'ipconfig getifaddr en0' in terminal
     // For Android Emulator, use '10.0.2.2'
     // For Physical Device, use your Mac's IP address
-    return 'http://192.168.13.238:8000/api'; // Replace with your Mac's IP
+    return 'http://192.168.13.180:8000/api'; // Replace with your Mac's IP
   }
   // Production URL
-  return 'http://192.168.13.238:8000/api';
+  return 'http://192.168.13.180:8000/api';
 };
 
 const instance = axios.create({
