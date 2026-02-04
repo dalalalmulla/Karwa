@@ -19,6 +19,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import { loginUser } from "@/src/api/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
