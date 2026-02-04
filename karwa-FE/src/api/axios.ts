@@ -12,6 +12,23 @@ const getBaseURL = () => {
 };
 
 // Create axios instance with base URL
+// For iOS Simulator: use your Mac's IP address (run: ipconfig getifaddr en0)
+// For Android Emulator: use 10.0.2.2
+// For Physical Device: use your Mac's IP address on the same network
+// For localhost: use localhost (only works for web)
+const getBaseURL = () => {
+  // Check if running on iOS Simulator or Android Emulator
+  if (__DEV__) {
+    // For iOS Simulator, use Mac's IP address
+    // Replace with your Mac's IP: run 'ipconfig getifaddr en0' in terminal
+    // For Android Emulator, use '10.0.2.2'
+    // For Physical Device, use your Mac's IP address
+    return 'http://192.168.3.170:8000/api'; // Replace with your Mac's IP
+  }
+  // Production URL
+  return 'http://localhost:8000/api';
+};
+
 const instance = axios.create({
   baseURL: getBaseURL(),
   timeout: 10000,
@@ -27,6 +44,9 @@ instance.interceptors.request.use(
       const token = await SecureStore.getItemAsync('token');
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log('Token added to request:', token.substring(0, 20) + '...');
+      } else {
+        console.warn('No token found in SecureStore');
       }
     } catch (error) {
       console.error('Error getting token:', error);
