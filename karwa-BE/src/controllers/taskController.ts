@@ -1,16 +1,20 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import Task from '../models/Task';
+import Task, { TaskType } from '../models/Task';
 import Application from '../models/Application';
 import Rating from '../models/Rating';
 import User from '../models/User';
 import { CustomeRequest } from '../types/http';
 
-// Helper function to calculate points based on money amount
-const calculatePoints = (money: number): number => {
-  // Points calculation: 1 point per 1 KWD (or currency unit)
-  // You can adjust this formula as needed
-  return Math.floor(money);
+const calculatePoints = (type: TaskType, money: number): number => {
+  const basePoints = Math.floor(money / 10); // 1 point per 10 money units
+
+  const typeMultipliers: Record<TaskType, number> = {
+    indoor: 1.0,
+    outdoor: 1.2,
+  };
+
+  return Math.floor(basePoints * typeMultipliers[type]);
 };
 
 export const createTask = async (req: Request, res: Response): Promise<void> => {
@@ -38,11 +42,11 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
     }
 
     // Validate task type
-    const validTypes = ['indoor', 'outdoor', 'home_service', 'car_service'];
+    const validTypes: TaskType[] = ['indoor', 'outdoor'];
     if (!validTypes.includes(type)) {
       res.status(400).json({
         success: false,
-        error: 'Invalid task type. Must be one of: indoor, outdoor, home_service, car_service',
+        error: 'Invalid task type. Must be one of: indoor, outdoor',
       });
       return;
     }
@@ -51,22 +55,22 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
     if (money <= 0) {
       res.status(400).json({
         success: false,
-        error: 'Money amount must be greater than 0',
+        error: 'Money amount in KWD must be greater than 0',
       });
       return;
     }
 
     // Calculate points automatically
-    const points = calculatePoints(money);
+    const points = calculatePoints(type, money);
 
     // Create task - Mongoose accepts string for ObjectId fields
     const task = await Task.create({
       title: title.trim(),
       description: description.trim(),
-      pictures: pictures || [],
+      pictures: Array.isArray(pictures) ? pictures : [],
       money: Number(money),
       location: location.trim(),
-      type,
+      type: type as TaskType,
       points,
       status: 'OPEN',
       posterId: userId, // Mongoose will convert string to ObjectId automatically
@@ -416,7 +420,7 @@ export const assignWorker = async (req: Request, res: Response): Promise<void> =
     }
 
     task.assignedWorkerId = new mongoose.Types.ObjectId(applicantId);
-    task.status = 'ASSIGNED';
+    task.status = 'IN_PROGRESS';
     await task.save();
 
     await Application.updateOne({ _id: application._id }, { status: 'ACCEPTED' });
@@ -490,7 +494,7 @@ export const markCompleteByWorker = async (req: Request, res: Response): Promise
       });
       return;
     }
-    if (task.status !== 'ASSIGNED' && task.status !== 'IN_PROGRESS') {
+    if (task.status !== 'OPEN' && task.status !== 'IN_PROGRESS') {
       res.status(400).json({
         success: false,
         error: 'Task can only be marked complete when assigned or in progress',
@@ -498,7 +502,7 @@ export const markCompleteByWorker = async (req: Request, res: Response): Promise
       return;
     }
 
-    task.status = 'PENDING_CONFIRMATION';
+    task.status = 'IN_PROGRESS';
     await task.save();
 
     const updated = await Task.findById(taskId)
@@ -565,9 +569,8 @@ export const confirmCompletion = async (req: Request, res: Response): Promise<vo
       return;
     }
     if (
-      task.status !== 'ASSIGNED' &&
-      task.status !== 'IN_PROGRESS' &&
-      task.status !== 'PENDING_CONFIRMATION'
+      task.status !== 'OPEN' &&
+      task.status !== 'IN_PROGRESS'
     ) {
       res.status(400).json({
         success: false,
