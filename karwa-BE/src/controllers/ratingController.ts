@@ -15,7 +15,7 @@ const recalculateUserRating = async (userId: string): Promise<void> => {
         return;
     }
 
-    const sum = ratings.reduce((acc, r) => acc + r.rating, 0);
+    const sum = ratings.reduce((acc, r) => acc + r.score, 0);
     const average = sum / ratings.length;
 
     await User.findByIdAndUpdate(userId, {
@@ -177,7 +177,7 @@ export const createOrUpdateRating = async (req: Request, res: Response): Promise
                     raterId: ratingDoc.raterId.toString(),
                     ratedUserId: ratingDoc.ratedUserId.toString(),
                     taskId: ratingDoc.taskId.toString(),
-                    rating: ratingDoc.rating,
+                    rating: ratingDoc.score,
                     createdAt: ratingDoc.createdAt,
                     updatedAt: ratingDoc.updatedAt,
                 },
@@ -260,7 +260,7 @@ export const getRating = async (req: Request, res: Response): Promise<void> => {
                     raterId: rating.raterId.toString(),
                     ratedUserId: rating.ratedUserId.toString(),
                     taskId: rating.taskId.toString(),
-                    rating: rating.rating,
+                    rating: rating.score,
                     createdAt: rating.createdAt,
                     updatedAt: rating.updatedAt,
                 },

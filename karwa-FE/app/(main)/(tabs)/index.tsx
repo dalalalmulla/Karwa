@@ -1,13 +1,3 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { colors, spacing, typography } from '@/constants/theme';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Logo from '@/components/ui/Logo';
-
-export default function HomeScreen() {
-  const router = useRouter();
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
 import { useQuery } from "@tanstack/react-query";
@@ -86,24 +76,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <Card style={styles.lastCard}>
-        <Text style={styles.cardTitle}>Your Reputation</Text>
-        <Text style={styles.cardText}>
-          Build your reputation through quality work. Higher reputation means better task matching and
-          more opportunities.
-        </Text>
-        <View style={{ marginTop: spacing.md }}>
-          <Button
-            title="View Profile"
-            onPress={() => {
-              console.log('View Profile button pressed - navigating to profile');
-              router.push('/(main)/profile');
-            }}
-            variant="primary"
-          />
-        </View>
-      </Card>
-    </ScrollView>
       {error ? (
         <Card style={styles.errorCard}>
           <Text style={styles.errorTitle}>Failed to load tasks</Text>
@@ -153,7 +125,6 @@ const styles = StyleSheet.create({
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
-    paddingBottom: spacing.xl + 100, // Extra padding to ensure button is visible above tab bar
     paddingBottom: spacing.md,
   },
   headerRow: {
@@ -183,10 +154,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: spacing.md,
   },
-  lastCard: {
-    marginBottom: spacing.xl + 20, // Extra margin for last card to ensure button visibility
-  },
-  cardTitle: {
   cardTopRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -216,25 +183,6 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     lineHeight: 22,
   },
-  buttonContainer: {
-    marginTop: spacing.md,
-    width: '100%',
-    minHeight: 50,
-  },
-  button: {
-    marginTop: spacing.sm,
-  },
-  profileButton: {
-    width: '100%',
-    marginTop: 0,
-    minHeight: 50,
-  },
-  stepContainer: {
-    gap: spacing.md,
-  },
-  step: {
-    flexDirection: 'row',
-    alignItems: 'center',
   metaRow: {
     flexDirection: "row",
     justifyContent: "space-between",

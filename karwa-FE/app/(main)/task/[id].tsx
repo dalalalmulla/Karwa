@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -170,6 +171,18 @@ export default function TaskDetailScreen() {
         },
       ]
     );
+  };
+
+  const handleContactWhatsApp = () => {
+    if (!id) return;
+    const message = `Task reference - Karwa\nTask ID: ${id}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    Linking.openURL(url).catch(() => {
+      Alert.alert(
+        "Cannot open WhatsApp",
+        "Please install WhatsApp or try again."
+      );
+    });
   };
 
   if (!id) {
@@ -345,6 +358,21 @@ export default function TaskDetailScreen() {
           ) : (
             <Text style={styles.bodyText}>Worker assigned</Text>
           )}
+        </Card>
+      )}
+
+      {isWorker && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Contact</Text>
+          <Text style={styles.bodyText}>
+            Contact the task poster via WhatsApp. Your message will include the
+            task ID so the agreement stays linked.
+          </Text>
+          <Button
+            title="Contact via WhatsApp"
+            onPress={handleContactWhatsApp}
+            style={styles.confirmButton}
+          />
         </Card>
       )}
 
