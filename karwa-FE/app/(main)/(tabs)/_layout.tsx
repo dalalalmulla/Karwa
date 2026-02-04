@@ -1,7 +1,7 @@
 import React from "react";
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { Tabs, useRouter } from "expo-router";
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { colors } from "@/constants/theme";
@@ -35,7 +35,7 @@ export default function TabLayout() {
               style={styles.headerRight}
               hitSlop={10}
             >
-              {/* إذا IconSymbol ما يدعم "plus" غيريه إلى "plus.circle.fill" */}
+              <AntDesign name="home" size={24} color="#227CC5" />
               <IconSymbol size={22} name="plus" color={colors.text} />
               {/* fallback إذا احتجتي:
               <Text style={styles.plusText}>+</Text>
@@ -51,7 +51,8 @@ export default function TabLayout() {
           title: "Profile",
           tabBarLabel: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <AntDesign name="profile" size={24} color="#227CC5" />
+            //<IconSymbol size={28} name="person.fill" color={color} />
           ),
         }}
       />

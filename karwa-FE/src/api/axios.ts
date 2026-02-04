@@ -6,9 +6,9 @@ import { Platform } from 'react-native';
 const getBaseURL = () => {
   if (Platform.OS === 'android') {
     // return 'http://10.0.2.2:8000/api'; // Android emulator
-    return 'http://192.168.13.238:8000/api'; // Android emulator
+    return 'http://192.168.8.109:8000/api'; // Android emulator
   }
-  return 'http://192.168.13.238:8000/api'; // iOS simulator / web
+  return 'http://192.168.8.109:8000/api'; // iOS simulator / web
 };
 
 // Create axios instance with base URL

@@ -47,3 +47,25 @@ export const getTasksApi = async (params?: GetTasksParams) => {
   const res = await api.get<GetTasksResponse>("/tasks", { params });
   return res.data;
 };
+
+export type CreateTaskData = {
+  title: string;
+  description: string;
+  pictures?: string[];
+  money: number;
+  location: string;
+  type: TaskType;
+};
+
+export type CreateTaskResponse = {
+  success: boolean;
+  data?: {
+    task: Task;
+  };
+  error?: string;
+};
+
+export const createTask = async (data: CreateTaskData): Promise<CreateTaskResponse> => {
+  const res = await api.post<CreateTaskResponse>("/tasks", data);
+  return res.data;
+};
