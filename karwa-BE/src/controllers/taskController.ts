@@ -5,6 +5,7 @@ import Application from '../models/Application';
 import Rating from '../models/Rating';
 import User from '../models/User';
 import { CustomeRequest } from '../types/http';
+import { createNotification } from './notificationController';
 
 const calculatePoints = (type: TaskType, money: number): number => {
   const basePoints = Math.floor(money / 10); // 1 point per 10 money units
@@ -429,6 +430,24 @@ export const assignWorker = async (req: Request, res: Response): Promise<void> =
       { status: 'REJECTED' }
     );
 
+    // Create notification for assigned worker
+    await createNotification({
+      userId: applicantId,
+      type: 'TASK_ASSIGNED',
+      title: 'Task Assigned',
+      message: `You have been assigned to task: ${task.title}`,
+      taskId,
+    });
+
+    // Create notification for poster
+    await createNotification({
+      userId: posterId,
+      type: 'TASK_STATUS_CHANGED',
+      title: 'Task Status Updated',
+      message: `Your task "${task.title}" is now In Progress`,
+      taskId,
+    });
+
     const updated = await Task.findById(taskId)
       .populate('posterId', 'firstName lastName email')
       .populate('assignedWorkerId', 'firstName lastName email rating');
@@ -587,7 +606,25 @@ export const confirmCompletion = async (req: Request, res: Response): Promise<vo
       await User.findByIdAndUpdate(task.assignedWorkerId, {
         $inc: { points: task.points },
       });
+
+      // Create notification for the worker
+      await createNotification({
+        userId: task.assignedWorkerId.toString(),
+        type: 'TASK_COMPLETED',
+        title: 'Task Completed',
+        message: `Task "${task.title}" has been marked as completed. You earned ${task.points} points!`,
+        taskId,
+      });
     }
+
+    // Create notification for the poster
+    await createNotification({
+      userId: posterId,
+      type: 'TASK_STATUS_CHANGED',
+      title: 'Task Completed',
+      message: `Your task "${task.title}" has been completed`,
+      taskId,
+    });
 
     const updated = await Task.findById(taskId)
       .populate('posterId', 'firstName lastName email')

@@ -15,6 +15,7 @@ import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import WatermarkBackground from '@/components/ui/WatermarkBackground';
 import RatingModal from '@/components/RatingModal';
 import { getTaskById } from '@/src/api/tasks';
 import { applyToTask } from '@/src/api/applications';
@@ -80,21 +81,21 @@ export default function TaskDetailsScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
+      <WatermarkBackground style={styles.centerContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading task details...</Text>
-      </View>
+      </WatermarkBackground>
     );
   }
 
   if (error || !taskData?.task) {
     return (
-      <View style={styles.centerContainer}>
+      <WatermarkBackground style={styles.centerContainer}>
         <Text style={styles.errorText}>
           {error instanceof Error ? error.message : 'Failed to load task details'}
         </Text>
         <Button title="Go Back" onPress={() => router.back()} style={styles.backButton} />
-      </View>
+      </WatermarkBackground>
     );
   }
 
@@ -141,7 +142,7 @@ export default function TaskDetailsScreen() {
   };
 
   return (
-    <>
+    <WatermarkBackground>
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {/* Header */}
       <View style={styles.header}>
@@ -372,14 +373,13 @@ export default function TaskDetailsScreen() {
         }}
       />
     )}
-    </>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     padding: spacing.lg,

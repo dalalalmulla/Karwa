@@ -14,6 +14,7 @@ import { useMutation } from '@tanstack/react-query';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import WatermarkBackground from '@/components/ui/WatermarkBackground';
 import { createTask, CreateTaskData, TaskType } from '@/src/api/tasks';
 
 const TASK_TYPES: { label: string; value: TaskType }[] = [
@@ -116,14 +117,15 @@ export default function CreateTaskScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled">
-        <View style={styles.content}>
+    <WatermarkBackground style={styles.container}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled">
+          <View style={styles.content}>
           <Text style={styles.title}>Create New Task</Text>
           <Text style={styles.subtitle}>Fill in the details to post your task</Text>
 
@@ -243,36 +245,39 @@ export default function CreateTaskScreen() {
             />
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: spacing.xl * 2,
+    paddingBottom: spacing.xl,
     flexGrow: 1,
   },
   content: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
   },
   title: {
     ...typography.title,
     color: colors.text,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   subtitle: {
-    ...typography.body,
-    color: colors.secondary,
-    marginBottom: spacing.xl,
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
   },
   form: {
     marginTop: spacing.md,
@@ -308,7 +313,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.surface,
     padding: spacing.sm,
     borderRadius: borderRadius.md,
     marginBottom: spacing.xs,
@@ -348,15 +353,15 @@ const styles = StyleSheet.create({
   },
   typeButton: {
     flex: 1,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
     borderRadius: borderRadius.md,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 50,
+    minHeight: 44,
   },
   typeButtonSelected: {
     borderColor: colors.primary,
@@ -376,10 +381,12 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   infoBox: {
-    backgroundColor: colors.gray100,
+    backgroundColor: colors.surface,
     padding: spacing.md,
     borderRadius: borderRadius.md,
     marginBottom: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   infoText: {
     ...typography.caption,

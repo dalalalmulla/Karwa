@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -7,19 +7,18 @@ import {
   TouchableOpacity,
   RefreshControl,
 } from "react-native";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useAuth } from "@/src/context/AuthContext";
 import { getTasksApi } from "@/src/api/taskCalls";
-import type { Task } from "@/src/types/taskTypes";
-import { colors, spacing, typography } from "@/constants/theme";
-
 import {
-  detectAndStoreTaskStatusChanges,
-  loadNotifications,
-  markAllNotificationsRead,
-  type InAppNotification,
-} from "@/src/utils/notification";
+  getNotificationsApi,
+  markAllNotificationsReadApi,
+} from "@/src/api/notificationCalls";
+import type { Task } from "@/src/types/taskTypes";
+import type { Notification } from "@/src/types/notificationTypes";
+import { colors, spacing, typography } from "@/constants/theme";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
 
 type TasksResponse = {
   success: boolean;
@@ -29,25 +28,51 @@ type TasksResponse = {
 
 export default function ProfileScreen() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const [notifications, setNotifications] = useState<InAppNotification[]>([]);
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read).length,
-    [notifications]
-  );
-
-  const { data, isRefetching, refetch, isLoading, error } =
-  useQuery<TasksResponse>({
+  const {
+    data: tasksData,
+    isRefetching: isTasksRefetching,
+    refetch: refetchTasks,
+    isLoading: isTasksLoading,
+    error: tasksError,
+  } = useQuery<TasksResponse>({
     queryKey: ["my-tasks"],
     queryFn: () => getTasksApi({}) as unknown as Promise<TasksResponse>,
-    refetchInterval: 15000, // كل 15 ثانية
+    refetchInterval: 15000,
     refetchIntervalInBackground: true,
   });
 
+  const {
+    data: notificationsData,
+    isRefetching: isNotificationsRefetching,
+    refetch: refetchNotifications,
+    isLoading: isNotificationsLoading,
+  } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => getNotificationsApi({ limit: 50 }),
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
+  });
+
+  const notifications: Notification[] = useMemo(() => {
+    return notificationsData?.success
+      ? notificationsData.data?.notifications ?? []
+      : [];
+  }, [notificationsData]);
+
+  const unreadCount = notificationsData?.data?.unreadCount ?? 0;
+
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllNotificationsReadApi,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
 
   const tasks: Task[] = useMemo(() => {
-    return data?.success ? data.data?.tasks ?? [] : [];
-  }, [data]);
+    return tasksData?.success ? tasksData.data?.tasks ?? [] : [];
+  }, [tasksData]);
 
   const stats = tasks.reduce(
     (acc, task) => {
@@ -55,55 +80,50 @@ export default function ProfileScreen() {
       else if (task.status === "IN_PROGRESS") acc.inProgress += 1;
       else if (task.status === "OPEN") acc.open += 1;
       else if (task.status === "CANCELLED") acc.cancelled += 1;
-  
       return acc;
     },
     { completed: 0, inProgress: 0, open: 0, cancelled: 0 }
   );
-  
 
-  useEffect(() => {
-    (async () => {
-      const list = await loadNotifications();
-      setNotifications(list);
-    })();
-  }, []);
+  const handleMarkAllRead = () => {
+    markAllReadMutation.mutate();
+  };
 
-  useEffect(() => {
-    (async () => {
-      if (!tasks.length) return;
-
-      await detectAndStoreTaskStatusChanges({
-        tasks: tasks.map((t) => ({
-          _id: String(t._id),
-          title: t.title,
-          status: t.status as any,
-        })),
-      });
-
-      const list = await loadNotifications();
-      setNotifications(list);
-    })();
-  }, [tasks]);
-
-  const handleMarkAllRead = async () => {
-    const updated = await markAllNotificationsRead();
-    setNotifications(updated);
+  const handleRefresh = () => {
+    refetchTasks();
+    refetchNotifications();
   };
 
   const displayName = useMemo(() => {
-    const anyUser = user as any;
+    const anyUser = user as {
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+    };
+    if (anyUser?.firstName && anyUser?.lastName) {
+      return `${anyUser.firstName} ${anyUser.lastName}`;
+    }
     return anyUser?.name ?? anyUser?.email ?? "User";
   }, [user]);
 
-  const renderNotif = ({ item }: { item: InAppNotification }) => {
+  const userRating = useMemo(() => {
+    const anyUser = user as { rating?: number };
+    return anyUser?.rating ?? null;
+  }, [user]);
+
+  const renderNotification = ({ item }: { item: Notification }) => {
     return (
       <View style={[styles.notifItem, !item.read && styles.notifUnread]}>
         <View style={styles.notifTopRow}>
-          <Text style={styles.notifTitle}>{item.title}</Text>
-          {!item.read ? <Text style={styles.badge}>NEW</Text> : null}
+          <Text style={styles.notifTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+          {!item.read && <Text style={styles.badge}>NEW</Text>}
         </View>
-        <Text style={styles.notifMsg}>{item.message}</Text>
+        <Text style={styles.notifMsg} numberOfLines={2}>
+          {item.message}
+        </Text>
         <Text style={styles.notifDate}>
           {new Date(item.createdAt).toLocaleString()}
         </Text>
@@ -111,135 +131,209 @@ export default function ProfileScreen() {
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.name}>{displayName}</Text>
+  const isRefreshing = isTasksRefetching || isNotificationsRefetching;
+  const isLoading = isTasksLoading || isNotificationsLoading;
 
-      <View style={styles.metaRow}>
-        <Text style={styles.rating}>⭐ 4.8</Text>
-        <View style={styles.unreadPill}>
-          <Text style={styles.unreadText}>Notifications: {unreadCount}</Text>
+  const ListHeader = () => (
+    <>
+      {/* Profile Header */}
+      <View style={styles.profileHeader}>
+        <View style={styles.profileInfo}>
+          <Text style={styles.name}>{displayName}</Text>
+          <Text style={styles.rating}>
+            {userRating !== null ? `⭐ ${userRating.toFixed(1)}` : "⭐ No rating yet"}
+          </Text>
+        </View>
+        {unreadCount > 0 && (
+          <View style={styles.unreadPill}>
+            <Text style={styles.unreadText}>{unreadCount}</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Stats */}
+      <View style={styles.stats}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.open}</Text>
+          <Text style={styles.statLabel}>Open</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.inProgress}</Text>
+          <Text style={styles.statLabel}>Active</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.completed}</Text>
+          <Text style={styles.statLabel}>Done</Text>
+        </View>
+        <View style={styles.statDivider} />
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{stats.cancelled}</Text>
+          <Text style={styles.statLabel}>Cancelled</Text>
         </View>
       </View>
 
-      <View style={styles.stats}>
-        <Text style={styles.stat}>Open: {stats.open}</Text>
-        <Text style={styles.stat}>In Progress: {stats.inProgress}</Text>
-        <Text style={styles.stat}>Completed: {stats.completed}</Text>
-      </View>
-
+      {/* Notifications Header */}
       <View style={styles.notifHeader}>
         <Text style={styles.notifHeaderTitle}>Notifications</Text>
-
-        <TouchableOpacity onPress={handleMarkAllRead} style={styles.markReadBtn}>
-          <Text style={styles.markReadText}>Mark all read</Text>
-        </TouchableOpacity>
+        {unreadCount > 0 && (
+          <TouchableOpacity
+            onPress={handleMarkAllRead}
+            disabled={markAllReadMutation.isPending}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Text style={styles.markReadText}>
+              {markAllReadMutation.isPending ? "..." : "Mark all read"}
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
 
-      {error ? (
+      {tasksError && (
         <Text style={styles.errorText}>
-          {(error as Error).message || "Failed to load"}
+          {(tasksError as Error).message || "Failed to load"}
         </Text>
-      ) : null}
+      )}
+    </>
+  );
 
+  return (
+    <WatermarkBackground style={styles.container}>
       <FlatList
         data={notifications}
-        keyExtractor={(item) => item.id}
-        renderItem={renderNotif}
-        contentContainerStyle={styles.notifList}
+        keyExtractor={(item) => item._id}
+        renderItem={renderNotification}
+        ListHeaderComponent={ListHeader}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
         }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>
-              {isLoading ? "Loading..." : "No notifications yet"}
+              {isLoading ? "Loading..." : "No notifications"}
             </Text>
             <Text style={styles.emptySub}>
-              {isLoading ? "Please wait" : "Notifications will appear when task status changes"}
+              {isLoading ? "Please wait" : "You're all caught up!"}
             </Text>
           </View>
         }
       />
-    </View>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-    padding: spacing.lg,
   },
-  name: {
-    ...typography.title,
-    marginBottom: spacing.sm,
-    color: colors.text,
+  listContent: {
+    paddingBottom: spacing.xl,
   },
-  metaRow: {
+
+  // Profile Header
+  profileHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.surface,
   },
-  rating: {
-    ...typography.body,
+  profileInfo: {
+    flex: 1,
+  },
+  name: {
+    ...typography.title,
     color: colors.text,
   },
+  rating: {
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
   unreadPill: {
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 999,
-    backgroundColor: colors.border,
   },
   unreadText: {
     ...typography.small,
-    color: colors.text,
+    color: colors.white,
     fontWeight: "700",
   },
+
+  // Stats
   stats: {
-    gap: spacing.sm,
-    marginBottom: spacing.lg,
+    flexDirection: "row",
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
-  stat: {
-    ...typography.body,
-    color: colors.text,
+  statItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  statDivider: {
+    width: 1,
+    backgroundColor: colors.border,
+  },
+  statNumber: {
+    ...typography.heading,
+    color: colors.primary,
+  },
+  statLabel: {
+    ...typography.small,
+    color: colors.textMuted,
+    marginTop: 2,
   },
 
+  // Notifications Header
   notifHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.background,
   },
   notifHeaderTitle: {
     ...typography.heading,
     color: colors.text,
   },
-  markReadBtn: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.sm,
-  },
   markReadText: {
-    ...typography.body,
+    ...typography.caption,
     color: colors.primary,
-    fontWeight: "700",
+    fontWeight: "600",
   },
 
-  notifList: {
-    paddingBottom: spacing.xl,
-  },
+  // Notification Items
   notifItem: {
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
+    backgroundColor: colors.surface,
+    borderRadius: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    backgroundColor: colors.background,
   },
   notifUnread: {
     borderColor: colors.primary,
+    borderLeftWidth: 3,
   },
   notifTopRow: {
     flexDirection: "row",
@@ -250,28 +344,36 @@ const styles = StyleSheet.create({
   notifTitle: {
     ...typography.body,
     color: colors.text,
-    fontWeight: "700",
+    fontWeight: "600",
     flex: 1,
     marginRight: spacing.sm,
   },
   badge: {
     ...typography.small,
-    color: colors.primary,
-    fontWeight: "800",
+    color: colors.white,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 2,
+    borderRadius: 4,
+    fontWeight: "700",
+    overflow: "hidden",
   },
   notifMsg: {
-    ...typography.body,
-    color: colors.secondary,
+    ...typography.caption,
+    color: colors.textSecondary,
     marginBottom: spacing.xs,
+    lineHeight: 18,
   },
   notifDate: {
     ...typography.small,
-    color: colors.gray500,
+    color: colors.textMuted,
   },
 
+  // Empty State
   empty: {
-    paddingTop: spacing.xl,
+    paddingTop: spacing.xl * 2,
     alignItems: "center",
+    paddingHorizontal: spacing.md,
   },
   emptyTitle: {
     ...typography.heading,
@@ -280,13 +382,14 @@ const styles = StyleSheet.create({
   },
   emptySub: {
     ...typography.body,
-    color: colors.secondary,
+    color: colors.textSecondary,
     textAlign: "center",
   },
 
   errorText: {
-    ...typography.body,
-    color: colors.secondary,
-    marginBottom: spacing.md,
+    ...typography.caption,
+    color: colors.danger,
+    paddingHorizontal: spacing.md,
+    marginBottom: spacing.sm,
   },
 });

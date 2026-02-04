@@ -4,12 +4,14 @@ import { useRouter } from 'expo-router';
 import { colors, spacing, typography } from '@/constants/theme';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import WatermarkBackground from '@/components/ui/WatermarkBackground';
 
 export default function ModalScreen() {
   const router = useRouter();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <WatermarkBackground>
+      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
         <Text style={styles.title}>Modal</Text>
         <Text style={styles.subtitle}>This is a modal screen</Text>
@@ -25,14 +27,14 @@ export default function ModalScreen() {
       <View style={styles.buttonContainer}>
         <Button title="Close" onPress={() => router.back()} variant="secondary" />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: spacing.lg,
