@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 import { colors, spacing, typography } from '@/constants/theme';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Logo from '@/components/ui/Logo';
 
 export default function HomeScreen() {
+  const router = useRouter();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.header}>
@@ -22,11 +24,22 @@ export default function HomeScreen() {
           Start earning by completing daily tasks. Each task is backed by standardized agreements
           and secure communication.
         </Text>
-        <Button
-          title="Explore Tasks"
-          onPress={() => console.log('Explore tasks')}
-          style={styles.button}
-        />
+        <View style={styles.buttonRow}>
+          <Button
+            title="Create Task"
+            onPress={() => {
+              // @ts-ignore - Expo Router path
+              router.push('/(main)/create-task');
+            }}
+            style={{ ...styles.button, ...styles.buttonHalf }}
+          />
+          <Button
+            title="Explore Tasks"
+            onPress={() => console.log('Explore tasks')}
+            variant="secondary"
+            style={{ ...styles.button, ...styles.buttonHalf }}
+          />
+        </View>
       </Card>
 
       <Card style={styles.card}>
@@ -106,6 +119,14 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: spacing.sm,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  buttonHalf: {
+    flex: 1,
   },
   stepContainer: {
     gap: spacing.md,
