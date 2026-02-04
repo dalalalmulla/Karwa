@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import {
-  createTask,
-  getTasks,
-  getTaskById,
-  applyToTask,
-  assignWorker,
-  markCompleteByWorker,
-  confirmCompletion,
-  submitRating,
+    createTask,
+    getTasks,
+    getTaskById,
+    applyToTask,
+    assignWorker,
+    markCompleteByWorker,
+    confirmCompletion,
+    submitRating,
 } from '../controllers/taskController';
 import { authenticate } from '../middleware/authenticate';
 

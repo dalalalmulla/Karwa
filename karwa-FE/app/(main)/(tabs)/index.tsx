@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
 import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-
+import Button from '@/components/ui/Button';
+import { useRouter } from 'expo-router';
 import { colors, spacing, typography } from "@/constants/theme";
 import Card from "@/components/ui/Card";
 import TaskFilters from "@/components/TaskFilters";
@@ -44,6 +45,7 @@ function TaskCard({ task }: { task: Task }) {
 }
 
 export default function HomeScreen() {
+  const router = useRouter();
   const [filters, setFilters] = useState<GetTasksParams>({});
 
   const { data, isLoading, isRefetching, refetch, error } =
@@ -85,6 +87,22 @@ export default function HomeScreen() {
           <Text style={styles.errorHint} onPress={() => refetch()}>
             Tap to retry
           </Text>
+          <View style={styles.buttonRow}>
+          <Button
+            title="Create Task"
+            onPress={() => {
+              // @ts-ignore - Expo Router path
+              router.push('/(main)/create-task');
+            }}
+            style={{ ...styles.button, ...styles.buttonHalf }}
+          />
+          <Button
+            title="Explore Tasks"
+            onPress={() => console.log('Explore tasks')}
+            variant="secondary"
+            style={{ ...styles.button, ...styles.buttonHalf }}
+          />
+        </View>
         </Card>
       ) : null}
 
@@ -185,7 +203,19 @@ const styles = StyleSheet.create({
   },
   metaRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-between",},
+  button: {
+    marginTop: spacing.sm,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+  },
+  buttonHalf: {
+    flex: 1,
+  },
+  stepContainer: {
     gap: spacing.md,
   },
   metaText: {

@@ -94,3 +94,40 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse['data']>
     throw error;
   }
 };
+
+export interface GetCurrentUserResponse {
+  success: boolean;
+  data: {
+    user: {
+      _id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      ratingAverage?: number;
+      completedTasksCount?: number;
+      earnedPoints?: number;
+      createdAt: string;
+      updatedAt: string;
+    };
+  };
+  error?: string;
+}
+
+export const getCurrentUser = async (): Promise<GetCurrentUserResponse['data']> => {
+  try {
+    const response = await instance.get<GetCurrentUserResponse>('/auth/me');
+    
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to fetch user profile');
+    }
+
+    return response.data.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage =
+        error.response?.data?.error || error.message || 'Failed to fetch user profile';
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};

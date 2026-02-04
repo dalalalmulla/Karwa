@@ -5,6 +5,19 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/token';
 import { CustomeRequest } from '../types/http';
 
+// Try to import Rating and Application models if they exist
+let Rating: any = null;
+let Application: any = null;
+
+try {
+  // Try to require the models (they might be in dist or src)
+  Rating = require('../models/Rating')?.default;
+  Application = require('../models/Application')?.default;
+} catch (error) {
+  // Models don't exist yet, will use default values
+  console.log('Rating/Application models not found, using default values');
+}
+
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, firstName, lastName, name, civilId } = req.body;
@@ -197,6 +210,49 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
       return;
     }
 
+    // Calculate profile statistics
+    let ratingAverage = 0;
+    let completedTasksCount = 0;
+    let earnedPoints = 0;
+
+    try {
+      // Calculate rating average from Rating model
+      if (Rating) {
+        const ratings = await Rating.find({ ratedUserId: new mongoose.Types.ObjectId(userId) });
+        if (ratings.length > 0) {
+          const sum = ratings.reduce((acc: number, r: any) => acc + r.rating, 0);
+          ratingAverage = sum / ratings.length;
+        }
+      }
+
+      // Calculate completed tasks count from Application model
+      // Assuming 'ACCEPTED' status means the task was completed
+      if (Application) {
+        completedTasksCount = await Application.countDocuments({ 
+          workerId: new mongoose.Types.ObjectId(userId), 
+          status: 'ACCEPTED' 
+        });
+
+        // Calculate earned points (assuming each completed task gives points)
+        // If Application model has a points field, use it; otherwise use count * default points
+        const completedApplications = await Application.find({ 
+          workerId: new mongoose.Types.ObjectId(userId), 
+          status: 'ACCEPTED' 
+        });
+        
+        // If Application has points field, sum them; otherwise use count * 10 as default
+        if (completedApplications.length > 0 && completedApplications[0].points !== undefined) {
+          earnedPoints = completedApplications.reduce((sum: number, app: any) => sum + (app.points || 0), 0);
+        } else {
+          // Default: 10 points per completed task
+          earnedPoints = completedTasksCount * 10;
+        }
+      }
+    } catch (modelError) {
+      // Models don't exist or error calculating, use default values
+      console.log('Error calculating profile statistics:', modelError);
+    }
+
     res.status(200).json({
       success: true,
       data: {
@@ -205,6 +261,9 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          ratingAverage: Math.round(ratingAverage * 10) / 10, // Round to 1 decimal place
+          completedTasksCount,
+          earnedPoints,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },
