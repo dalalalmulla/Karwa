@@ -30,6 +30,9 @@ export const palette = {
 
   // Distinction Color
   yellow: '#F2C94C',
+
+  // Error Color
+  red: '#DC3545',
 } as const;
 
 // Eye-friendly light theme colors
@@ -52,7 +55,7 @@ export const colors = {
 
   // Semantic
   success: palette.green,
-  danger: palette.blueDark,
+  danger: palette.red,
   warning: palette.yellow,
   info: palette.blueSoft,
 
