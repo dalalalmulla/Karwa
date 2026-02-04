@@ -6,7 +6,8 @@ import { errorHandler } from './src/middleware/errorHandler';
 import authRoutes from './src/routes/auth';
 import taskRoutes from './src/routes/tasks';
 
-// Load environment variables
+// Load environment variables tests
+console.log("Hello")
 dotenv.config();
 
 const app: Express = express();
