@@ -17,11 +17,11 @@ interface TaskFiltersProps {
 }
 
 const TASK_TYPES: { value: TaskType | ""; label: string }[] = [
-  { value: "", label: "All Types" },
+  { value: "", label: "All" },
   { value: "indoor", label: "Indoor" },
   { value: "outdoor", label: "Outdoor" },
-  { value: "home_service", label: "Home Service" },
-  { value: "car_service", label: "Car Service" },
+  { value: "home_service", label: "Home" },
+  { value: "car_service", label: "Car" },
 ];
 
 export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
@@ -55,12 +55,20 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
   return (
     <>
       <TouchableOpacity
-        style={styles.filterButton}
+        style={[
+          styles.filterButton,
+          activeFilterCount > 0 && styles.filterButtonActive,
+        ]}
         onPress={handleOpen}
         accessibilityLabel="Open filters"
       >
-        <Text style={styles.filterButtonText}>
-          Filters {activeFilterCount > 0 ? `(${activeFilterCount})` : ""}
+        <Text
+          style={[
+            styles.filterButtonText,
+            activeFilterCount > 0 && styles.filterButtonTextActive,
+          ]}
+        >
+          {activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filters"}
         </Text>
       </TouchableOpacity>
 
@@ -75,7 +83,7 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Filter Tasks</Text>
               <TouchableOpacity onPress={() => setModalVisible(false)}>
-                <Text style={styles.closeButton}>Close</Text>
+                <Text style={styles.closeButton}>✕</Text>
               </TouchableOpacity>
             </View>
 
@@ -92,10 +100,9 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
                     key={t.value || "all"}
                     style={[
                       styles.chip,
-                      localFilters.type === t.value ||
-                      (!localFilters.type && t.value === "")
-                        ? styles.chipActive
-                        : null,
+                      (localFilters.type === t.value ||
+                        (!localFilters.type && t.value === "")) &&
+                        styles.chipActive,
                     ]}
                     onPress={() =>
                       setLocalFilters((prev) => ({
@@ -107,10 +114,9 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
                     <Text
                       style={[
                         styles.chipText,
-                        localFilters.type === t.value ||
-                        (!localFilters.type && t.value === "")
-                          ? styles.chipTextActive
-                          : null,
+                        (localFilters.type === t.value ||
+                          (!localFilters.type && t.value === "")) &&
+                          styles.chipTextActive,
                       ]}
                     >
                       {t.label}
@@ -124,8 +130,8 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
             <Text style={styles.label}>Location</Text>
             <TextInput
               style={styles.input}
-              placeholder="Search by location..."
-              placeholderTextColor={colors.gray500}
+              placeholder="Search location..."
+              placeholderTextColor={colors.textMuted}
               value={localFilters.location || ""}
               onChangeText={(text) =>
                 setLocalFilters((prev) => ({
@@ -136,12 +142,12 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
             />
 
             {/* Money Range Filter */}
-            <Text style={styles.label}>Money Range (KWD)</Text>
+            <Text style={styles.label}>Budget (KWD)</Text>
             <View style={styles.rangeRow}>
               <TextInput
                 style={[styles.input, styles.rangeInput]}
                 placeholder="Min"
-                placeholderTextColor={colors.gray500}
+                placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
                 value={localFilters.minMoney?.toString() || ""}
                 onChangeText={(text) =>
@@ -151,11 +157,11 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
                   }))
                 }
               />
-              <Text style={styles.rangeSeparator}>-</Text>
+              <Text style={styles.rangeSeparator}>—</Text>
               <TextInput
                 style={[styles.input, styles.rangeInput]}
                 placeholder="Max"
-                placeholderTextColor={colors.gray500}
+                placeholderTextColor={colors.textMuted}
                 keyboardType="numeric"
                 value={localFilters.maxMoney?.toString() || ""}
                 onChangeText={(text) =>
@@ -169,17 +175,11 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
 
             {/* Action Buttons */}
             <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleClear}
-              >
-                <Text style={styles.clearButtonText}>Clear All</Text>
+              <TouchableOpacity style={styles.clearButton} onPress={handleClear}>
+                <Text style={styles.clearButtonText}>Clear</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.applyButton}
-                onPress={handleApply}
-              >
-                <Text style={styles.applyButtonText}>Apply Filters</Text>
+              <TouchableOpacity style={styles.applyButton} onPress={handleApply}>
+                <Text style={styles.applyButtonText}>Apply</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -191,27 +191,36 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
 
 const styles = StyleSheet.create({
   filterButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.surface,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  filterButtonActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   filterButtonText: {
-    ...typography.body,
+    ...typography.caption,
+    color: colors.text,
+    fontWeight: "500",
+  },
+  filterButtonTextActive: {
     color: colors.white,
-    fontWeight: "600",
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
   },
   modalContent: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderTopLeftRadius: borderRadius.lg,
     borderTopRightRadius: borderRadius.lg,
-    padding: spacing.lg,
-    paddingBottom: spacing.xl + spacing.lg,
+    padding: spacing.md,
+    paddingBottom: spacing.xl + spacing.md,
   },
   modalHeader: {
     flexDirection: "row",
@@ -224,15 +233,15 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   closeButton: {
-    ...typography.body,
-    color: colors.primary,
-    fontWeight: "600",
+    fontSize: 18,
+    color: colors.textMuted,
+    padding: spacing.xs,
   },
   label: {
-    ...typography.body,
+    ...typography.caption,
     color: colors.text,
     fontWeight: "600",
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
     marginTop: spacing.md,
   },
   chipScroll: {
@@ -248,7 +257,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.full,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
   },
   chipActive: {
     backgroundColor: colors.primary,
@@ -262,13 +271,13 @@ const styles = StyleSheet.create({
     color: colors.white,
   },
   input: {
-    backgroundColor: colors.white,
+    backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    fontSize: 16,
+    paddingVertical: spacing.sm,
+    fontSize: typography.body.fontSize,
     color: colors.text,
   },
   rangeRow: {
@@ -281,16 +290,16 @@ const styles = StyleSheet.create({
   },
   rangeSeparator: {
     ...typography.body,
-    color: colors.secondary,
+    color: colors.textMuted,
   },
   buttonRow: {
     flexDirection: "row",
-    gap: spacing.md,
-    marginTop: spacing.xl,
+    gap: spacing.sm,
+    marginTop: spacing.lg,
   },
   clearButton: {
     flex: 1,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm + 2,
     borderRadius: borderRadius.md,
     borderWidth: 1,
     borderColor: colors.border,
@@ -298,12 +307,12 @@ const styles = StyleSheet.create({
   },
   clearButtonText: {
     ...typography.body,
-    color: colors.secondary,
-    fontWeight: "600",
+    color: colors.textSecondary,
+    fontWeight: "500",
   },
   applyButton: {
     flex: 1,
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.sm + 2,
     borderRadius: borderRadius.md,
     backgroundColor: colors.primary,
     alignItems: "center",

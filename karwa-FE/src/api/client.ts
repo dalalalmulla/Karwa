@@ -3,6 +3,7 @@ import { getBaseURL } from "./axios";
 import { Platform } from "react-native";
 import { getToken } from "../utils/token";
 
+<<<<<<< HEAD
 // Get base URL based on platform
 // const getBaseURL = () => {
 //   if (Platform.OS === "android") {
@@ -15,8 +16,23 @@ import { getToken } from "../utils/token";
 
 
 
+=======
+// Get base URL based on platform - same as axios.ts
+const getBaseURL = () => {
+  if (__DEV__) {
+    // For iOS Simulator, use Mac's IP address
+    // For Android Emulator, use '10.0.2.2'
+    // For Physical Device, use your Mac's IP address
+    return 'http://192.168.13.180:8000/api'; // Replace with your Mac's IP
+  }
+  // Production URL
+  return 'http://192.168.13.180:8000/api';
+};
+>>>>>>> main
 
 export const api = axios.create({
+  baseURL: getBaseURL(),
+  timeout: 10000,
   baseURL: getBaseURL(),
   timeout: 10000,
   headers: {

@@ -1,44 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { StyleSheet } from "react-native";
 import { Tabs } from "expo-router";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { colors } from "@/constants/theme";
-import { loadNotifications } from "@/src/utils/notification";
+import { colors, spacing } from "@/constants/theme";
+import { useQuery } from "@tanstack/react-query";
+import { getNotificationsApi } from "@/src/api/notificationCalls";
 
 export default function TabLayout() {
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const { data: notificationsData } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => getNotificationsApi({ limit: 50 }),
+    refetchInterval: 15000,
+  });
 
-  useEffect(() => {
-    let mounted = true;
-
-    const load = async () => {
-      const list = await loadNotifications();
-      const unread = list.filter((n) => !n.read).length;
-      if (mounted) setUnreadCount(unread);
-    };
-
-    // أول تحميل
-    load();
-
-    // تحديث دوري (عشان الـ badge يتحدث حتى لو ما فتحتي البروفايل)
-    const id = setInterval(load, 5000);
-
-    return () => {
-      mounted = false;
-      clearInterval(id);
-    };
-  }, []);
+  const unreadCount = notificationsData?.data?.unreadCount ?? 0;
 
   return (
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.gray500,
+        tabBarInactiveTintColor: colors.textMuted,
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: styles.tabBar,
+        tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
       <Tabs.Screen
@@ -46,7 +33,18 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <AntDesign name="home" size={22} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="explore"
+        options={{
+          title: "Explore Tasks",
+          tabBarLabel: "Explore",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="chevron.right.forwardslash.chevron.right" color={color} />
           ),
         }}
       />
@@ -56,13 +54,10 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <AntDesign name="profile" size={22} color={color} />
           ),
           tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: {
-            backgroundColor: colors.primary,
-            color: colors.white,
-          },
+          tabBarBadgeStyle: styles.badge,
         }}
       />
     </Tabs>
@@ -71,7 +66,24 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     borderTopColor: colors.border,
+    borderTopWidth: 1,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs,
+    height: 56,
+  },
+  tabBarLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    marginTop: -2,
+  },
+  badge: {
+    backgroundColor: colors.primary,
+    color: colors.white,
+    fontSize: 10,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
   },
 });

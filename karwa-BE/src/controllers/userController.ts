@@ -5,18 +5,10 @@ import bcrypt from 'bcrypt';
 import { generateToken } from '../utils/token';
 import { CustomeRequest } from '../types/http';
 
-// Try to import Rating and Application models if they exist
-let Rating: any = null;
-let Application: any = null;
-
-try {
-  // Try to require the models (they might be in dist or src)
-  Rating = require('../models/Rating')?.default;
-  Application = require('../models/Application')?.default;
-} catch (error) {
-  // Models don't exist yet, will use default values
-  console.log('Rating/Application models not found, using default values');
-}
+// Import Rating, Application, and Task models
+import Rating from '../models/Rating';
+import Application from '../models/Application';
+import Task from '../models/Task';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -89,7 +81,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     // Handle Mongoose validation errors
     if (error instanceof mongoose.Error.ValidationError) {
-      const errors = Object.values(error.errors).map((e) => e.message);
+      const errors = Object.values(error.errors).map((e: mongoose.Error.ValidatorError) => e.message);
       res.status(400).json({
         success: false,
         error: errors.join(', '),
@@ -172,7 +164,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     // Handle Mongoose validation errors
     if (error instanceof mongoose.Error.ValidationError) {
-      const errors = Object.values(error.errors).map((e) => e.message);
+      const errors = Object.values(error.errors).map((e: mongoose.Error.ValidatorError) => e.message);
       res.status(400).json({
         success: false,
         error: errors.join(', '),
@@ -214,42 +206,39 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
     let ratingAverage = 0;
     let completedTasksCount = 0;
     let earnedPoints = 0;
+    let notificationCount = 0;
 
     try {
       // Calculate rating average from Rating model
-      if (Rating) {
-        const ratings = await Rating.find({ ratedUserId: new mongoose.Types.ObjectId(userId) });
-        if (ratings.length > 0) {
-          const sum = ratings.reduce((acc: number, r: any) => acc + r.rating, 0);
-          ratingAverage = sum / ratings.length;
-        }
+      const ratings = await Rating.find({ ratedUserId: new mongoose.Types.ObjectId(userId) });
+      if (ratings.length > 0) {
+        const sum = ratings.reduce((acc: number, r: any) => acc + r.score, 0);
+        ratingAverage = sum / ratings.length;
       }
 
       // Calculate completed tasks count from Application model
-      // Assuming 'ACCEPTED' status means the task was completed
-      if (Application) {
-        completedTasksCount = await Application.countDocuments({ 
-          workerId: new mongoose.Types.ObjectId(userId), 
-          status: 'ACCEPTED' 
-        });
+      // ACCEPTED status means the task was completed
+      completedTasksCount = await Application.countDocuments({
+        applicantId: new mongoose.Types.ObjectId(userId),
+        status: 'ACCEPTED'
+      });
 
-        // Calculate earned points (assuming each completed task gives points)
-        // If Application model has a points field, use it; otherwise use count * default points
-        const completedApplications = await Application.find({ 
-          workerId: new mongoose.Types.ObjectId(userId), 
-          status: 'ACCEPTED' 
+      // Calculate earned points from user's points field (points are added when tasks are completed)
+      earnedPoints = user.points || 0;
+
+      // Calculate notification count (pending applications for user's posted tasks)
+      const userIdObj = new mongoose.Types.ObjectId(userId);
+      const userPostedTasks = await Task.find({ posterId: userIdObj }).select('_id');
+      const taskIds = userPostedTasks.map(t => t._id);
+
+      if (taskIds.length > 0) {
+        notificationCount = await Application.countDocuments({
+          taskId: { $in: taskIds },
+          status: 'PENDING'
         });
-        
-        // If Application has points field, sum them; otherwise use count * 10 as default
-        if (completedApplications.length > 0 && completedApplications[0].points !== undefined) {
-          earnedPoints = completedApplications.reduce((sum: number, app: any) => sum + (app.points || 0), 0);
-        } else {
-          // Default: 10 points per completed task
-          earnedPoints = completedTasksCount * 10;
-        }
       }
     } catch (modelError) {
-      // Models don't exist or error calculating, use default values
+      // Error calculating, use default values
       console.log('Error calculating profile statistics:', modelError);
     }
 
@@ -264,6 +253,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
           ratingAverage: Math.round(ratingAverage * 10) / 10, // Round to 1 decimal place
           completedTasksCount,
           earnedPoints,
+          notificationCount,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         },

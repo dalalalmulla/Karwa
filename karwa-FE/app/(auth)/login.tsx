@@ -18,6 +18,8 @@ import { colors, spacing, typography } from "@/constants/theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import { loginUser } from "@/src/api/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -31,18 +33,18 @@ export default function Login() {
   const { setToken, setUser } = useAuth();
   const router = useRouter();
 
+  // console.log(email, password)
+
   const loginMutation = useMutation({
-    mutationFn: (data: LoginPayload) => loginApi(data),
+    mutationFn: (data: LoginPayload) => loginUser(data),
     onSuccess: (res) => {
-      if (!res.success || !res.data) {
-        Alert.alert("Login Failed", res.error || "An error occurred");
-        return;
+      if (res && res.token) {
+        setToken(res.token);
+        setUser(res.user);
+        router.replace("/(main)/(tabs)");
+      } else {
+        Alert.alert("Login Failed", "Invalid response from server");
       }
-
-      setToken(res.data.token);
-      setUser(res.data.user);
-
-      router.replace("/(main)/(tabs)");
     },
     onError: (error: unknown) => {
       const message =
@@ -82,11 +84,12 @@ export default function Login() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.container}
-    >
-      <View style={styles.contentContainer}>
+    <WatermarkBackground style={styles.container}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
+      >
+        <View style={styles.contentContainer}>
         <View style={styles.logoContainer}>
           <Logo size={120} />
         </View>
@@ -148,35 +151,35 @@ export default function Login() {
         </View>
       </View>
     </KeyboardAvoidingView>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.lg,
     justifyContent: "center",
   },
   logoContainer: {
     alignItems: "center",
-    marginBottom: spacing.xl,
+    marginBottom: spacing.lg,
   },
   headerTitle: {
     ...typography.title,
     color: colors.text,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
     textAlign: "center",
   },
   headerSubtitle: {
     ...typography.body,
-    color: colors.secondary,
-    marginBottom: spacing.xl,
+    color: colors.textSecondary,
+    marginBottom: spacing.lg,
     textAlign: "center",
   },
   formSection: {
@@ -201,12 +204,12 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: spacing.xl,
+    marginTop: spacing.lg,
     alignItems: "center",
   },
   footerText: {
     ...typography.body,
-    color: colors.secondary,
+    color: colors.textSecondary,
     marginRight: spacing.xs,
   },
   linkText: {

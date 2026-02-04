@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import Card from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import WatermarkBackground from '@/components/ui/WatermarkBackground';
 import { getTasks } from '@/src/api/tasks';
 import { useAuth } from '@/src/context/AuthContext';
 import type { TaskType, TaskStatus } from '@/src/types/taskTypes';
@@ -77,16 +78,16 @@ export default function TasksListScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
+      <WatermarkBackground style={styles.centerContainer}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Loading tasks...</Text>
-      </View>
+      </WatermarkBackground>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.centerContainer}>
+      <WatermarkBackground style={styles.centerContainer}>
         <IconSymbol name="exclamationmark.triangle" size={48} color={colors.danger} />
         <Text style={styles.errorText}>
           {error instanceof Error ? error.message : 'Failed to load tasks'}
@@ -94,12 +95,12 @@ export default function TasksListScreen() {
         <TouchableOpacity onPress={() => refetch()} style={styles.retryButton}>
           <Text style={styles.retryText}>Retry</Text>
         </TouchableOpacity>
-      </View>
+      </WatermarkBackground>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <WatermarkBackground style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -243,14 +244,13 @@ export default function TasksListScreen() {
           })
         )}
       </ScrollView>
-    </View>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   centerContainer: {
     flex: 1,

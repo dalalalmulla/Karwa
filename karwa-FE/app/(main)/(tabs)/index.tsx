@@ -1,46 +1,44 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
-import Button from '@/components/ui/Button';
-import { useRouter } from 'expo-router';
+import Button from "@/components/ui/Button";
+import { useRouter } from "expo-router";
 import { colors, spacing, typography } from "@/constants/theme";
 import Card from "@/components/ui/Card";
 import TaskFilters from "@/components/TaskFilters";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
 import {
   getTasksApi,
   type Task,
   type GetTasksParams,
+  type GetTasksResponse,
 } from "@/src/api/taskCalls";
 
-type TasksResponse = {
-  success: boolean;
-  data?: { tasks: Task[] };
-  error?: string;
-};
-
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task, onPress }: { task: Task; onPress: () => void }) {
   return (
-    <Card style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <Text style={styles.title} numberOfLines={1}>
-          {task.title}
-        </Text>
-        <View style={styles.pointsPill}>
-          <Text style={styles.pointsText}>{task.points} pts</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <Card style={styles.card}>
+        <View style={styles.cardTopRow}>
+          <Text style={styles.title} numberOfLines={1}>
+            {task.title}
+          </Text>
+          <View style={styles.pointsPill}>
+            <Text style={styles.pointsText}>{task.points} pts</Text>
+          </View>
         </View>
-      </View>
 
-      <Text style={styles.desc} numberOfLines={2}>
-        {task.description}
-      </Text>
-
-      <View style={styles.metaRow}>
-        <Text style={styles.metaText}>💰 {task.money} KWD</Text>
-        <Text style={styles.metaText} numberOfLines={1}>
-          📍 {task.location}
+        <Text style={styles.desc} numberOfLines={2}>
+          {task.description}
         </Text>
-      </View>
-    </Card>
+
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>💰 {task.money} KWD</Text>
+          <Text style={styles.metaText} numberOfLines={1}>
+            📍 {task.location}
+          </Text>
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 }
 
@@ -49,15 +47,22 @@ export default function HomeScreen() {
   const [filters, setFilters] = useState<GetTasksParams>({});
 
   const { data, isLoading, isRefetching, refetch, error } =
-    useQuery<TasksResponse>({
+    useQuery<GetTasksResponse>({
       queryKey: ["tasks", "open", filters],
-      queryFn: () => getTasksApi(filters) as unknown as Promise<TasksResponse>,
+      queryFn: async () => {
+        const params: GetTasksParams = {
+          ...filters,
+          status: "OPEN", // Always show OPEN tasks in browse screen
+        };
+        return await getTasksApi(params);
+      },
     });
 
-  // الباك يرجّع OPEN افتراضيًا، بس نخلي فلتر إضافي للأمان
   const tasks: Task[] = useMemo(() => {
-    const list = data?.success ? data.data?.tasks ?? [] : [];
-    return list.filter((t) => t.status === "OPEN");
+    if (!data?.success || !data.data?.tasks) {
+      return [];
+    }
+    return data.data.tasks.filter((t) => t.status === "OPEN");
   }, [data]);
 
   const handleFiltersChange = (newFilters: GetTasksParams) => {
@@ -65,13 +70,13 @@ export default function HomeScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <WatermarkBackground style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerRow}>
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>Browse Tasks</Text>
             <Text style={styles.headerSubtitle}>
-              Open tasks available ({tasks.length})
+              {tasks.length} open tasks available
             </Text>
           </View>
           <TaskFilters filters={filters} onApply={handleFiltersChange} />
@@ -79,105 +84,119 @@ export default function HomeScreen() {
       </View>
 
       {error ? (
-        <Card style={styles.errorCard}>
-          <Text style={styles.errorTitle}>Failed to load tasks</Text>
-          <Text style={styles.errorText}>
-            {(error as Error).message || "Unknown error"}
-          </Text>
-          <Text style={styles.errorHint} onPress={() => refetch()}>
-            Tap to retry
-          </Text>
-          <View style={styles.buttonRow}>
-          <Button
-            title="Create Task"
-            onPress={() => {
-              // @ts-ignore - Expo Router path
-              router.push('/(main)/create-task');
-            }}
-            style={{ ...styles.button, ...styles.buttonHalf }}
-          />
-          <Button
-            title="Explore Tasks"
-            onPress={() => console.log('Explore tasks')}
-            variant="secondary"
-            style={{ ...styles.button, ...styles.buttonHalf }}
-          />
+        <View style={styles.errorContainer}>
+          <Card style={styles.errorCard}>
+            <Text style={styles.errorTitle}>Failed to load tasks</Text>
+            <Text style={styles.errorText}>
+              {(error as Error).message || "Unknown error"}
+            </Text>
+            <Text style={styles.errorHint} onPress={() => refetch()}>
+              Tap to retry
+            </Text>
+            <View style={styles.buttonRow}>
+              <Button
+                title="Create Task"
+                onPress={() => {
+                  router.push("/(main)/create-task");
+                }}
+                style={styles.buttonHalf}
+              />
+              <Button
+                title="Refresh"
+                onPress={() => refetch()}
+                variant="secondary"
+                style={styles.buttonHalf}
+              />
+            </View>
+          </Card>
         </View>
-        </Card>
       ) : null}
 
       <FlatList
         data={tasks}
         keyExtractor={(item) => String(item._id)}
-        renderItem={({ item }) => <TaskCard task={item} />}
+        renderItem={({ item }) => (
+          <TaskCard
+            task={item}
+            onPress={() => router.push(`/(main)/task/${item._id}`)}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={refetch}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+            progressBackgroundColor={colors.surface}
+          />
         }
-        initialNumToRender={8}
+        initialNumToRender={10}
         windowSize={10}
-        maxToRenderPerBatch={8}
-        updateCellsBatchingPeriod={50}
+        maxToRenderPerBatch={10}
         removeClippedSubviews
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>
-              {isLoading ? "Loading..." : "No open tasks right now"}
+              {isLoading ? "Loading..." : "No open tasks"}
             </Text>
             <Text style={styles.emptySub}>
-              {isLoading ? "Please wait" : "Pull to refresh"}
+              {isLoading ? "Please wait" : "Pull down to refresh"}
             </Text>
           </View>
         }
       />
-    </View>
+    </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   header: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
   headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   headerTextContainer: {
     flex: 1,
-    marginRight: spacing.md,
+    marginRight: spacing.sm,
   },
   headerTitle: {
     ...typography.title,
     color: colors.text,
   },
   headerSubtitle: {
-    ...typography.body,
-    color: colors.secondary,
-    marginTop: spacing.xs,
+    ...typography.caption,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
 
   listContent: {
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.xl,
   },
 
   card: {
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   cardTopRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: spacing.md,
-    marginBottom: spacing.sm,
+    gap: spacing.sm,
+    marginBottom: spacing.xs,
   },
   title: {
     ...typography.heading,
@@ -188,44 +207,41 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: colors.border,
+    backgroundColor: colors.primarySoft,
   },
   pointsText: {
     ...typography.small,
-    color: colors.text,
+    color: colors.blueDark,
     fontWeight: "700",
   },
   desc: {
     ...typography.body,
-    color: colors.secondary,
-    marginBottom: spacing.md,
-    lineHeight: 22,
+    color: colors.textSecondary,
+    marginBottom: spacing.sm,
+    lineHeight: 20,
   },
   metaRow: {
     flexDirection: "row",
-    justifyContent: "space-between",},
-  button: {
-    marginTop: spacing.sm,
+    justifyContent: "space-between",
+    gap: spacing.sm,
   },
+  metaText: {
+    ...typography.caption,
+    color: colors.textMuted,
+    flex: 1,
+  },
+
   buttonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.sm,
     marginTop: spacing.sm,
   },
   buttonHalf: {
     flex: 1,
   },
-  stepContainer: {
-    gap: spacing.md,
-  },
-  metaText: {
-    ...typography.body,
-    color: colors.text,
-    flex: 1,
-  },
 
   empty: {
-    paddingTop: spacing.xl,
+    paddingTop: spacing.xl * 2,
     alignItems: "center",
   },
   emptyTitle: {
@@ -235,12 +251,15 @@ const styles = StyleSheet.create({
   },
   emptySub: {
     ...typography.body,
-    color: colors.secondary,
+    color: colors.textSecondary,
   },
 
+  errorContainer: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
   errorCard: {
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
   errorTitle: {
     ...typography.heading,
@@ -249,12 +268,12 @@ const styles = StyleSheet.create({
   },
   errorText: {
     ...typography.body,
-    color: colors.secondary,
+    color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
   errorHint: {
     ...typography.body,
     color: colors.primary,
-    fontWeight: "700",
+    fontWeight: "600",
   },
 });
