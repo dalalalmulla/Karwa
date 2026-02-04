@@ -1,16 +1,20 @@
 import axios from "axios";
+import { getBaseURL } from "./axios";
 import { Platform } from "react-native";
 import { getToken } from "../utils/token";
 
 // Get base URL based on platform
-const getBaseURL = () => {
-  if (Platform.OS === "android") {
-    // Android emulator uses 10.0.2.2 for localhost, physical device uses actual IP
-    return "http://192.168.8.109:8000/api";
-  }
-  // iOS simulator can use localhost, physical device needs actual IP
-  return "http://192.168.8.109:8000/api";
-};
+// const getBaseURL = () => {
+//   if (Platform.OS === "android") {
+//     // Android emulator uses 10.0.2.2 for localhost, physical device uses actual IP
+//     return "http://192.168.6.120:8000/api";
+//   }
+//   // iOS simulator can use localhost, physical device needs actual IP
+//   return "http://1192.168.6.120:8000/api";
+// };
+
+
+
 
 export const api = axios.create({
   baseURL: getBaseURL(),
