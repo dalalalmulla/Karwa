@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     right: 0,
-    backgroundColor: colors.error || '#FF3B30',
+    backgroundColor: '#FF3B30',
     borderRadius: borderRadius.full,
     minWidth: 20,
     height: 20,
