@@ -40,14 +40,18 @@ export default function RegisterScreen() {
       newErrors.name = "Name is required";
     }
 
+    // Email validation - must be in correct format
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
-    } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "It must be in the correct format, such as name@example.com.";
     }
 
+    // Civil ID validation - must be exactly 12 digits
     if (!formData.civilId?.trim()) {
       newErrors.civilId = "Civil ID is required";
+    } else if (!/^\d{12}$/.test(formData.civilId)) {
+      newErrors.civilId = "It must be 12 digits.";
     }
 
     if (!formData.password) {
@@ -56,10 +60,11 @@ export default function RegisterScreen() {
       newErrors.password = "Password must be at least 6 characters";
     }
 
+    // Confirm password must match password
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = "There is a discrepancy in the password.";
     }
 
     setErrors(newErrors);
@@ -151,6 +156,7 @@ export default function RegisterScreen() {
                 onChangeText={(value) => handleChange("civilId", value)}
                 error={errors.civilId}
                 keyboardType="numeric"
+                maxLength={12}
               />
 
               <Input

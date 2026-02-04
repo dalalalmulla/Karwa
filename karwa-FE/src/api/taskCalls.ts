@@ -1,6 +1,6 @@
 import { api } from "./client";
 
-export type TaskStatus = "OPEN" | "IN_PROGRESS" | "DONE";
+export type TaskStatus = "OPEN" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 export type TaskType = "indoor" | "outdoor" | "home_service" | "car_service";
 
 export type Poster =
