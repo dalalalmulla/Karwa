@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,8 +6,10 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  Alert
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from 'expo-router';
 
 import { useAuth } from "@/src/context/AuthContext";
 import { getTasksApi } from "@/src/api/taskCalls";
@@ -19,6 +21,8 @@ import type { Task } from "@/src/types/taskTypes";
 import type { Notification } from "@/src/types/notificationTypes";
 import { colors, spacing, typography } from "@/constants/theme";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import { getCurrentUser } from '@/src/api/auth';
+
 
 type TasksResponse = {
   success: boolean;
@@ -29,6 +33,9 @@ type TasksResponse = {
 export default function ProfileScreen() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const router = useRouter();
+  const { logout, token } = useAuth();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const {
     data: tasksData,
@@ -69,6 +76,34 @@ export default function ProfileScreen() {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
     },
   });
+
+
+  // Redirect to login if no token
+  useEffect(() => {
+    if (!token) {
+      console.log('No token found, redirecting to login');
+      router.replace('/(auth)/login');
+    }
+  }, [token, router]);
+
+  const { data, isLoading: currentUserLoading, error, refetch } = useQuery({
+    queryKey: ['currentUser'],
+    queryFn: getCurrentUser,
+    retry: 1,
+    enabled: !!token, // Only run query if token exists
+  });
+
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await logout();
+      router.replace('/(auth)/login');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to logout. Please try again.');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const tasks: Task[] = useMemo(() => {
     return tasksData?.success ? tasksData.data?.tasks ?? [] : [];

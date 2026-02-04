@@ -19,6 +19,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import { loginUser } from "@/src/api/auth";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -32,18 +33,18 @@ export default function Login() {
   const { setToken, setUser } = useAuth();
   const router = useRouter();
 
+  // console.log(email, password)
+
   const loginMutation = useMutation({
-    mutationFn: (data: LoginPayload) => loginApi(data),
+    mutationFn: (data: LoginPayload) => loginUser(data),
     onSuccess: (res) => {
-      if (!res.success || !res.data) {
-        Alert.alert("Login Failed", res.error || "An error occurred");
-        return;
+      if (res && res.token) {
+        setToken(res.token);
+        setUser(res.user);
+        router.replace("/(main)/(tabs)");
+      } else {
+        Alert.alert("Login Failed", "Invalid response from server");
       }
-
-      setToken(res.data.token);
-      setUser(res.data.user);
-
-      router.replace("/(main)/(tabs)");
     },
     onError: (error: unknown) => {
       const message =

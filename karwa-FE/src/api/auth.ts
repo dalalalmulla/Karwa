@@ -38,7 +38,8 @@ export interface LoginResponse {
     user: {
       _id: string;
       email: string;
-      name?: string;
+      firstName?: string;
+      lastName?: string;
     };
     token: string;
   };
@@ -74,10 +75,14 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
 
 export const loginUser = async (data: LoginData): Promise<LoginResponse['data']> => {
   try {
+    console.log("first")
+    console.log(data)
     const response = await instance.post<LoginResponse>('/auth/login', {
       email: data.email,
       password: data.password,
     });
+
+    console.log(response)
 
     if (response.data.success && response.data.data.token) {
       // Store token in SecureStore
@@ -106,6 +111,7 @@ export interface GetCurrentUserResponse {
       ratingAverage?: number;
       completedTasksCount?: number;
       earnedPoints?: number;
+      notificationCount?: number;
       createdAt: string;
       updatedAt: string;
     };
@@ -116,7 +122,7 @@ export interface GetCurrentUserResponse {
 export const getCurrentUser = async (): Promise<GetCurrentUserResponse['data']> => {
   try {
     const response = await instance.get<GetCurrentUserResponse>('/auth/me');
-    
+
     if (!response.data.success) {
       throw new Error(response.data.error || 'Failed to fetch user profile');
     }

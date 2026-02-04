@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, FlatList, RefreshControl } from "react-native";
+import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
 import { useRouter } from "expo-router";
@@ -11,37 +11,34 @@ import {
   getTasksApi,
   type Task,
   type GetTasksParams,
+  type GetTasksResponse,
 } from "@/src/api/taskCalls";
 
-type TasksResponse = {
-  success: boolean;
-  data?: { tasks: Task[] };
-  error?: string;
-};
-
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task, onPress }: { task: Task; onPress: () => void }) {
   return (
-    <Card style={styles.card}>
-      <View style={styles.cardTopRow}>
-        <Text style={styles.title} numberOfLines={1}>
-          {task.title}
-        </Text>
-        <View style={styles.pointsPill}>
-          <Text style={styles.pointsText}>{task.points} pts</Text>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <Card style={styles.card}>
+        <View style={styles.cardTopRow}>
+          <Text style={styles.title} numberOfLines={1}>
+            {task.title}
+          </Text>
+          <View style={styles.pointsPill}>
+            <Text style={styles.pointsText}>{task.points} pts</Text>
+          </View>
         </View>
-      </View>
 
-      <Text style={styles.desc} numberOfLines={2}>
-        {task.description}
-      </Text>
-
-      <View style={styles.metaRow}>
-        <Text style={styles.metaText}>💰 {task.money} KWD</Text>
-        <Text style={styles.metaText} numberOfLines={1}>
-          📍 {task.location}
+        <Text style={styles.desc} numberOfLines={2}>
+          {task.description}
         </Text>
-      </View>
-    </Card>
+
+        <View style={styles.metaRow}>
+          <Text style={styles.metaText}>💰 {task.money} KWD</Text>
+          <Text style={styles.metaText} numberOfLines={1}>
+            📍 {task.location}
+          </Text>
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 }
 
@@ -50,14 +47,22 @@ export default function HomeScreen() {
   const [filters, setFilters] = useState<GetTasksParams>({});
 
   const { data, isLoading, isRefetching, refetch, error } =
-    useQuery<TasksResponse>({
+    useQuery<GetTasksResponse>({
       queryKey: ["tasks", "open", filters],
-      queryFn: () => getTasksApi(filters) as unknown as Promise<TasksResponse>,
+      queryFn: async () => {
+        const params: GetTasksParams = {
+          ...filters,
+          status: "OPEN", // Always show OPEN tasks in browse screen
+        };
+        return await getTasksApi(params);
+      },
     });
 
   const tasks: Task[] = useMemo(() => {
-    const list = data?.success ? data.data?.tasks ?? [] : [];
-    return list.filter((t) => t.status === "OPEN");
+    if (!data?.success || !data.data?.tasks) {
+      return [];
+    }
+    return data.data.tasks.filter((t) => t.status === "OPEN");
   }, [data]);
 
   const handleFiltersChange = (newFilters: GetTasksParams) => {
@@ -110,7 +115,12 @@ export default function HomeScreen() {
       <FlatList
         data={tasks}
         keyExtractor={(item) => String(item._id)}
-        renderItem={({ item }) => <TaskCard task={item} />}
+        renderItem={({ item }) => (
+          <TaskCard
+            task={item}
+            onPress={() => router.push(`/(main)/task/${item._id}`)}
+          />
+        )}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         refreshControl={

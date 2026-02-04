@@ -12,6 +12,23 @@ export default function MainLayout() {
       <Stack.Screen name="tasks" />
       <Stack.Screen name="task/[id]" />
       <Stack.Screen 
+        name="profile" 
+        options={{ 
+          headerShown: true,
+          title: 'Profile',
+          headerStyle: {
+            backgroundColor: colors.background,
+          },
+          headerTintColor: colors.text,
+          headerTitleStyle: {
+            fontWeight: '700',
+          },
+          contentStyle: {
+            backgroundColor: colors.background,
+          },
+        }} 
+      />
+      <Stack.Screen 
         name="create-task" 
         options={{ 
           headerShown: true,
