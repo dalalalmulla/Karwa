@@ -1,18 +1,18 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-export type TaskType = 'indoor' | 'outdoor' | 'home_service' | 'car_service';
-export type TaskStatus = 'OPEN' | 'ASSIGNED' | 'IN_PROGRESS' | 'PENDING_CONFIRMATION' | 'COMPLETED' | 'CANCELLED';
+export type TaskType = 'indoor' | 'outdoor';
+export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export interface ITask extends Document {
   title: string;
   description: string;
-  pictures: string[]; // Array of image URLs
+  pictures: string[];
   money: number;
   location: string;
   type: TaskType;
-  points: number; // Auto-generated from backend
+  points: number;
   status: TaskStatus;
-  posterId: mongoose.Types.ObjectId; // Reference to User who created the task
+  posterId: mongoose.Types.ObjectId;
   assignedWorkerId?: mongoose.Types.ObjectId; // Reference to User assigned (only one)
   createdAt: Date;
   updatedAt: Date;
@@ -24,52 +24,42 @@ const taskSchema = new Schema<ITask>(
       type: String,
       required: [true, 'Title is required'],
       trim: true,
-      maxlength: [200, 'Title cannot exceed 200 characters'],
+      minlength: [3, 'Title must be at least 3 characters long'],
+      maxlength: [100, 'Title must not exceed 100 characters'],
     },
     description: {
       type: String,
       required: [true, 'Description is required'],
       trim: true,
-      maxlength: [2000, 'Description cannot exceed 2000 characters'],
+      minlength: [10, 'Description must be at least 10 characters long'],
     },
     pictures: {
       type: [String],
       default: [],
-      validate: {
-        validator: (pics: string[]) => pics.length <= 10,
-        message: 'Maximum 10 pictures allowed',
-      },
     },
     money: {
       type: Number,
-      required: [true, 'Money amount is required'],
-      min: [0, 'Money amount must be positive'],
+      required: [true, 'Amount in KWD is required'],
+      min: [0, 'Amount in KWD must be positive'],
     },
     location: {
       type: String,
       required: [true, 'Location is required'],
       trim: true,
-      maxlength: [200, 'Location cannot exceed 200 characters'],
     },
     type: {
       type: String,
+      enum: ['indoor', 'outdoor'],
       required: [true, 'Task type is required'],
-      enum: {
-        values: ['indoor', 'outdoor', 'home_service', 'car_service'],
-        message: 'Task type must be one of: indoor, outdoor, home_service, car_service',
-      },
     },
     points: {
       type: Number,
-      required: true,
+      default: 0,
       min: [0, 'Points must be positive'],
     },
     status: {
       type: String,
-      enum: {
-        values: ['OPEN', 'ASSIGNED', 'IN_PROGRESS', 'PENDING_CONFIRMATION', 'COMPLETED', 'CANCELLED'],
-        message: 'Status must be one of: OPEN, ASSIGNED, IN_PROGRESS, PENDING_CONFIRMATION, COMPLETED, CANCELLED',
-      },
+      enum: ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
       default: 'OPEN',
     },
     posterId: {
@@ -88,14 +78,11 @@ const taskSchema = new Schema<ITask>(
   }
 );
 
-// Indexes for faster queries
+// Indexes for better query performance
 taskSchema.index({ posterId: 1 });
 taskSchema.index({ status: 1 });
 taskSchema.index({ type: 1 });
-taskSchema.index({ assignedWorkerId: 1 });
-taskSchema.index({ createdAt: -1 }); // For marketplace sorting
-taskSchema.index({ money: 1 }); // For money range filtering
-taskSchema.index({ location: 'text' }); // For location search
+taskSchema.index({ createdAt: -1 });
 
 const Task = mongoose.model<ITask>('Task', taskSchema);
 

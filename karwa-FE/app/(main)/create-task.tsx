@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -8,71 +8,86 @@ import {
   Platform,
   Alert,
   TouchableOpacity,
-} from "react-native";
-import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { colors, spacing, typography, borderRadius } from "@/constants/theme";
-import Input from "@/components/ui/Input";
-import Button from "@/components/ui/Button";
-import { createTaskApi } from "@/src/api/taskCalls";
-import type { CreateTaskData, TaskType } from "@/src/types/taskTypes";
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMutation } from '@tanstack/react-query';
+import { colors, spacing, typography, borderRadius } from '@/constants/theme';
+import Input from '@/components/ui/Input';
+import Button from '@/components/ui/Button';
+import { createTask, CreateTaskData, TaskType } from '@/src/api/tasks';
 
-const TASK_TYPES: { value: TaskType; label: string }[] = [
-  { value: "indoor", label: "Indoor" },
-  { value: "outdoor", label: "Outdoor" },
-  { value: "home_service", label: "Home Service" },
-  { value: "car_service", label: "Car Service" },
+const TASK_TYPES: { label: string; value: TaskType }[] = [
+  { label: 'Indoor', value: 'indoor' },
+  { label: 'Outdoor', value: 'outdoor' },
 ];
 
 export default function CreateTaskScreen() {
   const router = useRouter();
   const [formData, setFormData] = useState<CreateTaskData>({
-    title: "",
-    description: "",
+    title: '',
+    description: '',
     pictures: [],
     money: 0,
-    location: "",
-    type: "indoor",
+    location: '',
+    type: 'indoor',
   });
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof CreateTaskData, string>>
-  >({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateTaskData, string>>>({});
+  const [pictureInput, setPictureInput] = useState('');
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof CreateTaskData, string>> = {};
 
     if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
+      newErrors.title = 'Title is required';
+    } else if (formData.title.trim().length < 3) {
+      newErrors.title = 'Title must be at least 3 characters';
     }
 
     if (!formData.description.trim()) {
-      newErrors.description = "Description is required";
+      newErrors.description = 'Description is required';
     } else if (formData.description.trim().length < 10) {
-      newErrors.description = "Description must be at least 10 characters";
+      newErrors.description = 'Description must be at least 10 characters';
     }
 
     if (!formData.money || formData.money <= 0) {
-      newErrors.money = "Money amount must be greater than 0";
+      newErrors.money = 'Amount in KWD must be greater than 0';
     }
 
     if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
+      newErrors.location = 'Location is required';
     }
 
     if (!formData.type) {
-      newErrors.type = "Task type is required";
+      newErrors.type = 'Task type is required';
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const mutation = useMutation({
-    mutationFn: (data: CreateTaskData) => createTaskApi(data),
-    onSuccess: () => {
-      Alert.alert("Success", "Task created successfully!", [
+  const handleAddPicture = () => {
+    if (pictureInput.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        pictures: [...(prev.pictures || []), pictureInput.trim()],
+      }));
+      setPictureInput('');
+    }
+  };
+
+  const handleRemovePicture = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      pictures: prev.pictures?.filter((_, i) => i !== index) || [],
+    }));
+  };
+
+  const createTaskMutation = useMutation({
+    mutationFn: (data: CreateTaskData) => createTask(data),
+    onSuccess: (data) => {
+      Alert.alert('Success', 'Task created successfully!', [
         {
-          text: "OK",
+          text: 'OK',
           onPress: () => {
             router.back();
           },
@@ -80,10 +95,7 @@ export default function CreateTaskScreen() {
       ]);
     },
     onError: (error: Error) => {
-      Alert.alert(
-        "Failed",
-        error.message || "Failed to create task. Please try again."
-      );
+      Alert.alert('Error', error.message || 'Failed to create task');
     },
   });
 
@@ -92,126 +104,141 @@ export default function CreateTaskScreen() {
       return;
     }
 
-    mutation.mutate({
-      ...formData,
-      money: Number(formData.money),
-    });
+    createTaskMutation.mutate(formData);
   };
 
-  const handleChange = (
-    field: keyof CreateTaskData,
-    value: string | number | TaskType
-  ) => {
-    setFormData((prev: CreateTaskData) => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof CreateTaskData, value: string | number | TaskType) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors((prev: Partial<Record<keyof CreateTaskData, string>>) => ({
-        ...prev,
-        [field]: undefined,
-      }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-    >
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
+        style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
         <View style={styles.content}>
-          <Text style={styles.title}>Create Task</Text>
-          <Text style={styles.subtitle}>Post a task to find a worker</Text>
+          <Text style={styles.title}>Create New Task</Text>
+          <Text style={styles.subtitle}>Fill in the details to post your task</Text>
 
           <View style={styles.form}>
             <Input
-              label="Title"
+              label="Title *"
               placeholder="Enter task title"
               value={formData.title}
-              onChangeText={(value) => handleChange("title", value)}
+              onChangeText={(value) => handleChange('title', value)}
               error={errors.title}
-              maxLength={200}
+              maxLength={100}
             />
 
             <Input
-              label="Description"
-              placeholder="Describe the task in detail"
+              label="Description *"
+              placeholder="Describe your task in detail"
               value={formData.description}
-              onChangeText={(value) => handleChange("description", value)}
+              onChangeText={(value) => handleChange('description', value)}
               error={errors.description}
               multiline
               numberOfLines={4}
               textAlignVertical="top"
-              maxLength={2000}
+              style={styles.textArea}
             />
 
-            <View style={styles.section}>
-              <Text style={styles.label}>Money (KWD)</Text>
-              <Input
-                placeholder="0.000"
-                value={formData.money.toString()}
-                onChangeText={(value) => {
-                  const numValue = parseFloat(value) || 0;
-                  handleChange("money", numValue);
-                }}
-                error={errors.money}
-                keyboardType="decimal-pad"
-                containerStyle={styles.inputContainer}
-              />
+            <View style={styles.pictureSection}>
+              <Text style={styles.label}>Pictures (Optional)</Text>
+              <View style={styles.pictureInputRow}>
+                <Input
+                  placeholder="Enter image URL"
+                  value={pictureInput}
+                  onChangeText={setPictureInput}
+                  containerStyle={styles.pictureInput}
+                  style={styles.pictureInputField}
+                />
+                <Button
+                  title="Add"
+                  onPress={handleAddPicture}
+                  variant="secondary"
+                  style={styles.addButton}
+                />
+              </View>
+              {formData.pictures && formData.pictures.length > 0 && (
+                <View style={styles.pictureList}>
+                  {formData.pictures.map((pic, index) => (
+                    <View key={index} style={styles.pictureItem}>
+                      <Text style={styles.pictureText} numberOfLines={1}>
+                        {pic}
+                      </Text>
+                      <TouchableOpacity
+                        onPress={() => handleRemovePicture(index)}
+                        style={styles.removeButton}>
+                        <Text style={styles.removeButtonText}>×</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
 
             <Input
-              label="Location"
-              placeholder="Enter task location"
-              value={formData.location}
-              onChangeText={(value) => handleChange("location", value)}
-              error={errors.location}
-              maxLength={200}
+              label="Money (KWD) *"
+              placeholder="Enter amount in Kuwaiti Dinar"
+              value={formData.money.toString()}
+              onChangeText={(value) => {
+                const numValue = parseFloat(value) || 0;
+                handleChange('money', numValue);
+              }}
+              error={errors.money}
+              keyboardType="numeric"
             />
 
-            <View style={styles.section}>
-              <Text style={styles.label}>Task Type</Text>
-              <View style={styles.typeContainer}>
-                {TASK_TYPES.map((taskType) => (
+            <Input
+              label="Location *"
+              placeholder="Enter task location"
+              value={formData.location}
+              onChangeText={(value) => handleChange('location', value)}
+              error={errors.location}
+            />
+
+            <View style={styles.pickerContainer}>
+              <Text style={styles.label}>Task Type *</Text>
+              <View style={styles.typeSelector}>
+                {TASK_TYPES.map((type) => (
                   <TouchableOpacity
-                    key={taskType.value}
+                    key={type.value}
                     style={[
                       styles.typeButton,
-                      formData.type === taskType.value &&
-                        styles.typeButtonActive,
+                      formData.type === type.value && styles.typeButtonSelected,
                     ]}
-                    onPress={() => handleChange("type", taskType.value)}
-                  >
+                    onPress={() => handleChange('type', type.value)}>
                     <Text
                       style={[
                         styles.typeButtonText,
-                        formData.type === taskType.value &&
-                          styles.typeButtonTextActive,
-                      ]}
-                    >
-                      {taskType.label}
+                        formData.type === type.value && styles.typeButtonTextSelected,
+                      ]}>
+                      {type.label}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              {errors.type && (
-                <Text style={styles.errorText}>{errors.type}</Text>
-              )}
+              {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
             </View>
 
             <View style={styles.infoBox}>
               <Text style={styles.infoText}>
-                Points will be automatically calculated based on the money
-                amount.
+                Points will be automatically calculated based on task type and amount in KWD.
               </Text>
             </View>
 
             <Button
-              title="Create Task"
+              title={createTaskMutation.isPending ? 'Creating...' : 'Create Task'}
               onPress={handleSubmit}
-              loading={mutation.isPending}
+              loading={createTaskMutation.isPending}
+              disabled={createTaskMutation.isPending}
               style={styles.submitButton}
             />
           </View>
@@ -226,14 +253,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  scrollView: {
+    flex: 1,
+  },
   scrollContent: {
+    paddingBottom: spacing.xl * 2,
     flexGrow: 1,
   },
   content: {
-    flex: 1,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xl,
+    paddingTop: spacing.lg,
   },
   title: {
     ...typography.title,
@@ -246,45 +275,105 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xl,
   },
   form: {
-    flex: 1,
+    marginTop: spacing.md,
   },
-  section: {
+  textArea: {
+    minHeight: 100,
+    paddingTop: 14,
+  },
+  pictureSection: {
     marginBottom: spacing.md,
+  },
+  pictureInputRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    alignItems: 'flex-start',
+  },
+  pictureInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  pictureInputField: {
+    marginBottom: 0,
+  },
+  addButton: {
+    marginTop: 24,
+    minWidth: 80,
+  },
+  pictureList: {
+    marginTop: spacing.sm,
+    gap: spacing.xs,
+  },
+  pictureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.gray100,
+    padding: spacing.sm,
+    borderRadius: borderRadius.md,
+    marginBottom: spacing.xs,
+  },
+  pictureText: {
+    ...typography.caption,
+    color: colors.text,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  removeButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.danger,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  pickerContainer: {
+    marginBottom: spacing.lg,
   },
   label: {
     fontSize: typography.caption.fontSize,
-    fontWeight: "500",
+    fontWeight: '500',
     color: colors.text,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
-  inputContainer: {
-    marginBottom: 0,
-  },
-  typeContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm,
-    marginTop: spacing.xs,
+  typeSelector: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    justifyContent: 'space-between',
   },
   typeButton: {
-    paddingVertical: spacing.sm,
+    flex: 1,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
     borderRadius: borderRadius.md,
     borderWidth: 1.5,
     borderColor: colors.border,
     backgroundColor: colors.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 50,
   },
-  typeButtonActive: {
+  typeButtonSelected: {
     borderColor: colors.primary,
     backgroundColor: colors.primary,
   },
   typeButtonText: {
-    ...typography.caption,
+    ...typography.body,
     color: colors.text,
-    fontWeight: "500",
+    fontWeight: '500',
   },
-  typeButtonTextActive: {
+  typeButtonTextSelected: {
     color: colors.white,
+  },
+  errorText: {
+    fontSize: typography.small.fontSize,
+    color: colors.danger,
+    marginTop: spacing.xs,
   },
   infoBox: {
     backgroundColor: colors.gray100,
@@ -296,12 +385,8 @@ const styles = StyleSheet.create({
     ...typography.caption,
     color: colors.secondary,
   },
-  errorText: {
-    fontSize: typography.small.fontSize,
-    color: colors.danger,
-    marginTop: spacing.xs,
-  },
   submitButton: {
     marginTop: spacing.md,
   },
 });
+

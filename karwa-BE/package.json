@@ -6,7 +6,6 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
     "start": "nodemon server.ts",
     "lint": "eslint src --ext .ts"
   },
