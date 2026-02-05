@@ -1,52 +1,54 @@
-import { Stack } from 'expo-router';
-import React from 'react';
-import { colors } from '@/constants/theme';
+import { Stack } from "expo-router";
+import React from "react";
+import { useTheme } from "@/src/context/ThemeContext";
 
 export default function MainLayout() {
+  const { theme } = useTheme();
+
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-      }}>
+      }}
+    >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="tasks" />
       <Stack.Screen name="task/[id]" />
-      <Stack.Screen 
-        name="profile" 
-        options={{ 
+      <Stack.Screen
+        name="profile"
+        options={{
           headerShown: true,
-          title: 'Profile',
+          title: "Profile",
           headerStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: theme.surface,
           },
-          headerTintColor: colors.text,
+          headerTintColor: theme.textTitle,
           headerTitleStyle: {
-            fontWeight: '700',
+            fontWeight: "700",
           },
           contentStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: theme.background,
           },
-        }} 
+        }}
       />
-      <Stack.Screen 
-        name="create-task" 
-        options={{ 
+      <Stack.Screen
+        name="create-task"
+        options={{
           headerShown: true,
-          title: 'Create Task',
-          presentation: 'card',
+          title: "Create Task",
+          presentation: "card",
           headerStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: theme.surface,
           },
-          headerTintColor: colors.text,
+          headerTintColor: theme.textTitle,
           headerTitleStyle: {
-            fontWeight: '700',
+            fontWeight: "700",
           },
           contentStyle: {
-            backgroundColor: colors.background,
+            backgroundColor: theme.background,
           },
-        }} 
+        }}
       />
     </Stack>
   );
 }
-

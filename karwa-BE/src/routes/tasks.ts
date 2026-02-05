@@ -9,6 +9,8 @@ import {
     confirmCompletion,
     submitRating,
     updateTaskStatus,
+    updateTask,
+    deleteTask,
 } from '../controllers/taskController';
 import { authenticate } from '../middleware/authenticate';
 
@@ -24,6 +26,8 @@ router.patch('/:id/mark-complete', authenticate, markCompleteByWorker);
 router.patch('/:id/complete', authenticate, confirmCompletion);
 router.patch('/:id/status', authenticate, updateTaskStatus);
 router.post('/:id/rate', authenticate, submitRating);
+router.put('/:id', authenticate, updateTask);
+router.delete('/:id', authenticate, deleteTask);
 
 export default router;
 

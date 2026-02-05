@@ -239,7 +239,7 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
     }
 
     const task = await Task.findById(id)
-      .populate('posterId', 'firstName lastName email')
+      .populate('posterId', 'firstName lastName email rating')
       .populate('assignedWorkerId', 'firstName lastName email rating');
 
     if (!task) {
@@ -248,9 +248,14 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
     }
 
     let hasRatedByPoster = false;
+    let hasApplied = false;
     if (q.user?._id) {
       const ratingExists = await Rating.exists({ taskId: id, raterId: q.user._id });
       hasRatedByPoster = !!ratingExists;
+
+      // Check if current user has applied to this task
+      const applicationExists = await Application.exists({ taskId: id, applicantId: q.user._id });
+      hasApplied = !!applicationExists;
     }
 
     const applications = await Application.find({ taskId: id, status: 'PENDING' })
@@ -300,6 +305,7 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
         },
         applicants: applicantsFormatted,
         hasRatedByPoster,
+        hasApplied,
       },
     });
   } catch (error) {
@@ -708,7 +714,7 @@ export const updateTaskStatus = async (req: Request, res: Response): Promise<voi
 
     // Validate status transitions
     const currentStatus = task.status;
-    
+
     // Define valid transitions
     const validTransitions: Record<string, string[]> = {
       'OPEN': ['IN_PROGRESS', 'CANCELLED'],
@@ -847,6 +853,193 @@ export const submitRating = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({
       success: false,
       error: 'Failed to submit rating',
+    });
+  }
+};
+
+// Update task details
+export const updateTask = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const userId = q.user?._id;
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
+      return;
+    }
+
+    const { id: taskId } = req.params;
+    const { title, description, pictures, money, location, type } = req.body;
+
+    if (!taskId || !mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ success: false, error: 'Valid task ID is required' });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ success: false, error: 'Task not found' });
+      return;
+    }
+
+    // Only the poster can update the task
+    if (task.posterId.toString() !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Only the task poster can update the task',
+      });
+      return;
+    }
+
+    // Cannot update if task is already assigned or completed
+    if (task.status !== 'OPEN') {
+      res.status(400).json({
+        success: false,
+        error: 'Task can only be updated when status is OPEN',
+      });
+      return;
+    }
+
+    // Update fields if provided
+    if (title !== undefined) task.title = title.trim();
+    if (description !== undefined) task.description = description.trim();
+    if (pictures !== undefined) task.pictures = Array.isArray(pictures) ? pictures : [];
+    if (money !== undefined) {
+      if (money <= 0) {
+        res.status(400).json({
+          success: false,
+          error: 'Money amount in KWD must be greater than 0',
+        });
+        return;
+      }
+      task.money = Number(money);
+    }
+    if (location !== undefined) task.location = location.trim();
+    if (type !== undefined) {
+      const validTypes: TaskType[] = ['indoor', 'outdoor'];
+      if (!validTypes.includes(type)) {
+        res.status(400).json({
+          success: false,
+          error: 'Invalid task type. Must be one of: indoor, outdoor',
+        });
+        return;
+      }
+      task.type = type as TaskType;
+    }
+
+    // Recalculate points if money or type changed
+    if (money !== undefined || type !== undefined) {
+      task.points = calculatePoints(task.type, task.money);
+    }
+
+    await task.save();
+
+    const updated = await Task.findById(taskId)
+      .populate('posterId', 'firstName lastName email rating')
+      .populate('assignedWorkerId', 'firstName lastName email rating');
+
+    const posterFormatted = formatPopulatedUser(updated!.posterId);
+    const assignedWorkerFormatted = updated!.assignedWorkerId
+      ? formatPopulatedUser(updated!.assignedWorkerId)
+      : undefined;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        task: {
+          _id: updated!._id,
+          title: updated!.title,
+          description: updated!.description,
+          pictures: updated!.pictures,
+          money: updated!.money,
+          location: updated!.location,
+          type: updated!.type,
+          points: updated!.points,
+          status: updated!.status,
+          posterId: posterFormatted,
+          assignedWorkerId: assignedWorkerFormatted,
+          createdAt: updated!.createdAt,
+          updatedAt: updated!.updatedAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Update task error:', error);
+    if (error instanceof mongoose.Error.ValidationError) {
+      const errors = Object.values(error.errors).map((e) => e.message);
+      res.status(400).json({
+        success: false,
+        error: errors.join(', '),
+      });
+      return;
+    }
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update task',
+    });
+  }
+};
+
+// Delete task
+export const deleteTask = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const userId = q.user?._id;
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
+      return;
+    }
+
+    const { id: taskId } = req.params;
+
+    if (!taskId || !mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ success: false, error: 'Valid task ID is required' });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ success: false, error: 'Task not found' });
+      return;
+    }
+
+    // Only the poster can delete the task
+    if (task.posterId.toString() !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Only the task poster can delete the task',
+      });
+      return;
+    }
+
+    // Cannot delete if task is already assigned or completed
+    if (task.status !== 'OPEN') {
+      res.status(400).json({
+        success: false,
+        error: 'Task can only be deleted when status is OPEN',
+      });
+      return;
+    }
+
+    // Delete related applications
+    await Application.deleteMany({ taskId });
+
+    // Delete related ratings (if any)
+    await Rating.deleteMany({ taskId });
+
+    // Delete the task
+    await Task.findByIdAndDelete(taskId);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        message: 'Task deleted successfully',
+      },
+    });
+  } catch (error) {
+    console.error('Delete task error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete task',
     });
   }
 };

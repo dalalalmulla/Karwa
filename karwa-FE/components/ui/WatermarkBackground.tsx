@@ -1,7 +1,7 @@
 import React from "react";
 import { View, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import { Image } from "expo-image";
-import { colors } from "@/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
 
 interface WatermarkBackgroundProps {
   children: React.ReactNode;
@@ -12,9 +12,12 @@ export default function WatermarkBackground({
   children,
   style,
 }: WatermarkBackgroundProps) {
+  const { theme } = useTheme();
+
   return (
-    <View style={[styles.container, style]}>
-      {/* Watermark Logo */}
+    <View
+      style={[styles.container, { backgroundColor: theme.background }, style]}
+    >
       <View style={styles.watermarkContainer} pointerEvents="none">
         <Image
           source={require("../../assets/images/Karwa.png")}
@@ -22,7 +25,6 @@ export default function WatermarkBackground({
           contentFit="contain"
         />
       </View>
-      {/* Content */}
       {children}
     </View>
   );
@@ -30,7 +32,7 @@ export default function WatermarkBackground({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: colors.background,
+    flex: 1,
   },
   watermarkContainer: {
     ...StyleSheet.absoluteFillObject,

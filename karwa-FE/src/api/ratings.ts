@@ -8,13 +8,14 @@ import type {
 export const createOrUpdateRating = async (
   data: CreateRatingData
 ): Promise<CreateRatingResponse['data']> => {
+  console.log(data)
   try {
     const response = await instance.post<CreateRatingResponse>('/ratings', data);
 
     if (!response.data.success) {
       throw new Error(response.data.error || 'Failed to save rating');
     }
-
+    console.log(response.data.data)
     return response.data.data;
   } catch (error: unknown) {
     if (error instanceof Error) {

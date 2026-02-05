@@ -7,7 +7,8 @@ import {
   TextInputProps,
   ViewStyle,
 } from "react-native";
-import { colors, spacing, borderRadius, typography } from "@/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing, borderRadius } from "@/constants/Karwa.theme";
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -26,6 +27,7 @@ export default function Input({
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const hasError = !!error;
+  const { theme, typography } = useTheme();
 
   const handleFocus = (e: any) => {
     setIsFocused(true);
@@ -39,20 +41,48 @@ export default function Input({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && (
+        <Text
+          style={[
+            styles.label,
+            { color: theme.text, fontSize: typography.caption.fontSize },
+          ]}
+        >
+          {label}
+        </Text>
+      )}
       <TextInput
         style={[
           styles.input,
-          isFocused && styles.inputFocused,
-          hasError && styles.inputError,
+          {
+            backgroundColor: theme.surface,
+            borderColor: hasError
+              ? theme.danger
+              : isFocused
+              ? theme.primary
+              : theme.border,
+            borderWidth: isFocused || hasError ? 2 : 1.5,
+            color: theme.text,
+            fontSize: typography.body.fontSize,
+            borderRadius: borderRadius.lg,
+          },
           style,
         ]}
-        placeholderTextColor={colors.textMuted}
+        placeholderTextColor={theme.textMuted}
         onFocus={handleFocus}
         onBlur={handleBlur}
         {...props}
       />
-      {hasError && <Text style={styles.errorText}>{error}</Text>}
+      {hasError && (
+        <Text
+          style={[
+            styles.errorText,
+            { color: theme.danger, fontSize: typography.small.fontSize },
+          ]}
+        >
+          {error}
+        </Text>
+      )}
     </View>
   );
 }
@@ -62,31 +92,15 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   label: {
-    fontSize: typography.caption.fontSize,
     fontWeight: "500",
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   input: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    fontSize: typography.body.fontSize,
-    color: colors.text,
-    minHeight: 44,
-  },
-  inputFocused: {
-    borderColor: colors.primary,
-  },
-  inputError: {
-    borderColor: colors.danger,
+    paddingVertical: spacing.md,
+    minHeight: 48,
   },
   errorText: {
-    fontSize: typography.small.fontSize,
-    color: colors.danger,
     marginTop: spacing.xs,
   },
 });

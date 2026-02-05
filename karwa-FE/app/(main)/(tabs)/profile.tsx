@@ -9,13 +9,17 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { Image } from "expo-image";
 
 import { useAuth } from "@/src/context/AuthContext";
 import { useTheme } from "@/src/context/ThemeContext";
+import { spacing, borderRadius, shadows } from "@/constants/Karwa.theme";
 import { getTasksApi } from "@/src/api/taskCalls";
 import {
   getNotificationsApi,
@@ -24,8 +28,11 @@ import {
 import type { Task } from "@/src/types/taskTypes";
 import type { Notification } from "@/src/types/notificationTypes";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import AppHeader from "@/components/ui/AppHeader";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import EmptyState from "@/components/ui/EmptyState";
 import { getCurrentUser } from "@/src/api/auth";
-import { spacing } from "@/constants/theme";
 
 type TasksResponse = {
   success: boolean;
@@ -81,10 +88,8 @@ export default function ProfileScreen() {
     },
   });
 
-  // Redirect to login if no token
   useEffect(() => {
     if (!token) {
-      console.log("No token found, redirecting to login");
       router.replace("/(auth)/login");
     }
   }, [token, router]);
@@ -106,7 +111,7 @@ export default function ProfileScreen() {
       setIsLoggingOut(true);
       await logout();
       router.replace("/(auth)/login");
-    } catch (error) {
+    } catch {
       Alert.alert("Error", "Failed to logout. Please try again.");
     } finally {
       setIsLoggingOut(false);
@@ -125,7 +130,7 @@ export default function ProfileScreen() {
       else if (task.status === "CANCELLED") acc.cancelled += 1;
       return acc;
     },
-    { completed: 0, inProgress: 0, open: 0, cancelled: 0 },
+    { completed: 0, inProgress: 0, open: 0, cancelled: 0 }
   );
 
   const handleMarkAllRead = () => {
@@ -155,84 +160,59 @@ export default function ProfileScreen() {
     return anyUser?.rating ?? null;
   }, [user]);
 
-  const renderNotification = ({ item }: { item: Notification }) => {
-    return (
-      <View
+  const renderNotification = ({ item }: { item: Notification }) => (
+    <Card
+      variant="outlined"
+      padding="medium"
+      style={[!item.read && { borderLeftWidth: 3, borderLeftColor: theme.primary }]}
+    >
+      <View style={styles.notifTopRow}>
+        <Text
+          style={[
+            styles.notifTitle,
+            { color: theme.text, fontSize: typography.body.fontSize },
+          ]}
+          numberOfLines={1}
+        >
+          {item.title}
+        </Text>
+        {!item.read && <Badge label="NEW" variant="primary" size="small" />}
+      </View>
+      <Text
         style={[
-          styles.notifItem,
-          { backgroundColor: theme.surface, borderColor: theme.border },
-          !item.read && [styles.notifUnread, { borderColor: theme.primary }],
+          styles.notifMsg,
+          {
+            color: theme.textSecondary,
+            fontSize: typography.caption.fontSize,
+          },
+        ]}
+        numberOfLines={2}
+      >
+        {item.message}
+      </Text>
+      <Text
+        style={[
+          styles.notifDate,
+          { color: theme.textMuted, fontSize: typography.small.fontSize },
         ]}
       >
-        <View style={styles.notifTopRow}>
-          <Text
-            style={[
-              styles.notifTitle,
-              { color: theme.text, fontSize: typography.body.fontSize },
-            ]}
-            numberOfLines={1}
-          >
-            {item.title}
-          </Text>
-          {!item.read && (
-            <Text
-              style={[
-                styles.badge,
-                { color: theme.white, backgroundColor: theme.primary },
-              ]}
-            >
-              NEW
-            </Text>
-          )}
-        </View>
-        <Text
-          style={[
-            styles.notifMsg,
-            {
-              color: theme.textSecondary,
-              fontSize: typography.caption.fontSize,
-            },
-          ]}
-          numberOfLines={2}
-        >
-          {item.message}
-        </Text>
-        <Text
-          style={[
-            styles.notifDate,
-            { color: theme.textMuted, fontSize: typography.small.fontSize },
-          ]}
-        >
-          {new Date(item.createdAt).toLocaleString()}
-        </Text>
-      </View>
-    );
-  };
+        {new Date(item.createdAt).toLocaleString()}
+      </Text>
+    </Card>
+  );
 
   const isRefreshing = isTasksRefetching || isNotificationsRefetching;
   const isLoading = isTasksLoading || isNotificationsLoading;
 
   const ListHeader = () => (
     <>
-      {/* App Branding Header */}
-      <View
-        style={[
-          styles.brandingHeader,
-          { backgroundColor: theme.surface, borderBottomColor: theme.border },
-        ]}
-      >
-        <Text
-          style={[
-            styles.pageTitle,
-            { color: theme.textTitle, fontSize: typography.title.fontSize },
-          ]}
-        >
-          Profile
-        </Text>
-        <View style={styles.brandingRight}>
-          {/* Logout Button */}
+      {/* Header Row */}
+      <AppHeader
+        title="Profile"
+        showBranding
+        rightElement={
           <TouchableOpacity
-            style={[styles.logoutButton]}
+            style={styles.logoutButton}
             onPress={() => {
               Alert.alert("Logout", "Are you sure you want to logout?", [
                 { text: "Cancel", style: "cancel" },
@@ -246,42 +226,23 @@ export default function ProfileScreen() {
             disabled={isLoggingOut}
           >
             {isLoggingOut ? (
-              <ActivityIndicator size="small" color={theme.white} />
+              <ActivityIndicator size="small" color={theme.primary} />
             ) : (
-              <>
-                <AntDesign name="logout" size={24} color="#4A9AD6" />
-              </>
+              <AntDesign name="logout" size={20} color={theme.primary} />
             )}
           </TouchableOpacity>
-          {/* App Logo and Name */}
-          <View style={styles.branding}>
-            <Image
-              source={require("../../../assets/images/Karwa.png")}
-              style={styles.logo}
-              contentFit="contain"
-            />
-            <Text
-              style={[
-                styles.appName,
-                { color: theme.primary, fontSize: typography.body.fontSize },
-              ]}
-            >
-              Karwa
-            </Text>
-          </View>
-        </View>
-      </View>
+        }
+      />
 
-      {/* Profile Info */}
-      <View style={[styles.profileHeader, { backgroundColor: theme.surface }]}>
-        <View style={styles.profileInfo}>
+      {/* Profile Info Card */}
+      <View style={styles.profileSection}>
+        <Card variant="elevated" padding="large">
           <Text
             style={[
               styles.name,
               {
-                color: "#4A9AD6",
+                color: theme.textTitle,
                 fontSize: typography.title.fontSize,
-                fontWeight: "700",
               },
             ]}
           >
@@ -289,10 +250,10 @@ export default function ProfileScreen() {
           </Text>
           <Text
             style={[
-              styles.rating,
+              styles.ratingText,
               {
                 color: theme.textSecondary,
-                fontSize: typography.caption.fontSize,
+                fontSize: typography.body.fontSize,
               },
             ]}
           >
@@ -300,106 +261,61 @@ export default function ProfileScreen() {
               ? `⭐ ${userRating.toFixed(1)}`
               : "⭐ No rating yet"}
           </Text>
-        </View>
-        {unreadCount > 0 && (
-          <View style={[styles.unreadPill, { backgroundColor: theme.primary }]}>
-            <Text style={[styles.unreadText, { color: theme.white }]}>
-              {unreadCount}
-            </Text>
-          </View>
-        )}
+          {unreadCount > 0 && (
+            <Badge
+              label={`${unreadCount} unread`}
+              variant="primary"
+              size="small"
+              style={styles.unreadBadge}
+            />
+          )}
+        </Card>
       </View>
 
-      {/* Stats */}
-      <View
-        style={[
-          styles.stats,
-          { backgroundColor: theme.surface, borderBottomColor: theme.border },
-        ]}
-      >
-        <View style={styles.statItem}>
-          <Text
-            style={[
-              styles.statNumber,
-              { color: theme.primary, fontSize: typography.heading.fontSize },
-            ]}
-          >
-            {stats.open}
-          </Text>
-          <Text
-            style={[
-              styles.statLabel,
-              { color: theme.textMuted, fontSize: typography.small.fontSize },
-            ]}
-          >
-            Open
-          </Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-        <View style={styles.statItem}>
-          <Text
-            style={[
-              styles.statNumber,
-              { color: theme.primary, fontSize: typography.heading.fontSize },
-            ]}
-          >
-            {stats.inProgress}
-          </Text>
-          <Text
-            style={[
-              styles.statLabel,
-              { color: theme.textMuted, fontSize: typography.small.fontSize },
-            ]}
-          >
-            Active
-          </Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-        <View style={styles.statItem}>
-          <Text
-            style={[
-              styles.statNumber,
-              { color: theme.primary, fontSize: typography.heading.fontSize },
-            ]}
-          >
-            {stats.completed}
-          </Text>
-          <Text
-            style={[
-              styles.statLabel,
-              { color: theme.textMuted, fontSize: typography.small.fontSize },
-            ]}
-          >
-            Done
-          </Text>
-        </View>
-        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
-        <View style={styles.statItem}>
-          <Text
-            style={[
-              styles.statNumber,
-              { color: theme.primary, fontSize: typography.heading.fontSize },
-            ]}
-          >
-            {stats.cancelled}
-          </Text>
-          <Text
-            style={[
-              styles.statLabel,
-              { color: theme.textMuted, fontSize: typography.small.fontSize },
-            ]}
-          >
-            Cancelled
-          </Text>
-        </View>
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
+        {[
+          { label: "Open", value: stats.open, variant: "info" as const },
+          { label: "Active", value: stats.inProgress, variant: "warning" as const },
+          { label: "Done", value: stats.completed, variant: "success" as const },
+          { label: "Cancelled", value: stats.cancelled, variant: "danger" as const },
+        ].map((stat) => (
+          <Card key={stat.label} variant="default" padding="small" style={styles.statCard}>
+            <Text
+              style={[
+                styles.statNumber,
+                {
+                  color: theme.primary,
+                  fontSize: typography.heading.fontSize,
+                },
+              ]}
+            >
+              {stat.value}
+            </Text>
+            <Text
+              style={[
+                styles.statLabel,
+                {
+                  color: theme.textMuted,
+                  fontSize: typography.small.fontSize,
+                },
+              ]}
+            >
+              {stat.label}
+            </Text>
+          </Card>
+        ))}
       </View>
 
       {/* Notifications Header */}
-      <View style={[styles.notifHeader, { backgroundColor: theme.background }]}>
+      <View style={styles.notifHeader}>
         <Text
           style={[
             styles.notifHeaderTitle,
-            { color: theme.textHeading, fontSize: typography.heading.fontSize },
+            {
+              color: theme.textHeading,
+              fontSize: typography.heading.fontSize,
+            },
           ]}
         >
           Notifications
@@ -436,9 +352,7 @@ export default function ProfileScreen() {
   );
 
   return (
-    <WatermarkBackground
-      style={[styles.container, { backgroundColor: theme.background }]}
-    >
+    <WatermarkBackground>
       <FlatList
         data={notifications}
         keyExtractor={(item) => item._id}
@@ -455,27 +369,12 @@ export default function ProfileScreen() {
           />
         }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text
-              style={[
-                styles.emptyTitle,
-                { color: theme.text, fontSize: typography.heading.fontSize },
-              ]}
-            >
-              {isLoading ? "Loading..." : "No notifications"}
-            </Text>
-            <Text
-              style={[
-                styles.emptySub,
-                {
-                  color: theme.textSecondary,
-                  fontSize: typography.body.fontSize,
-                },
-              ]}
-            >
-              {isLoading ? "Please wait" : "You're all caught up!"}
-            </Text>
-          </View>
+          <EmptyState
+            title={isLoading ? "Loading..." : "No notifications"}
+            message={
+              isLoading ? "Please wait" : "You're all caught up!"
+            }
+          />
         }
       />
     </WatermarkBackground>
@@ -483,132 +382,62 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   listContent: {
     paddingBottom: spacing.xl,
   },
+  logoutButton: {
+    padding: spacing.xs,
+  },
 
-  // Branding Header
-  brandingHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  /* Profile */
+  profileSection: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: 1,
-  },
-  pageTitle: {
-    fontWeight: "700",
-  },
-  brandingRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.md,
-  },
-  branding: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  logo: {
-    width: 28,
-    height: 28,
-  },
-  appName: {
-    fontWeight: "600",
-  },
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 6,
-    gap: spacing.xs,
-  },
-  logoutText: {
-    fontWeight: "600",
-  },
-
-  // Profile Header
-  profileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm,
-  },
-  profileInfo: {
-    flex: 1,
   },
   name: {
-    fontWeight: "600",
-  },
-  rating: {
-    marginTop: 2,
-  },
-  unreadPill: {
-    minWidth: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: spacing.sm,
-  },
-  unreadText: {
     fontWeight: "700",
-    fontSize: 11,
+    marginBottom: spacing.xs,
+  },
+  ratingText: {
+    marginBottom: spacing.xs,
+  },
+  unreadBadge: {
+    marginTop: spacing.sm,
   },
 
-  // Stats
-  stats: {
+  /* Stats */
+  statsRow: {
     flexDirection: "row",
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderBottomWidth: 1,
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+    marginTop: spacing.sm,
   },
-  statItem: {
+  statCard: {
     flex: 1,
     alignItems: "center",
-  },
-  statDivider: {
-    width: 1,
+    paddingVertical: spacing.md,
   },
   statNumber: {
-    fontWeight: "600",
+    fontWeight: "700",
   },
   statLabel: {
-    marginTop: 2,
+    marginTop: spacing.xs,
   },
 
-  // Notifications Header
+  /* Notifications */
   notifHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
+    marginTop: spacing.sm,
   },
   notifHeaderTitle: {
     fontWeight: "600",
   },
   markReadText: {
     fontWeight: "600",
-  },
-
-  // Notification Items
-  notifItem: {
-    marginHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-    padding: spacing.md,
-    borderRadius: spacing.sm,
-    borderWidth: 1,
-  },
-  notifUnread: {
-    borderLeftWidth: 3,
   },
   notifTopRow: {
     flexDirection: "row",
@@ -621,33 +450,11 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: spacing.sm,
   },
-  badge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-    borderRadius: 4,
-    fontWeight: "700",
-    fontSize: 10,
-    overflow: "hidden",
-  },
   notifMsg: {
     marginBottom: spacing.xs,
     lineHeight: 18,
   },
   notifDate: {},
-
-  // Empty State
-  empty: {
-    paddingTop: spacing.xl * 2,
-    alignItems: "center",
-    paddingHorizontal: spacing.md,
-  },
-  emptyTitle: {
-    marginBottom: spacing.xs,
-  },
-  emptySub: {
-    textAlign: "center",
-  },
-
   errorText: {
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,

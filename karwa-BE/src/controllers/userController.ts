@@ -12,7 +12,7 @@ import Task from '../models/Task';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, firstName, lastName, name, civilId } = req.body;
+    const { email, password, firstName, lastName, name, civilId, role } = req.body;
 
     // Handle name field - split into firstName and lastName if provided
     let finalFirstName = firstName;
@@ -47,6 +47,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+    // Validate role if provided
+    const validRoles = ['poster', 'worker', 'both'];
+    const userRole = role && validRoles.includes(role) ? role : 'both';
+
     // Create user
     const user = await User.create({
       email: email.toLowerCase(),
@@ -54,6 +58,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       firstName: finalFirstName,
       lastName: finalLastName,
       civilId: civilId?.trim(),
+      role: userRole,
     });
 
     // Generate token
@@ -72,6 +77,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
           firstName: user.firstName,
           lastName: user.lastName,
           civilId: user.civilId,
+          role: user.role,
         },
         token,
       },
@@ -155,6 +161,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role,
         },
         token,
       },
@@ -250,6 +257,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
+          role: user.role,
           ratingAverage: Math.round(ratingAverage * 10) / 10, // Round to 1 decimal place
           completedTasksCount,
           earnedPoints,
@@ -274,6 +282,77 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
     res.status(500).json({
       success: false,
       error: 'Failed to fetch user data',
+    });
+  }
+};
+
+export const updateUserRole = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const userId = q.user?._id;
+
+    if (!userId) {
+      res.status(401).json({
+        success: false,
+        error: 'User not authenticated',
+      });
+      return;
+    }
+
+    const { role } = req.body;
+
+    // Validate role
+    const validRoles = ['poster', 'worker', 'both'];
+    if (!role || !validRoles.includes(role)) {
+      res.status(400).json({
+        success: false,
+        error: 'Invalid role. Must be one of: poster, worker, both',
+      });
+      return;
+    }
+
+    // Update user role
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { role },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      res.status(404).json({
+        success: false,
+        error: 'User not found',
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        user: {
+          _id: user._id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Update user role error:', error);
+
+    if (error instanceof mongoose.Error.ValidationError) {
+      const errors = Object.values(error.errors).map((e: mongoose.Error.ValidatorError) => e.message);
+      res.status(400).json({
+        success: false,
+        error: errors.join(', '),
+      });
+      return;
+    }
+
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update user role. Please try again.',
     });
   }
 };

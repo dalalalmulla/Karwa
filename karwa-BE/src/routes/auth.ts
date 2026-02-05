@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { register, login, getCurrentUser } from '../controllers/userController';
+import { register, login, getCurrentUser, updateUserRole } from '../controllers/userController';
 import { authenticate } from '../middleware/authenticate';
 
 const router = Router();
@@ -8,7 +8,8 @@ const router = Router();
 router.post('/register', register);
 router.post('/login', login);
 
-// Protected route
+// Protected routes
 router.get('/me', authenticate, getCurrentUser);
+router.patch('/role', authenticate, updateUserRole);
 
 export default router;

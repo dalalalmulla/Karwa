@@ -9,12 +9,11 @@ import {
   Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
-import * as SecureStore from "expo-secure-store";
 import { useAuth } from "../../src/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
-import { loginApi } from "../../src/api/authCalls";
 import type { LoginPayload } from "../../src/api/authCalls";
-import { colors, spacing, typography } from "@/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing } from "@/constants/Karwa.theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
@@ -25,15 +24,13 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [visiblePassword, setVisiblePassword] = useState(false);
-
   const [errors, setErrors] = useState<
     Partial<Record<keyof LoginPayload, string>>
   >({});
 
   const { setToken, setUser } = useAuth();
   const router = useRouter();
-
-  // console.log(email, password)
+  const { theme, typography } = useTheme();
 
   const loginMutation = useMutation({
     mutationFn: (data: LoginPayload) => loginUser(data),
@@ -49,26 +46,21 @@ export default function Login() {
     onError: (error: unknown) => {
       const message =
         error instanceof Error ? error.message : "An error occurred";
-      console.log("Login Error Details:", error);
       Alert.alert("Login Failed", message);
     },
   });
 
   const handleLogin = () => {
     const newErrors: Partial<Record<keyof LoginPayload, string>> = {};
-
     if (!email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^\S+@\S+\.\S+$/.test(email)) {
       newErrors.email = "Please enter a valid email address";
     }
-
     if (!password) {
       newErrors.password = "Password is required";
     }
-
     setErrors(newErrors);
-
     if (Object.keys(newErrors).length === 0) {
       loginMutation.mutate({ email: email.toLowerCase(), password });
     }
@@ -77,32 +69,46 @@ export default function Login() {
   const handleChange = (field: keyof LoginPayload, value: string) => {
     if (field === "email") setEmail(value);
     if (field === "password") setPassword(value);
-
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
   return (
-    <WatermarkBackground style={styles.container}>
+    <WatermarkBackground>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.container}
+        style={styles.flex}
       >
         <View style={styles.contentContainer}>
-        <View style={styles.logoContainer}>
-          <Logo size={120} />
-        </View>
+          <View style={styles.logoContainer}>
+            <Logo size={120} />
+          </View>
 
-        <View>
-          <Text style={styles.headerTitle}>Welcome Back</Text>
-          <Text style={styles.headerSubtitle}>
+          <Text
+            style={[
+              styles.headerTitle,
+              {
+                color: theme.textTitle,
+                fontSize: typography.title.fontSize,
+              },
+            ]}
+          >
+            Welcome Back
+          </Text>
+          <Text
+            style={[
+              styles.headerSubtitle,
+              {
+                color: theme.textSecondary,
+                fontSize: typography.body.fontSize,
+              },
+            ]}
+          >
             Sign in to continue to Karwa
           </Text>
-        </View>
 
-        <View style={styles.formSection}>
-          <View style={styles.form}>
+          <View style={styles.formSection}>
             <Input
               label="Email"
               placeholder="Enter your email"
@@ -128,7 +134,15 @@ export default function Login() {
               style={styles.eyeButton}
               onPress={() => setVisiblePassword((v) => !v)}
             >
-              <Text style={styles.eyeButtonText}>
+              <Text
+                style={[
+                  styles.eyeButtonText,
+                  {
+                    color: theme.primary,
+                    fontSize: typography.small.fontSize,
+                  },
+                ]}
+              >
                 {visiblePassword ? "Hide" : "Show"} Password
               </Text>
             </TouchableOpacity>
@@ -140,52 +154,65 @@ export default function Login() {
               disabled={loginMutation.isPending}
               style={styles.button}
             />
-          </View>
 
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don&apos;t have an account?</Text>
-            <TouchableOpacity onPress={() => router.push("/(auth)/register")}>
-              <Text style={styles.linkText}>Create Account</Text>
-            </TouchableOpacity>
+            <View style={styles.footer}>
+              <Text
+                style={[
+                  styles.footerText,
+                  {
+                    color: theme.textSecondary,
+                    fontSize: typography.body.fontSize,
+                  },
+                ]}
+              >
+                Don&apos;t have an account?
+              </Text>
+              <TouchableOpacity
+                onPress={() => router.push("/(auth)/register")}
+              >
+                <Text
+                  style={[
+                    styles.linkText,
+                    {
+                      color: theme.primary,
+                      fontSize: typography.body.fontSize,
+                    },
+                  ]}
+                >
+                  Create Account
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
     </WatermarkBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  flex: {
     flex: 1,
   },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.lg,
+    paddingHorizontal: spacing.lg,
     justifyContent: "center",
   },
   logoContainer: {
     alignItems: "center",
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
   },
   headerTitle: {
-    ...typography.title,
-    color: colors.text,
+    fontWeight: "700",
     marginBottom: spacing.xs,
     textAlign: "center",
   },
   headerSubtitle: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xl,
     textAlign: "center",
   },
   formSection: {
-    width: "100%",
-  },
-  form: {
     width: "100%",
   },
   eyeButton: {
@@ -194,8 +221,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   eyeButtonText: {
-    ...typography.small,
-    color: colors.primary,
     fontWeight: "500",
   },
   button: {
@@ -204,17 +229,12 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
     alignItems: "center",
+    gap: spacing.xs,
   },
-  footerText: {
-    ...typography.body,
-    color: colors.textSecondary,
-    marginRight: spacing.xs,
-  },
+  footerText: {},
   linkText: {
-    ...typography.body,
-    color: colors.primary,
     fontWeight: "600",
   },
 });
