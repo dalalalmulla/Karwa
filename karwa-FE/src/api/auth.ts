@@ -59,8 +59,8 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
     });
 
     if (response.data.success && response.data.data.token) {
-      // Store token in SecureStore
-      await SecureStore.setItemAsync('token', response.data.data.token);
+      // Store token in SecureStore using consistent key
+      await saveToken(response.data.data.token);
     }
 
     return response.data.data;

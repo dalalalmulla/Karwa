@@ -4,7 +4,7 @@ export interface IRating extends Document {
   taskId: mongoose.Types.ObjectId;
   raterId: mongoose.Types.ObjectId;   // poster who rated
   ratedUserId: mongoose.Types.ObjectId; // worker who was rated
-  score: number; // 1-5
+  rate: number; // 1-5
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,11 +26,11 @@ const ratingSchema = new Schema<IRating>(
       ref: 'User',
       required: [true, 'Rated user ID is required'],
     },
-    score: {
+    rate: {
       type: Number,
-      required: [true, 'Score is required'],
-      min: [1, 'Score must be between 1 and 5'],
-      max: [5, 'Score must be between 1 and 5'],
+      required: [true, 'Rate is required'],
+      min: [1, 'Rate must be between 1 and 5'],
+      max: [5, 'Rate must be between 1 and 5'],
     },
   },
   {
@@ -39,7 +39,7 @@ const ratingSchema = new Schema<IRating>(
 );
 
 // One rating per task
-ratingSchema.index({ taskId: 1 }, { unique: true });
+ratingSchema.index({ taskId: 1, raterId: 1 }, { unique: true });
 ratingSchema.index({ ratedUserId: 1 });
 
 const Rating = mongoose.model<IRating>('Rating', ratingSchema);

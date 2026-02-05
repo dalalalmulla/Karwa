@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { View, Text, StyleSheet, FlatList, RefreshControl, TouchableOpacity } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing } from "@/constants/Karwa.theme";
 import Card from "@/components/ui/Card";
@@ -92,6 +93,7 @@ export default function HomeScreen() {
         };
         return await getTasksApi(params);
       },
+      refetchOnMount: 'always', // Refetch when screen comes into focus
     });
 
   const tasks: Task[] = useMemo(() => {
@@ -100,6 +102,13 @@ export default function HomeScreen() {
     }
     return data.data.tasks.filter((t) => t.status === "OPEN");
   }, [data]);
+
+  // Refetch tasks when screen comes into focus (e.g., returning from create-task)
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch])
+  );
 
   const handleFiltersChange = (newFilters: GetTasksParams) => {
     setFilters(newFilters);

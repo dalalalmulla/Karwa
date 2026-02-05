@@ -1,6 +1,6 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { getToken } from '../utils/token';
 
 // Get base URL based on platform
 // const getBaseURL = () => {
@@ -17,16 +17,21 @@ import { Platform } from 'react-native';
 // For Physical Device: use your Mac's IP address on the same network
 // For localhost: use localhost (only works for web)
 const getBaseURL = () => {
-  if (Platform.OS === 'android') {
-    // return 'http://10.0.2.2:8000/api'; // Android emulator
-    return 'http://192.168.8.109:8000/api'; // Android emulator
+  // Check if running on iOS Simulator or Android Emulator
+  if (__DEV__) {
+    // For iOS Simulator, use Mac's IP address
+    // Replace with your Mac's IP: run 'ipconfig getifaddr en0' in terminal
+    // For Android Emulator, use '10.0.2.2'
+    // For Physical Device, use your Mac's IP address
+    return 'http://192.168.3.170:8000/api'; // Replace with your Mac's IP
   }
-  return 'http://192.168.8.109:8000/api'; // iOS simulator / web
+  // Production URL
+  return 'http://192.168.3.170:8000/api';
 };
 
 const instance = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for mobile devices
   headers: {
     'Content-Type': 'application/json',
   },
@@ -37,7 +42,7 @@ instance.interceptors.request.use(
   async (config) => {
     // console.log("first")
     try {
-      const token = await SecureStore.getItemAsync('token');
+      const token = await getToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
         console.log('Token added to request:', token.substring(0, 20) + '...');
@@ -63,7 +68,8 @@ instance.interceptors.response.use(
     if (error.response?.status === 401) {
       // Token expired or invalid - clear token
       try {
-        await SecureStore.deleteItemAsync('token');
+        const { clearToken } = await import('../utils/token');
+        await clearToken();
       } catch (e) {
         console.error('Error deleting token:', e);
       }
