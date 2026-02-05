@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -22,11 +22,12 @@ import {
   assignWorker,
   markCompleteByWorker,
   confirmCompletion,
-  submitRating,
   type Task,
   type Applicant,
   type TaskUser,
 } from "@/src/api/tasks";
+import RatingModal from "@/components/RatingModal";
+
 
 function getPosterId(task: Task): string {
   return typeof task.posterId === "object" &&
@@ -52,11 +53,27 @@ function getApplicantName(applicantId: TaskUser): string {
   return applicantId.email || "Applicant";
 }
 
+function getPosterName(task: Task): string {
+  if (typeof task.posterId === "object" && task.posterId !== null) {
+    const poster = task.posterId as TaskUser;
+    const first = poster.firstName || "";
+    const last = poster.lastName || "";
+    if (first || last) return [first, last].filter(Boolean).join(" ");
+    return poster.email || "Poster";
+  }
+  return "Poster";
+}
+
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [ratingTarget, setRatingTarget] = useState<{
+    userId: string;
+    userName: string;
+  } | null>(null);
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ["task", id],
@@ -113,21 +130,10 @@ export default function TaskDetailScreen() {
     },
   });
 
-  const rateMutation = useMutation({
-    mutationFn: ({ taskId, rating }: { taskId: string; rating: number }) =>
-      submitRating(taskId, rating),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["task", variables.taskId] });
-    },
-    onError: (err: Error & { response?: { data?: { error?: string } } }) => {
-      Alert.alert(
-        "Rating failed",
-        err.response?.data?.error || err.message || "Could not submit rating"
-      );
-    },
-  });
-
-  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const handleRateUser = (userId: string, userName: string) => {
+    setRatingTarget({ userId, userName });
+    setShowRatingModal(true);
+  };
 
   const markCompleteMutation = useMutation({
     mutationFn: (taskId: string) => markCompleteByWorker(taskId),
@@ -230,7 +236,7 @@ export default function TaskDetailScreen() {
     );
   }
 
-  const { task, applicants, hasRatedByPoster } = data;
+  const { task, applicants } = data;
   const isPoster = user?._id && getPosterId(task) === user._id;
   const isWorker = !!user?._id && getAssignedWorkerId(task) === user._id;
   const isAssigned = task.status === "ASSIGNED";
@@ -243,10 +249,33 @@ export default function TaskDetailScreen() {
       task.status === "IN_PROGRESS" ||
       task.status === "PENDING_CONFIRMATION") &&
     !!task.assignedWorkerId;
-  const isCompleted = task.status === "COMPLETED";
-  const showRatingFlow =
-    isPoster && isCompleted && task.assignedWorkerId && !hasRatedByPoster;
-  const isPendingConfirmation = task.status === "PENDING_CONFIRMATION";
+  // Check if task is completed (case-insensitive)
+  const taskStatusUpper = task.status?.toUpperCase() || "";
+  const isCompleted = taskStatusUpper === "COMPLETED";
+  const canRate = isCompleted;
+  
+  // Calculate if rating buttons should show
+  const showWorkerRatePoster = isWorker && canRate && !!task.posterId;
+  const showPosterRateWorker = isPoster && canRate && !!task.assignedWorkerId;
+  
+  // Debug logging (remove in production)
+  React.useEffect(() => {
+    console.log('=== Task Debug Info ===');
+    console.log('Task Status:', task.status);
+    console.log('Status Uppercase:', task.status?.toUpperCase());
+    console.log('Is Completed:', isCompleted);
+    console.log('Can Rate:', canRate);
+    console.log('Is Poster:', isPoster);
+    console.log('Is Worker:', isWorker);
+    console.log('Has Poster ID:', !!task.posterId);
+    console.log('Has Assigned Worker:', !!task.assignedWorkerId);
+    console.log('User ID:', user?._id);
+    console.log('Poster ID:', getPosterId(task));
+    console.log('Worker ID:', getAssignedWorkerId(task));
+    console.log('Show Worker Rate Poster:', showWorkerRatePoster);
+    console.log('Show Poster Rate Worker:', showPosterRateWorker);
+    console.log('======================');
+  }, [task, isPoster, isWorker, isCompleted, canRate, showWorkerRatePoster, showPosterRateWorker, user?._id]);
 
   return (
     <WatermarkBackground>
@@ -394,14 +423,6 @@ export default function TaskDetailScreen() {
         </Card>
       )}
 
-      {isPendingConfirmation && isWorker && (
-        <Card style={styles.card}>
-          <Text style={styles.pendingText}>
-            Task is pending the poster&apos;s confirmation. You will receive
-            points once they confirm.
-          </Text>
-        </Card>
-      )}
 
       {canConfirm && (
         <Card style={styles.card}>
@@ -419,54 +440,89 @@ export default function TaskDetailScreen() {
         </Card>
       )}
 
-      {showRatingFlow && (
+      {/* Debug Info - Remove in production */}
+      {__DEV__ && (
         <Card style={styles.card}>
-          <Text style={styles.sectionTitle}>Rate the worker</Text>
+          <Text style={styles.sectionTitle}>Debug Info</Text>
           <Text style={styles.ratingPrompt}>
-            How was the work? Select a rating from 1 to 5.
+            Status: {task.status}{'\n'}
+            Status (Upper): {task.status?.toUpperCase()}{'\n'}
+            Is Poster: {isPoster ? 'Yes' : 'No'}{'\n'}
+            Is Worker: {isWorker ? 'Yes' : 'No'}{'\n'}
+            Is Completed: {isCompleted ? 'Yes' : 'No'}{'\n'}
+            Can Rate: {canRate ? 'Yes' : 'No'}{'\n'}
+            Has Poster ID: {task.posterId ? 'Yes' : 'No'}{'\n'}
+            Has Assigned Worker: {task.assignedWorkerId ? 'Yes' : 'No'}{'\n'}
+            Show Worker Rate Poster: {showWorkerRatePoster ? 'Yes' : 'No'}{'\n'}
+            Show Poster Rate Worker: {showPosterRateWorker ? 'Yes' : 'No'}{'\n'}
+            User ID: {user?._id || 'None'}{'\n'}
+            Poster ID: {getPosterId(task)}{'\n'}
+            Worker ID: {getAssignedWorkerId(task) || 'None'}
           </Text>
-          <View style={styles.ratingRow}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <TouchableOpacity
-                key={n}
-                style={[
-                  styles.ratingOption,
-                  selectedRating === n && styles.ratingOptionSelected,
-                ]}
-                onPress={() => setSelectedRating(n)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.ratingOptionText,
-                    selectedRating === n && styles.ratingOptionTextSelected,
-                  ]}
-                >
-                  {n}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        </Card>
+      )}
+
+      {/* Rating Section - Worker rates poster (only if task is COMPLETED) */}
+      {showWorkerRatePoster && (
+        <Card style={styles.card}>
+          <Text style={styles.sectionTitle}>Rate the Poster</Text>
+          <Text style={styles.ratingPrompt}>
+            Share your experience working with {getPosterName(task)}
+          </Text>
           <Button
-            title="Submit rating"
-            onPress={() =>
-              selectedRating != null &&
-              id &&
-              rateMutation.mutate({ taskId: id, rating: selectedRating })
-            }
+            title="Rate Poster"
+            onPress={() => {
+              const posterId = getPosterId(task);
+              handleRateUser(posterId, getPosterName(task));
+            }}
             style={styles.confirmButton}
-            loading={rateMutation.isPending}
-            disabled={rateMutation.isPending || selectedRating == null}
           />
         </Card>
       )}
 
-      {isCompleted && hasRatedByPoster && (
+      {/* Rating Section - Poster rates worker (only if task is COMPLETED) */}
+      {showPosterRateWorker && (
         <Card style={styles.card}>
-          <Text style={styles.ratingThanks}>Thanks for rating the worker.</Text>
+          <Text style={styles.sectionTitle}>Rate the Worker</Text>
+          <Text style={styles.ratingPrompt}>
+            How was the work? Rate the worker who completed this task.
+          </Text>
+          {typeof task.assignedWorkerId === "object" &&
+          task.assignedWorkerId !== null ? (
+            <Button
+              title="Rate Worker"
+              onPress={() => {
+                const workerId = getAssignedWorkerId(task);
+                if (workerId) {
+                  handleRateUser(
+                    workerId,
+                    getApplicantName(task.assignedWorkerId as TaskUser)
+                  );
+                }
+              }}
+              style={styles.confirmButton}
+            />
+          ) : null}
         </Card>
       )}
       </ScrollView>
+
+      {/* Rating Modal - Outside ScrollView */}
+      {ratingTarget && id && (
+        <RatingModal
+          visible={showRatingModal}
+          onClose={() => {
+            setShowRatingModal(false);
+            setRatingTarget(null);
+          }}
+          taskId={id}
+          ratedUserId={ratingTarget.userId}
+          ratedUserName={ratingTarget.userName}
+          onRatingSubmitted={() => {
+            queryClient.invalidateQueries({ queryKey: ["task", id] });
+          }}
+        />
+      )}
     </WatermarkBackground>
   );
 }

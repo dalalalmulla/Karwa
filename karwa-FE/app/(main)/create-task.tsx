@@ -10,7 +10,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { colors, spacing, typography, borderRadius } from '@/constants/theme';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -24,6 +24,7 @@ const TASK_TYPES: { label: string; value: TaskType }[] = [
 
 export default function CreateTaskScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<CreateTaskData>({
     title: '',
     description: '',
@@ -86,6 +87,8 @@ export default function CreateTaskScreen() {
   const createTaskMutation = useMutation({
     mutationFn: (data: CreateTaskData) => createTask(data),
     onSuccess: (data) => {
+      // Invalidate all task queries to refresh the task list
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
       Alert.alert('Success', 'Task created successfully!', [
         {
           text: 'OK',

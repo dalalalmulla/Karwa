@@ -15,7 +15,7 @@ const recalculateUserRating = async (userId: string): Promise<void> => {
         return;
     }
 
-    const sum = ratings.reduce((acc, r) => acc + r.score, 0);
+    const sum = ratings.reduce((acc, r) => acc + (r as any).rate, 0);
     const average = sum / ratings.length;
 
     await User.findByIdAndUpdate(userId, {
@@ -96,7 +96,16 @@ export const createOrUpdateRating = async (req: Request, res: Response): Promise
             return;
         }
 
-        // Verify user can rate (must be poster or accepted worker)
+        // Task must be COMPLETED before ratings can be submitted
+        if (task.status !== 'COMPLETED') {
+            res.status(400).json({
+                success: false,
+                error: 'Task must be completed before ratings can be submitted',
+            });
+            return;
+        }
+
+        // Verify user can rate (must be poster or assigned worker)
         const isPoster = task.posterId.toString() === raterId;
         const isRatingPoster = task.posterId.toString() === ratedUserId;
 
@@ -110,17 +119,11 @@ export const createOrUpdateRating = async (req: Request, res: Response): Promise
                 return;
             }
 
-            // Check if worker was accepted for this task
-            const application = await Application.findOne({
-                taskId,
-                workerId: ratedUserId,
-                status: 'ACCEPTED',
-            });
-
-            if (!application) {
+            // Check if worker is assigned to this task
+            if (!task.assignedWorkerId || task.assignedWorkerId.toString() !== ratedUserId) {
                 res.status(403).json({
                     success: false,
-                    error: 'You can only rate workers who were accepted for this task',
+                    error: 'You can only rate the worker who was assigned to this task',
                 });
                 return;
             }
@@ -134,17 +137,11 @@ export const createOrUpdateRating = async (req: Request, res: Response): Promise
                 return;
             }
 
-            // Check if worker was accepted for this task
-            const application = await Application.findOne({
-                taskId,
-                workerId: raterId,
-                status: 'ACCEPTED',
-            });
-
-            if (!application) {
+            // Check if worker is assigned to this task
+            if (!task.assignedWorkerId || task.assignedWorkerId.toString() !== raterId) {
                 res.status(403).json({
                     success: false,
-                    error: 'You can only rate the poster if you were accepted for this task',
+                    error: 'You can only rate the poster if you were assigned to this task',
                 });
                 return;
             }
@@ -157,7 +154,7 @@ export const createOrUpdateRating = async (req: Request, res: Response): Promise
                 raterId,
                 ratedUserId,
                 taskId,
-                rating,
+                rate: rating,
             },
             {
                 new: true,
@@ -177,7 +174,7 @@ export const createOrUpdateRating = async (req: Request, res: Response): Promise
                     raterId: ratingDoc.raterId.toString(),
                     ratedUserId: ratingDoc.ratedUserId.toString(),
                     taskId: ratingDoc.taskId.toString(),
-                    rating: ratingDoc.score,
+                    rating: (ratingDoc as any).rate,
                     createdAt: ratingDoc.createdAt,
                     updatedAt: ratingDoc.updatedAt,
                 },
@@ -260,7 +257,7 @@ export const getRating = async (req: Request, res: Response): Promise<void> => {
                     raterId: rating.raterId.toString(),
                     ratedUserId: rating.ratedUserId.toString(),
                     taskId: rating.taskId.toString(),
-                    rating: rating.score,
+                    rating: (rating as any).rate,
                     createdAt: rating.createdAt,
                     updatedAt: rating.updatedAt,
                 },

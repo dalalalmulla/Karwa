@@ -8,17 +8,15 @@ const getBaseURL = () => {
     // For iOS Simulator, use Mac's IP address
     // For Android Emulator, use '10.0.2.2'
     // For Physical Device, use your Mac's IP address
-    return 'http://192.168.13.180:8000/api'; // Replace with your Mac's IP
+    return 'http://192.168.3.170:8000/api'; // Replace with your Mac's IP
   }
   // Production URL
-  return 'http://192.168.13.180:8000/api';
+  return 'http://192.168.3.170:8000/api';
 };
 
 export const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
-  baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds for mobile devices
   headers: {
     "Content-Type": "application/json",
   },
