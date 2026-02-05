@@ -1,4 +1,4 @@
-export type TaskType = 'indoor' | 'outdoor' | 'home_service' | 'car_service';
+export type TaskType = 'indoor' | 'outdoor';
 export type TaskStatus = 'OPEN' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
 export interface Task {

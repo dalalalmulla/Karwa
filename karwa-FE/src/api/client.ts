@@ -27,7 +27,7 @@ export const api = axios.create({
 // Attach token automatically before every request
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
-
+  // console.log("token", token);
   if (token) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;
