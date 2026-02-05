@@ -259,26 +259,27 @@ export default function TaskDetailScreen() {
   const showPosterRateWorker = isPoster && canRate && !!task.assignedWorkerId;
   
   // Debug logging (remove in production)
-  React.useEffect(() => {
-    console.log('=== Task Debug Info ===');
-    console.log('Task Status:', task.status);
-    console.log('Status Uppercase:', task.status?.toUpperCase());
-    console.log('Is Completed:', isCompleted);
-    console.log('Can Rate:', canRate);
-    console.log('Is Poster:', isPoster);
-    console.log('Is Worker:', isWorker);
-    console.log('Has Poster ID:', !!task.posterId);
-    console.log('Has Assigned Worker:', !!task.assignedWorkerId);
-    console.log('User ID:', user?._id);
-    console.log('Poster ID:', getPosterId(task));
-    console.log('Worker ID:', getAssignedWorkerId(task));
-    console.log('Show Worker Rate Poster:', showWorkerRatePoster);
-    console.log('Show Poster Rate Worker:', showPosterRateWorker);
-    console.log('======================');
-  }, [task, isPoster, isWorker, isCompleted, canRate, showWorkerRatePoster, showPosterRateWorker, user?._id]);
+  // React.useEffect(() => {
+  //   console.log('=== Task Debug Info ===');
+  //   console.log('Task Status:', task.status);
+  //   console.log('Status Uppercase:', task.status?.toUpperCase());
+  //   console.log('Is Completed:', isCompleted);
+  //   console.log('Can Rate:', canRate);
+  //   console.log('Is Poster:', isPoster);
+  //   console.log('Is Worker:', isWorker);
+  //   console.log('Has Poster ID:', !!task.posterId);
+  //   console.log('Has Assigned Worker:', !!task.assignedWorkerId);
+  //   console.log('User ID:', user?._id);
+  //   console.log('Poster ID:', getPosterId(task));
+  //   console.log('Worker ID:', getAssignedWorkerId(task));
+  //   console.log('Show Worker Rate Poster:', showWorkerRatePoster);
+  //   console.log('Show Poster Rate Worker:', showPosterRateWorker);
+  //   console.log('======================');
+  // }, [task, isPoster, isWorker, isCompleted, canRate, showWorkerRatePoster, showPosterRateWorker, user?._id]);
 
+  console.log("TASK>>>>>>>",task)
   return (
-    <WatermarkBackground>
+    <WatermarkBackground style={{flex:1}}>
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <TouchableOpacity
           style={styles.backRow}
@@ -441,7 +442,7 @@ export default function TaskDetailScreen() {
       )}
 
       {/* Debug Info - Remove in production */}
-      {__DEV__ && (
+      {/*__DEV__ && (
         <Card style={styles.card}>
           <Text style={styles.sectionTitle}>Debug Info</Text>
           <Text style={styles.ratingPrompt}>
@@ -460,7 +461,7 @@ export default function TaskDetailScreen() {
             Worker ID: {getAssignedWorkerId(task) || 'None'}
           </Text>
         </Card>
-      )}
+      )*/}
 
       {/* Rating Section - Worker rates poster (only if task is COMPLETED) */}
       {showWorkerRatePoster && (
