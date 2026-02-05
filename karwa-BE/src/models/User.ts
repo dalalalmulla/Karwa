@@ -1,11 +1,14 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
+export type UserRole = 'poster' | 'worker' | 'both';
+
 export interface IUser extends Document {
   email: string;
   password: string;
   firstName?: string;
   lastName?: string;
   civilId?: string;
+  role?: UserRole; // User role: 'poster' (task creator), 'worker' (task doer), or 'both'
   rating?: number; // Worker rating (0-5), used when displaying applicants
   points?: number; // Earned from completed tasks (added when poster confirms)
   createdAt: Date;
@@ -41,6 +44,11 @@ const userSchema = new Schema<IUser>(
       trim: true,
       unique: true,
       sparse: true, // Allows multiple null values
+    },
+    role: {
+      type: String,
+      enum: ['poster', 'worker', 'both'],
+      default: 'both', // Default to 'both' to allow flexibility
     },
     rating: {
       type: Number,

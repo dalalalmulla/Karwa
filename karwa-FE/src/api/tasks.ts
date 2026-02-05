@@ -50,6 +50,7 @@ export interface GetTaskByIdResponse {
     task: Task;
     applicants: Applicant[];
     hasRatedByPoster?: boolean;
+    hasApplied?: boolean;
   };
 }
 
@@ -176,4 +177,65 @@ export const submitRating = async (
     throw new Error(err.error || 'Failed to submit rating');
   }
   return response.data.data;
+};
+
+export interface UpdateTaskData {
+  title?: string;
+  description?: string;
+  pictures?: string[];
+  money?: number;
+  location?: string;
+  type?: TaskType;
+}
+
+export interface UpdateTaskResponse {
+  success: boolean;
+  data: {
+    task: Task;
+  };
+  error?: string;
+}
+
+export const updateTask = async (
+  taskId: string,
+  data: UpdateTaskData
+): Promise<UpdateTaskResponse['data']> => {
+  try {
+    const response = await instance.put<UpdateTaskResponse>(`/tasks/${taskId}`, data);
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to update task');
+    }
+    return response.data.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage =
+        error.response?.data?.error || error.message || 'Failed to update task';
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};
+
+export interface DeleteTaskResponse {
+  success: boolean;
+  data: {
+    message: string;
+  };
+  error?: string;
+}
+
+export const deleteTask = async (taskId: string): Promise<void> => {
+  try {
+    const response = await instance.delete<DeleteTaskResponse>(`/tasks/${taskId}`);
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to delete task');
+    }
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage =
+        error.response?.data?.error || error.message || 'Failed to delete task';
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
 };

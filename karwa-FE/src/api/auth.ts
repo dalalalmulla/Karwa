@@ -3,6 +3,8 @@ import instance from './axios';
 import * as SecureStore from 'expo-secure-store';
 import { saveToken } from '../utils/token';
 
+export type UserRole = 'poster' | 'worker' | 'both';
+
 export interface RegisterData {
   name?: string;
   email: string;
@@ -11,6 +13,7 @@ export interface RegisterData {
   confirmPassword?: string;
   firstName?: string;
   lastName?: string;
+  role?: UserRole; // User role: 'poster' (task creator), 'worker' (task doer), or 'both'
 }
 
 export interface RegisterResponse {
@@ -22,6 +25,7 @@ export interface RegisterResponse {
       firstName?: string;
       lastName?: string;
       civilId?: string;
+      role?: UserRole;
     };
     token: string;
   };
@@ -41,6 +45,7 @@ export interface LoginResponse {
       email: string;
       firstName?: string;
       lastName?: string;
+      role?: UserRole;
     };
     token: string;
   };
@@ -56,6 +61,7 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
       password: data.password,
       firstName: data.firstName,
       lastName: data.lastName,
+      role: data.role || 'both', // Default to 'both' if not provided
     });
 
     if (response.data.success && response.data.data.token) {
@@ -109,6 +115,7 @@ export interface GetCurrentUserResponse {
       email: string;
       firstName?: string;
       lastName?: string;
+      role?: UserRole;
       ratingAverage?: number;
       completedTasksCount?: number;
       earnedPoints?: number;
@@ -133,6 +140,39 @@ export const getCurrentUser = async (): Promise<GetCurrentUserResponse['data']> 
     if (axios.isAxiosError(error)) {
       const errorMessage =
         error.response?.data?.error || error.message || 'Failed to fetch user profile';
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};
+
+export interface UpdateUserRoleResponse {
+  success: boolean;
+  data: {
+    user: {
+      _id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      role?: UserRole;
+    };
+  };
+  error?: string;
+}
+
+export const updateUserRole = async (role: UserRole): Promise<UpdateUserRoleResponse['data']> => {
+  try {
+    const response = await instance.patch<UpdateUserRoleResponse>('/auth/role', { role });
+
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to update user role');
+    }
+
+    return response.data.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage =
+        error.response?.data?.error || error.message || 'Failed to update user role';
       throw new Error(errorMessage);
     }
     throw error;

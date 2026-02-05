@@ -1,200 +1,396 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import Logo from '@/components/ui/Logo';
-import { getCurrentUser } from '@/src/api/auth';
-import { useAuth } from '@/src/context/AuthContext';
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  Modal,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing, borderRadius } from "@/constants/Karwa.theme";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import StatCard from "@/components/ui/StatCard";
+import Logo from "@/components/ui/Logo";
+import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import { getCurrentUser, updateUserRole, UserRole } from "@/src/api/auth";
+import { useAuth } from "@/src/context/AuthContext";
+import { ROLE_LABELS } from "@/src/constants/roles";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { logout, token } = useAuth();
+  const { theme, typography } = useTheme();
+  const { logout, token, setUser } = useAuth();
+  const queryClient = useQueryClient();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
-  // Redirect to login if no token
   useEffect(() => {
     if (!token) {
-      console.log('No token found, redirecting to login');
-      router.replace('/(auth)/login');
+      router.replace("/(auth)/login");
     }
   }, [token, router]);
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ['currentUser'],
+    queryKey: ["currentUser"],
     queryFn: getCurrentUser,
     retry: 1,
-    enabled: !!token, // Only run query if token exists
+    enabled: !!token,
   });
 
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
       await logout();
-      router.replace('/(auth)/login');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to logout. Please try again.');
+      router.replace("/(auth)/login");
+    } catch {
+      Alert.alert("Error", "Failed to logout. Please try again.");
     } finally {
       setIsLoggingOut(false);
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      });
-    } catch {
-      return 'N/A';
-    }
-  };
-
   const getFullName = () => {
-    const firstName = data?.user.firstName || '';
-    const lastName = data?.user.lastName || '';
-    if (firstName || lastName) {
-      return `${firstName} ${lastName}`.trim();
-    }
-    return 'Not provided';
+    const firstName = data?.user.firstName || "";
+    const lastName = data?.user.lastName || "";
+    if (firstName || lastName) return `${firstName} ${lastName}`.trim();
+    return "Not provided";
   };
 
+  const updateRoleMutation = useMutation({
+    mutationFn: updateUserRole,
+    onSuccess: (res) => {
+      if (setUser) setUser({ ...res.user });
+      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      setShowRoleModal(false);
+      Alert.alert("Success", "Your role has been updated!");
+    },
+    onError: (err: Error) => {
+      Alert.alert("Error", err.message || "Failed to update role.");
+    },
+  });
+
+  const getRoleLabel = (role?: UserRole): string => {
+    if (!role) return "Not set";
+    switch (role) {
+      case "poster":
+        return ROLE_LABELS.POSTER.singular;
+      case "worker":
+        return ROLE_LABELS.WORKER.singular;
+      case "both":
+        return "Both";
+      default:
+        return "Not set";
+    }
+  };
+
+  const handleRoleChange = (newRole: UserRole) => {
+    if (data?.user.role === newRole) {
+      setShowRoleModal(false);
+      return;
+    }
+    updateRoleMutation.mutate(newRole);
+  };
+
+  /* ─── Loading ─── */
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading profile...</Text>
-      </View>
+      <WatermarkBackground style={styles.center}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text
+          style={[
+            styles.loadingText,
+            { color: theme.textSecondary, fontSize: typography.body.fontSize },
+          ]}
+        >
+          Loading profile...
+        </Text>
+      </WatermarkBackground>
     );
   }
 
+  /* ─── Error ─── */
   if (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    const isNetworkError = errorMessage.includes('Network') || errorMessage.includes('timeout') || errorMessage.includes('ECONNREFUSED');
-    const isAuthError = errorMessage.includes('Authentication') || errorMessage.includes('token') || errorMessage.includes('401');
-    
+    const msg = error instanceof Error ? error.message : "An error occurred";
+    const isAuthError =
+      msg.includes("Authentication") ||
+      msg.includes("token") ||
+      msg.includes("401");
+
     return (
-      <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Failed to load profile</Text>
-          <Text style={styles.errorText}>
-            {errorMessage}
-          </Text>
-          {isAuthError && (
-            <View style={styles.networkHelp}>
-              <Text style={styles.helpTitle}>Authentication Required:</Text>
-              <Text style={styles.helpText}>• Your session may have expired</Text>
-              <Text style={styles.helpText}>• Please login again to continue</Text>
-            </View>
-          )}
-          {isNetworkError && (
-            <View style={styles.networkHelp}>
-              <Text style={styles.helpTitle}>Troubleshooting:</Text>
-              <Text style={styles.helpText}>• Make sure backend server is running</Text>
-              <Text style={styles.helpText}>• Ensure your device is on the same WiFi network</Text>
-              <Text style={styles.helpText}>• Check if backend is accessible at: 192.168.3.170:8000</Text>
-            </View>
-          )}
-          {isAuthError ? (
+      <WatermarkBackground style={styles.center}>
+        <Text
+          style={[
+            styles.errorTitle,
+            { color: theme.text, fontSize: typography.heading.fontSize },
+          ]}
+        >
+          Failed to load profile
+        </Text>
+        <Text
+          style={[
+            styles.errorMsg,
+            { color: theme.textSecondary, fontSize: typography.body.fontSize },
+          ]}
+        >
+          {msg}
+        </Text>
+        {isAuthError ? (
+          <Button
+            title="Go to Login"
+            onPress={() => router.replace("/(auth)/login")}
+            style={styles.mt}
+          />
+        ) : (
+          <>
             <Button
-              title="Go to Login"
-              onPress={() => router.replace('/(auth)/login')}
-              style={styles.retryButton}
+              title="Retry"
+              onPress={() => refetch()}
+              style={styles.mt}
             />
-          ) : (
-            <>
-              <Button
-                title="Retry"
-                onPress={() => refetch()}
-                style={styles.retryButton}
-              />
-              <Button
-                title="Go Back"
-                onPress={() => router.back()}
-                variant="secondary"
-                style={styles.backButton}
-              />
-            </>
-          )}
-        </View>
-      </ScrollView>
+            <Button
+              title="Go Back"
+              onPress={() => router.back()}
+              variant="secondary"
+              style={styles.mtSm}
+            />
+          </>
+        )}
+      </WatermarkBackground>
     );
   }
 
-  const notificationCount = data?.user.notificationCount ?? 0;
-  const hasNotifications = notificationCount > 0;
-
-  const handleNotificationPress = () => {
-    // Navigate to notifications screen or show notifications
-    Alert.alert('Notifications', `You have ${notificationCount} new update${notificationCount !== 1 ? 's' : ''}`);
-    // TODO: Navigate to notifications screen when implemented
-    // router.push('/notifications');
-  };
-
+  /* ─── Render ─── */
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <View style={styles.logoContainer}>
-            <Logo size={80} />
-          </View>
-          <TouchableOpacity 
-            style={styles.notificationButton}
-            onPress={handleNotificationPress}
-            activeOpacity={0.7}
+        <Logo size={80} />
+        <Text
+          style={[
+            styles.name,
+            { color: theme.textTitle, fontSize: typography.title.fontSize },
+          ]}
+        >
+          {getFullName()}
+        </Text>
+        <Text
+          style={[
+            styles.email,
+            {
+              color: theme.textSecondary,
+              fontSize: typography.body.fontSize,
+            },
+          ]}
+        >
+          {data?.user.email || "N/A"}
+        </Text>
+      </View>
+
+      {/* Stats Grid */}
+      <View style={styles.statsGrid}>
+        <StatCard
+          label="Rating"
+          value={`⭐ ${
+            data?.user.ratingAverage !== undefined
+              ? data.user.ratingAverage.toFixed(1)
+              : "0.0"
+          }`}
+          style={styles.statCard}
+        />
+        <StatCard
+          label="Completed"
+          value={data?.user.completedTasksCount ?? 0}
+          style={styles.statCard}
+        />
+        <StatCard
+          label="Points"
+          value={data?.user.earnedPoints ?? 0}
+          style={styles.statCard}
+        />
+      </View>
+
+      {/* Role Card */}
+      <Card variant="default" padding="medium">
+        <View style={styles.roleHeader}>
+          <Text
+            style={[
+              styles.roleTitle,
+              {
+                color: theme.text,
+                fontSize: typography.heading.fontSize,
+              },
+            ]}
           >
-            <MaterialIcons name="notifications" size={24} color={colors.text} />
-            {hasNotifications && (
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>
-                  {notificationCount > 99 ? '99+' : notificationCount}
-                </Text>
-              </View>
-            )}
+            My Role
+          </Text>
+          <TouchableOpacity
+            onPress={() => setShowRoleModal(true)}
+            style={[styles.changeRoleBtn, { backgroundColor: theme.primary }]}
+          >
+            <Text
+              style={[
+                styles.changeRoleTxt,
+                { color: theme.white, fontSize: typography.caption.fontSize },
+              ]}
+            >
+              Change
+            </Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.name}>{getFullName()}</Text>
-        <Text style={styles.subtitle}>{data?.user.email || 'N/A'}</Text>
-      </View>
-
-      <Card style={styles.card}>
-        <View style={styles.statRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Rating Average</Text>
-            <Text style={styles.statValue}>
-              ⭐ {data?.user.ratingAverage !== undefined 
-                ? data.user.ratingAverage.toFixed(1) 
-                : '0.0'}
-            </Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Completed Tasks</Text>
-            <Text style={styles.statValue}>
-              {data?.user.completedTasksCount ?? 0}
-            </Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={styles.statLabel}>Earned Points</Text>
-            <Text style={styles.statValue}>
-              {data?.user.earnedPoints ?? 0}
-            </Text>
-          </View>
-        </View>
+        <Text
+          style={[
+            styles.currentRole,
+            { color: theme.primary, fontSize: typography.body.fontSize },
+          ]}
+        >
+          {getRoleLabel(data?.user.role)}
+        </Text>
+        <Text
+          style={[
+            styles.roleDesc,
+            {
+              color: theme.textSecondary,
+              fontSize: typography.caption.fontSize,
+            },
+          ]}
+        >
+          {data?.user.role === "poster" &&
+            "You can create tasks for others to complete"}
+          {data?.user.role === "worker" &&
+            "You can apply to and complete tasks"}
+          {data?.user.role === "both" &&
+            "You can create tasks and also complete tasks"}
+          {!data?.user.role && "Select your role to get started"}
+        </Text>
       </Card>
 
+      {/* Role Selection Modal */}
+      <Modal
+        visible={showRoleModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowRoleModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View
+            style={[
+              styles.modalContent,
+              { backgroundColor: theme.surface },
+            ]}
+          >
+            <Text
+              style={[
+                styles.modalTitle,
+                {
+                  color: theme.text,
+                  fontSize: typography.title.fontSize,
+                },
+              ]}
+            >
+              Select Your Role
+            </Text>
+            <Text
+              style={[
+                styles.modalSubtitle,
+                {
+                  color: theme.textSecondary,
+                  fontSize: typography.body.fontSize,
+                },
+              ]}
+            >
+              Choose how you want to use Karwa
+            </Text>
+
+            {(
+              [
+                {
+                  value: "poster" as UserRole,
+                  label: ROLE_LABELS.POSTER.singular,
+                  desc: "Create tasks for others",
+                },
+                {
+                  value: "worker" as UserRole,
+                  label: ROLE_LABELS.WORKER.singular,
+                  desc: "Complete tasks",
+                },
+                {
+                  value: "both" as UserRole,
+                  label: "Both",
+                  desc: "Create and complete tasks",
+                },
+              ] as const
+            ).map((opt) => {
+              const isSelected = data?.user.role === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    styles.roleOption,
+                    {
+                      borderColor: isSelected ? theme.primary : theme.border,
+                      backgroundColor: isSelected
+                        ? theme.primary
+                        : theme.surface,
+                    },
+                  ]}
+                  onPress={() => handleRoleChange(opt.value)}
+                  disabled={updateRoleMutation.isPending}
+                >
+                  <Text
+                    style={[
+                      styles.roleOptionText,
+                      {
+                        color: isSelected ? theme.white : theme.text,
+                        fontSize: typography.body.fontSize,
+                      },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.roleOptionSubtext,
+                      {
+                        color: isSelected
+                          ? theme.white
+                          : theme.textSecondary,
+                        fontSize: typography.caption.fontSize,
+                      },
+                    ]}
+                  >
+                    {opt.desc}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+
+            <Button
+              title="Cancel"
+              onPress={() => setShowRoleModal(false)}
+              variant="secondary"
+              style={styles.mt}
+              disabled={updateRoleMutation.isPending}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Logout */}
       <Button
-        title={isLoggingOut ? 'Logging out...' : 'Logout'}
+        title={isLoggingOut ? "Logging out..." : "Logout"}
         onPress={handleLogout}
         variant="secondary"
-        style={styles.logoutButton}
+        style={styles.logoutBtn}
         disabled={isLoggingOut}
       />
     </ScrollView>
@@ -204,148 +400,127 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
   content: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl,
   },
-  loadingContainer: {
+  center: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    gap: spacing.md,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: spacing.lg,
   },
   loadingText: {
-    ...typography.body,
-    color: colors.secondary,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
-    gap: spacing.md,
+    marginTop: spacing.md,
   },
   errorTitle: {
-    ...typography.heading,
-    color: colors.text,
+    fontWeight: "600",
     marginBottom: spacing.sm,
   },
-  errorText: {
-    ...typography.body,
-    color: colors.secondary,
-    textAlign: 'center',
+  errorMsg: {
+    textAlign: "center",
     marginBottom: spacing.md,
   },
-  retryButton: {
+  mt: {
     marginTop: spacing.md,
   },
-  backButton: {
+  mtSm: {
     marginTop: spacing.sm,
   },
-  networkHelp: {
-    marginTop: spacing.md,
-    marginBottom: spacing.md,
-    padding: spacing.md,
-    backgroundColor: colors.gray100,
-    borderRadius: borderRadius.md,
-    width: '100%',
-  },
-  helpTitle: {
-    ...typography.body,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: spacing.sm,
-  },
-  helpText: {
-    ...typography.caption,
-    color: colors.secondary,
-    marginBottom: spacing.xs,
-  },
+
+  /* Header */
   header: {
+    alignItems: "center",
     marginBottom: spacing.xl,
-    alignItems: 'center',
-  },
-  headerTop: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.md,
-  },
-  logoContainer: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  notificationButton: {
-    position: 'relative',
-    padding: spacing.sm,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.gray100,
-  },
-  badge: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    backgroundColor: '#FF3B30',
-    borderRadius: borderRadius.full,
-    minWidth: 20,
-    height: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xs,
-    borderWidth: 2,
-    borderColor: colors.background,
-  },
-  badgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '700',
   },
   name: {
-    ...typography.title,
-    color: colors.text,
-    marginBottom: spacing.xs,
-    textAlign: 'center',
+    fontWeight: "700",
+    marginTop: spacing.sm,
+    textAlign: "center",
   },
-  subtitle: {
-    ...typography.body,
-    color: colors.secondary,
-    textAlign: 'center',
+  email: {
+    marginTop: spacing.xs,
+    textAlign: "center",
   },
-  card: {
+
+  /* Stats */
+  statsGrid: {
+    flexDirection: "row",
+    gap: spacing.sm,
     marginBottom: spacing.md,
   },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-  },
-  statItem: {
+  statCard: {
     flex: 1,
-    alignItems: 'center',
   },
-  statLabel: {
-    ...typography.caption,
-    color: colors.secondary,
+
+  /* Role */
+  roleHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.sm,
+  },
+  roleTitle: {
+    fontWeight: "600",
+  },
+  changeRoleBtn: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.sm,
+  },
+  changeRoleTxt: {
+    fontWeight: "600",
+  },
+  currentRole: {
+    fontWeight: "600",
     marginBottom: spacing.xs,
   },
-  statValue: {
-    ...typography.heading,
-    color: colors.text,
-    fontSize: 20,
+  roleDesc: {
+    lineHeight: 18,
   },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: colors.border,
+
+  /* Modal */
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: spacing.lg,
   },
-  logoutButton: {
+  modalContent: {
+    borderRadius: borderRadius.lg,
+    padding: spacing.lg,
+    width: "100%",
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontWeight: "700",
+    marginBottom: spacing.xs,
+    textAlign: "center",
+  },
+  modalSubtitle: {
+    marginBottom: spacing.lg,
+    textAlign: "center",
+  },
+  roleOption: {
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    marginBottom: spacing.sm,
+    alignItems: "center",
+  },
+  roleOptionText: {
+    fontWeight: "600",
+    marginBottom: spacing.xs,
+  },
+  roleOptionSubtext: {
+    opacity: 0.8,
+  },
+
+  /* Logout */
+  logoutBtn: {
     marginTop: spacing.lg,
   },
 });
-

@@ -7,12 +7,13 @@ import {
   ViewStyle,
   TextStyle,
 } from "react-native";
-import { colors, spacing, borderRadius, typography } from "@/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing, borderRadius } from "@/constants/Karwa.theme";
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "danger" | "text";
   loading?: boolean;
   disabled?: boolean;
   style?: ViewStyle;
@@ -28,13 +29,54 @@ export default function Button({
   style,
   textStyle,
 }: ButtonProps) {
-  const isPrimary = variant === "primary";
+  const { theme, typography } = useTheme();
   const isDisabled = disabled || loading;
+
+  const getButtonStyles = (): ViewStyle => {
+    switch (variant) {
+      case "secondary":
+        return {
+          backgroundColor: "transparent",
+          borderWidth: 1.5,
+          borderColor: theme.primary,
+        };
+      case "danger":
+        return {
+          backgroundColor: theme.danger,
+        };
+      case "text":
+        return {
+          backgroundColor: "transparent",
+          paddingVertical: spacing.xs,
+          paddingHorizontal: spacing.sm,
+          minHeight: 36,
+        };
+      case "primary":
+      default:
+        return {
+          backgroundColor: theme.primary,
+        };
+    }
+  };
+
+  const getTextColor = (): string => {
+    switch (variant) {
+      case "secondary":
+      case "text":
+        return theme.primary;
+      case "danger":
+      case "primary":
+      default:
+        return theme.white;
+    }
+  };
 
   return (
     <TouchableOpacity
       style={[
-        isPrimary ? styles.primaryButton : styles.secondaryButton,
+        styles.base,
+        { borderRadius: borderRadius.lg },
+        getButtonStyles(),
         isDisabled && styles.disabled,
         style,
       ]}
@@ -44,13 +86,17 @@ export default function Button({
     >
       {loading ? (
         <ActivityIndicator
-          color={isPrimary ? colors.white : colors.primary}
+          color={variant === "secondary" || variant === "text" ? theme.primary : theme.white}
           size="small"
         />
       ) : (
         <Text
           style={[
-            isPrimary ? styles.primaryText : styles.secondaryText,
+            styles.text,
+            {
+              color: getTextColor(),
+              fontSize: typography.body.fontSize,
+            },
             isDisabled && styles.disabledText,
             textStyle,
           ]}
@@ -63,34 +109,14 @@ export default function Button({
 }
 
 const styles = StyleSheet.create({
-  primaryButton: {
-    backgroundColor: colors.primary,
+  base: {
     paddingVertical: spacing.sm + 4,
     paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    minHeight: 44,
+    minHeight: 48,
     justifyContent: "center",
     alignItems: "center",
   },
-  secondaryButton: {
-    backgroundColor: "transparent",
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    paddingVertical: spacing.sm + 4,
-    paddingHorizontal: spacing.lg,
-    borderRadius: borderRadius.md,
-    minHeight: 44,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  primaryText: {
-    color: colors.white,
-    fontSize: typography.body.fontSize,
-    fontWeight: "600",
-  },
-  secondaryText: {
-    color: colors.primary,
-    fontSize: typography.body.fontSize,
+  text: {
     fontWeight: "600",
   },
   disabled: {

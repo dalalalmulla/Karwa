@@ -1,3 +1,5 @@
+export type UserRole = 'poster' | 'worker' | 'both';
+
 export interface User {
     _id: string;
     email: string;
@@ -5,6 +7,7 @@ export interface User {
     firstName?: string;
     lastName?: string;
     civilId?: string;
+    role?: UserRole; // User role: 'poster' (task creator), 'worker' (task doer), or 'both'
     createdAt?: string;
     updatedAt?: string;
 }

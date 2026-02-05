@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   Modal,
-  TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from 'react-native';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { colors, spacing, typography, borderRadius } from '@/constants/theme';
-import Card from './ui/Card';
-import Button from './ui/Button';
-import StarRating from './ui/StarRating';
-import { createOrUpdateRating, getRating } from '@/src/api/ratings';
-import type { CreateRatingData } from '@/src/types/ratingTypes';
+} from "react-native";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing } from "@/constants/Karwa.theme";
+import Card from "./ui/Card";
+import Button from "./ui/Button";
+import StarRating from "./ui/StarRating";
+import { createOrUpdateRating, getRating } from "@/src/api/ratings";
+import type { CreateRatingData } from "@/src/types/ratingTypes";
 
 interface RatingModalProps {
   visible: boolean;
@@ -34,16 +34,15 @@ export default function RatingModal({
   onRatingSubmitted,
 }: RatingModalProps) {
   const queryClient = useQueryClient();
+  const { theme, typography } = useTheme();
   const [selectedRating, setSelectedRating] = useState(0);
 
-  // Fetch existing rating
   const { data: ratingData, isLoading: isLoadingRating } = useQuery({
-    queryKey: ['rating', taskId],
+    queryKey: ["rating", taskId],
     queryFn: () => getRating(taskId),
     enabled: visible && !!taskId,
   });
 
-  // Set initial rating if exists
   useEffect(() => {
     if (ratingData?.rating) {
       setSelectedRating(ratingData.rating.rating);
@@ -52,30 +51,22 @@ export default function RatingModal({
     }
   }, [ratingData, visible]);
 
-  // Submit rating mutation
   const submitRating = useMutation({
     mutationFn: (data: CreateRatingData) => createOrUpdateRating(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rating', taskId] });
-      queryClient.invalidateQueries({ queryKey: ['task', taskId] });
+      queryClient.invalidateQueries({ queryKey: ["rating", taskId] });
+      queryClient.invalidateQueries({ queryKey: ["task", taskId] });
       onRatingSubmitted?.();
       onClose();
     },
     onError: (error: Error) => {
-      Alert.alert('Error', error.message || 'Failed to save rating');
+      Alert.alert("Error", error.message || "Failed to save rating");
     },
   });
 
   const handleSubmit = () => {
-    if (selectedRating === 0) {
-      return;
-    }
-
-    submitRating.mutate({
-      taskId,
-      ratedUserId,
-      rating: selectedRating,
-    });
+    if (selectedRating === 0) return;
+    submitRating.mutate({ taskId, ratedUserId, rating: selectedRating });
   };
 
   return (
@@ -83,15 +74,37 @@ export default function RatingModal({
       visible={visible}
       transparent
       animationType="fade"
-      onRequestClose={onClose}>
+      onRequestClose={onClose}
+    >
       <View style={styles.overlay}>
-        <Card style={styles.modalContent}>
+        <Card
+          style={[styles.modalContent, { backgroundColor: theme.surface }]}
+          variant="elevated"
+        >
           {isLoadingRating ? (
-            <ActivityIndicator size="large" color={colors.primary} />
+            <ActivityIndicator size="large" color={theme.primary} />
           ) : (
             <>
-              <Text style={styles.title}>Rate {ratedUserName}</Text>
-              <Text style={styles.subtitle}>
+              <Text
+                style={[
+                  styles.title,
+                  {
+                    color: theme.text,
+                    fontSize: typography.heading.fontSize,
+                  },
+                ]}
+              >
+                Rate {ratedUserName}
+              </Text>
+              <Text
+                style={[
+                  styles.subtitle,
+                  {
+                    color: theme.textSecondary,
+                    fontSize: typography.body.fontSize,
+                  },
+                ]}
+              >
                 How would you rate your experience?
               </Text>
 
@@ -100,7 +113,7 @@ export default function RatingModal({
                   rating={selectedRating}
                   onRatingChange={setSelectedRating}
                   size={40}
-                  editable={true}
+                  editable
                 />
               </View>
 
@@ -112,7 +125,7 @@ export default function RatingModal({
                   style={styles.button}
                 />
                 <Button
-                  title={ratingData?.rating ? 'Update Rating' : 'Submit Rating'}
+                  title={ratingData?.rating ? "Update" : "Submit"}
                   onPress={handleSubmit}
                   disabled={selectedRating === 0 || submitRating.isPending}
                   loading={submitRating.isPending}
@@ -130,35 +143,32 @@ export default function RatingModal({
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: spacing.lg,
   },
   modalContent: {
-    width: '100%',
+    width: "100%",
     maxWidth: 400,
     padding: spacing.lg,
   },
   title: {
-    ...typography.heading,
-    color: colors.text,
+    fontWeight: "600",
     marginBottom: spacing.xs,
-    textAlign: 'center',
+    textAlign: "center",
   },
   subtitle: {
-    ...typography.body,
-    color: colors.secondary,
     marginBottom: spacing.lg,
-    textAlign: 'center',
+    textAlign: "center",
   },
   ratingContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginVertical: spacing.xl,
     paddingVertical: spacing.md,
   },
   buttonContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: spacing.md,
     marginTop: spacing.md,
   },
@@ -166,4 +176,3 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 });
-
