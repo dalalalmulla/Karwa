@@ -4,7 +4,7 @@ import { colors, spacing, borderRadius, shadows } from "@/constants/theme";
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: ViewStyle | ViewStyle[];
   variant?: "subtle" | "medium";
 }
 

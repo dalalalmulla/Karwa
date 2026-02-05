@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import Button from "@/components/ui/Button";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import { colors, spacing, typography } from "@/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing } from "@/constants/Karwa.theme";
 import Card from "@/components/ui/Card";
 import TaskFilters from "@/components/TaskFilters";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import AppHeader from "@/components/ui/AppHeader";
 import {
   getTasksApi,
   type Task,
@@ -15,26 +17,59 @@ import {
   type GetTasksResponse,
 } from "@/src/api/taskCalls";
 
-function TaskCard({ task, onPress }: { task: Task; onPress: () => void }) {
+function TaskCard({ 
+  task, 
+  onPress, 
+  theme, 
+  typography 
+}: { 
+  task: Task; 
+  onPress: () => void;
+  theme: ReturnType<typeof useTheme>['theme'];
+  typography: ReturnType<typeof useTheme>['typography'];
+}) {
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Card style={styles.card}>
+      <Card style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
         <View style={styles.cardTopRow}>
-          <Text style={styles.title} numberOfLines={1}>
+          <Text style={[styles.title, { color: theme.textHeading, fontSize: typography.heading.fontSize }]} numberOfLines={1}>
             {task.title}
           </Text>
-          <View style={styles.pointsPill}>
-            <Text style={styles.pointsText}>{task.points} pts</Text>
+          <View style={[styles.pointsPill, { backgroundColor: theme.primarySoft }]}>
+            <Text style={[styles.pointsText, { color: theme.primaryPressed, fontSize: typography.small.fontSize }]}>
+              {task.points} pts
+            </Text>
           </View>
         </View>
 
-        <Text style={styles.desc} numberOfLines={2}>
+        <Text style={[styles.desc, { color: theme.textSecondary, fontSize: typography.body.fontSize }]} numberOfLines={2}>
           {task.description}
         </Text>
 
+        {/* Status Badge */}
+        <View style={styles.statusRow}>
+          <View style={[
+            styles.statusBadge,
+            {
+              backgroundColor: task.status === 'OPEN' ? theme.success :
+                task.status === 'IN_PROGRESS' ? theme.warning :
+                task.status === 'COMPLETED' ? theme.primary :
+                theme.danger,
+            }
+          ]}>
+            <Text style={[styles.statusText, { color: theme.white, fontSize: typography.small.fontSize }]}>
+              {task.status === 'IN_PROGRESS' ? 'On Progress' : 
+               task.status === 'COMPLETED' ? 'Completed' :
+               task.status === 'CANCELLED' ? 'Cancelled' : 'Open'}
+            </Text>
+          </View>
+        </View>
+
         <View style={styles.metaRow}>
-          <Text style={styles.metaText}>💰 {task.money} KWD</Text>
-          <Text style={styles.metaText} numberOfLines={1}>
+          <Text style={[styles.metaText, { color: theme.textMuted, fontSize: typography.caption.fontSize }]}>
+            💰 {task.money} KWD
+          </Text>
+          <Text style={[styles.metaText, { color: theme.textMuted, fontSize: typography.caption.fontSize }]} numberOfLines={1}>
             📍 {task.location}
           </Text>
         </View>
@@ -45,6 +80,7 @@ function TaskCard({ task, onPress }: { task: Task; onPress: () => void }) {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { theme, typography } = useTheme();
   const [filters, setFilters] = useState<GetTasksParams>({});
 
   const { data, isLoading, isRefetching, refetch, error } =
@@ -79,27 +115,24 @@ export default function HomeScreen() {
   };
 
   return (
-    <WatermarkBackground style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <View style={styles.headerTextContainer}>
-            <Text style={styles.headerTitle}>Browse Tasks</Text>
-            <Text style={styles.headerSubtitle}>
-              {tasks.length} open tasks available
-            </Text>
-          </View>
-          <TaskFilters filters={filters} onApply={handleFiltersChange} />
-        </View>
-      </View>
+    <WatermarkBackground style={[styles.container, { backgroundColor: theme.background }]}>
+      <AppHeader
+        title="Browse Tasks"
+        subtitle={`${tasks.length} open tasks available`}
+        rightElement={<TaskFilters filters={filters} onApply={handleFiltersChange} />}
+        showBranding={true}
+      />
 
       {error ? (
         <View style={styles.errorContainer}>
-          <Card style={styles.errorCard}>
-            <Text style={styles.errorTitle}>Failed to load tasks</Text>
-            <Text style={styles.errorText}>
+          <Card style={[styles.errorCard, { backgroundColor: theme.surface }]}>
+            <Text style={[styles.errorTitle, { color: theme.text, fontSize: typography.heading.fontSize }]}>
+              Failed to load tasks
+            </Text>
+            <Text style={[styles.errorText, { color: theme.textSecondary, fontSize: typography.body.fontSize }]}>
               {(error as Error).message || "Unknown error"}
             </Text>
-            <Text style={styles.errorHint} onPress={() => refetch()}>
+            <Text style={[styles.errorHint, { color: theme.primary, fontSize: typography.body.fontSize }]} onPress={() => refetch()}>
               Tap to retry
             </Text>
             <View style={styles.buttonRow}>
@@ -128,6 +161,8 @@ export default function HomeScreen() {
           <TaskCard
             task={item}
             onPress={() => router.push(`/(main)/task/${item._id}`)}
+            theme={theme}
+            typography={typography}
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -136,9 +171,9 @@ export default function HomeScreen() {
           <RefreshControl
             refreshing={isRefetching}
             onRefresh={refetch}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
-            progressBackgroundColor={colors.surface}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
+            progressBackgroundColor={theme.surface}
           />
         }
         initialNumToRender={10}
@@ -147,10 +182,10 @@ export default function HomeScreen() {
         removeClippedSubviews
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>
+            <Text style={[styles.emptyTitle, { color: theme.text, fontSize: typography.heading.fontSize }]}>
               {isLoading ? "Loading..." : "No open tasks"}
             </Text>
-            <Text style={styles.emptySub}>
+            <Text style={[styles.emptySub, { color: theme.textSecondary, fontSize: typography.body.fontSize }]}>
               {isLoading ? "Please wait" : "Pull down to refresh"}
             </Text>
           </View>
@@ -164,32 +199,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  headerTextContainer: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  headerTitle: {
-    ...typography.title,
-    color: colors.text,
-  },
-  headerSubtitle: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
 
   listContent: {
     paddingHorizontal: spacing.md,
@@ -199,6 +208,9 @@ const styles = StyleSheet.create({
 
   card: {
     marginBottom: spacing.sm,
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: spacing.md,
   },
   cardTopRow: {
     flexDirection: "row",
@@ -208,26 +220,32 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   title: {
-    ...typography.heading,
-    color: colors.text,
+    fontWeight: "600",
     flex: 1,
   },
   pointsPill: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     borderRadius: 999,
-    backgroundColor: colors.primarySoft,
   },
   pointsText: {
-    ...typography.small,
-    color: colors.blueDark,
     fontWeight: "700",
   },
   desc: {
-    ...typography.body,
-    color: colors.textSecondary,
     marginBottom: spacing.sm,
     lineHeight: 20,
+  },
+  statusRow: {
+    marginBottom: spacing.sm,
+  },
+  statusBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 4,
+  },
+  statusText: {
+    fontWeight: '600',
   },
   metaRow: {
     flexDirection: "row",
@@ -235,8 +253,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   metaText: {
-    ...typography.caption,
-    color: colors.textMuted,
     flex: 1,
   },
 
@@ -254,14 +270,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyTitle: {
-    ...typography.heading,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
-  emptySub: {
-    ...typography.body,
-    color: colors.textSecondary,
-  },
+  emptySub: {},
 
   errorContainer: {
     paddingHorizontal: spacing.md,
@@ -271,18 +282,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   errorTitle: {
-    ...typography.heading,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   errorText: {
-    ...typography.body,
-    color: colors.textSecondary,
     marginBottom: spacing.sm,
   },
   errorHint: {
-    ...typography.body,
-    color: colors.primary,
     fontWeight: "600",
   },
 });

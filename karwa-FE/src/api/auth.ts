@@ -1,5 +1,6 @@
 import axios from 'axios';
 import instance from './axios';
+import * as SecureStore from 'expo-secure-store';
 import { saveToken } from '../utils/token';
 
 export interface RegisterData {
@@ -75,8 +76,8 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
 
 export const loginUser = async (data: LoginData): Promise<LoginResponse['data']> => {
   try {
-    console.log("first")
-    console.log(data)
+    // console.log("first")
+    // console.log(data)
     const response = await instance.post<LoginResponse>('/auth/login', {
       email: data.email,
       password: data.password,
@@ -85,7 +86,7 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse['data']>
     console.log(response)
 
     if (response.data.success && response.data.data.token) {
-      // Store token in SecureStore using consistent key
+      // Store token in SecureStore
       await saveToken(response.data.data.token);
     }
 

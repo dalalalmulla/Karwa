@@ -5,6 +5,7 @@ import { connectDatabase } from './src/config/database';
 import { errorHandler } from './src/middleware/errorHandler';
 import authRoutes from './src/routes/auth';
 import taskRoutes from './src/routes/tasks';
+import notificationRoutes from './src/routes/notifications';
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,8 @@ app.get('/health', (_req: Request, res: Response) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

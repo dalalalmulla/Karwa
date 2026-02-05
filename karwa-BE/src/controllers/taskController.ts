@@ -664,6 +664,116 @@ export const confirmCompletion = async (req: Request, res: Response): Promise<vo
   }
 };
 
+export const updateTaskStatus = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = req as CustomeRequest;
+    const userId = q.user?._id;
+    if (!userId) {
+      res.status(401).json({ success: false, error: 'User not authenticated' });
+      return;
+    }
+
+    const { id: taskId } = req.params;
+    const { status } = req.body;
+
+    if (!taskId || !mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ success: false, error: 'Valid task ID is required' });
+      return;
+    }
+
+    // Validate status
+    const validStatuses = ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'];
+    if (!status || !validStatuses.includes(status)) {
+      res.status(400).json({
+        success: false,
+        error: `Invalid status. Must be one of: ${validStatuses.join(', ')}`,
+      });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ success: false, error: 'Task not found' });
+      return;
+    }
+
+    // Only the poster can update the task status
+    if (task.posterId.toString() !== userId) {
+      res.status(403).json({
+        success: false,
+        error: 'Only the task poster can update the status',
+      });
+      return;
+    }
+
+    // Validate status transitions
+    const currentStatus = task.status;
+    
+    // Define valid transitions
+    const validTransitions: Record<string, string[]> = {
+      'OPEN': ['IN_PROGRESS', 'CANCELLED'],
+      'IN_PROGRESS': ['COMPLETED', 'CANCELLED'],
+      'COMPLETED': [], // Cannot change from completed
+      'CANCELLED': [], // Cannot change from cancelled
+    };
+
+    if (!validTransitions[currentStatus]?.includes(status)) {
+      res.status(400).json({
+        success: false,
+        error: `Cannot change status from ${currentStatus} to ${status}`,
+      });
+      return;
+    }
+
+    // Update the status
+    task.status = status;
+    await task.save();
+
+    // If completed and there's an assigned worker, add points
+    if (status === 'COMPLETED' && task.assignedWorkerId) {
+      await User.findByIdAndUpdate(task.assignedWorkerId, {
+        $inc: { points: task.points },
+      });
+    }
+
+    const updated = await Task.findById(taskId)
+      .populate('posterId', 'firstName lastName email')
+      .populate('assignedWorkerId', 'firstName lastName email rating');
+
+    const posterFormatted = formatPopulatedUser(updated!.posterId);
+    const assignedWorkerFormatted = updated!.assignedWorkerId
+      ? formatPopulatedUser(updated!.assignedWorkerId)
+      : undefined;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        task: {
+          _id: updated!._id,
+          title: updated!.title,
+          description: updated!.description,
+          pictures: updated!.pictures,
+          money: updated!.money,
+          location: updated!.location,
+          type: updated!.type,
+          points: updated!.points,
+          status: updated!.status,
+          posterId: posterFormatted,
+          assignedWorkerId: assignedWorkerFormatted,
+          createdAt: updated!.createdAt,
+          updatedAt: updated!.updatedAt,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Update task status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update task status',
+    });
+  }
+};
+
 export const submitRating = async (req: Request, res: Response): Promise<void> => {
   try {
     const q = req as CustomeRequest;

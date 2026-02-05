@@ -1,22 +1,24 @@
 import axios from "axios";
+import { getBaseURL } from "./axios";
 import { Platform } from "react-native";
 import { getToken } from "../utils/token";
 
-// Get base URL based on platform - same as axios.ts
-const getBaseURL = () => {
-  if (__DEV__) {
-    // For iOS Simulator, use Mac's IP address
-    // For Android Emulator, use '10.0.2.2'
-    // For Physical Device, use your Mac's IP address
-    return 'http://192.168.3.170:8000/api'; // Replace with your Mac's IP
-  }
-  // Production URL
-  return 'http://192.168.3.170:8000/api';
-};
+// Get base URL based on platform
+// const getBaseURL = () => {
+//   if (Platform.OS === "android") {
+//     // Android emulator uses 10.0.2.2 for localhost, physical device uses actual IP
+//     return "http://192.168.6.120:8000/api";
+//   }
+//   // iOS simulator can use localhost, physical device needs actual IP
+//   return "http://1192.168.6.120:8000/api";
+// };
+
+
+
 
 export const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 30000, // Increased to 30 seconds for mobile devices
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -25,7 +27,7 @@ export const api = axios.create({
 // Attach token automatically before every request
 api.interceptors.request.use(async (config) => {
   const token = await getToken();
-
+  // console.log("token", token);
   if (token) {
     config.headers = config.headers ?? {};
     config.headers.Authorization = `Bearer ${token}`;

@@ -6,12 +6,16 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
-  Alert
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from 'expo-router';
+import { useRouter } from "expo-router";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { Image } from "expo-image";
 
 import { useAuth } from "@/src/context/AuthContext";
+import { useTheme } from "@/src/context/ThemeContext";
 import { getTasksApi } from "@/src/api/taskCalls";
 import {
   getNotificationsApi,
@@ -19,10 +23,9 @@ import {
 } from "@/src/api/notificationCalls";
 import type { Task } from "@/src/types/taskTypes";
 import type { Notification } from "@/src/types/notificationTypes";
-import { colors, spacing, typography } from "@/constants/theme";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
-import { getCurrentUser } from '@/src/api/auth';
-
+import { getCurrentUser } from "@/src/api/auth";
+import { spacing } from "@/constants/theme";
 
 type TasksResponse = {
   success: boolean;
@@ -32,6 +35,7 @@ type TasksResponse = {
 
 export default function ProfileScreen() {
   const { user } = useAuth();
+  const { theme, typography } = useTheme();
   const queryClient = useQueryClient();
   const router = useRouter();
   const { logout, token } = useAuth();
@@ -64,7 +68,7 @@ export default function ProfileScreen() {
 
   const notifications: Notification[] = useMemo(() => {
     return notificationsData?.success
-      ? notificationsData.data?.notifications ?? []
+      ? (notificationsData.data?.notifications ?? [])
       : [];
   }, [notificationsData]);
 
@@ -77,36 +81,40 @@ export default function ProfileScreen() {
     },
   });
 
-
   // Redirect to login if no token
   useEffect(() => {
     if (!token) {
-      console.log('No token found, redirecting to login');
-      router.replace('/(auth)/login');
+      console.log("No token found, redirecting to login");
+      router.replace("/(auth)/login");
     }
   }, [token, router]);
 
-  const { data, isLoading: currentUserLoading, error, refetch } = useQuery({
-    queryKey: ['currentUser'],
+  const {
+    data,
+    isLoading: currentUserLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["currentUser"],
     queryFn: getCurrentUser,
     retry: 1,
-    enabled: !!token, // Only run query if token exists
+    enabled: !!token,
   });
 
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
       await logout();
-      router.replace('/(auth)/login');
+      router.replace("/(auth)/login");
     } catch (error) {
-      Alert.alert('Error', 'Failed to logout. Please try again.');
+      Alert.alert("Error", "Failed to logout. Please try again.");
     } finally {
       setIsLoggingOut(false);
     }
   };
 
   const tasks: Task[] = useMemo(() => {
-    return tasksData?.success ? tasksData.data?.tasks ?? [] : [];
+    return tasksData?.success ? (tasksData.data?.tasks ?? []) : [];
   }, [tasksData]);
 
   const stats = tasks.reduce(
@@ -117,7 +125,7 @@ export default function ProfileScreen() {
       else if (task.status === "CANCELLED") acc.cancelled += 1;
       return acc;
     },
-    { completed: 0, inProgress: 0, open: 0, cancelled: 0 }
+    { completed: 0, inProgress: 0, open: 0, cancelled: 0 },
   );
 
   const handleMarkAllRead = () => {
@@ -149,17 +157,52 @@ export default function ProfileScreen() {
 
   const renderNotification = ({ item }: { item: Notification }) => {
     return (
-      <View style={[styles.notifItem, !item.read && styles.notifUnread]}>
+      <View
+        style={[
+          styles.notifItem,
+          { backgroundColor: theme.surface, borderColor: theme.border },
+          !item.read && [styles.notifUnread, { borderColor: theme.primary }],
+        ]}
+      >
         <View style={styles.notifTopRow}>
-          <Text style={styles.notifTitle} numberOfLines={1}>
+          <Text
+            style={[
+              styles.notifTitle,
+              { color: theme.text, fontSize: typography.body.fontSize },
+            ]}
+            numberOfLines={1}
+          >
             {item.title}
           </Text>
-          {!item.read && <Text style={styles.badge}>NEW</Text>}
+          {!item.read && (
+            <Text
+              style={[
+                styles.badge,
+                { color: theme.white, backgroundColor: theme.primary },
+              ]}
+            >
+              NEW
+            </Text>
+          )}
         </View>
-        <Text style={styles.notifMsg} numberOfLines={2}>
+        <Text
+          style={[
+            styles.notifMsg,
+            {
+              color: theme.textSecondary,
+              fontSize: typography.caption.fontSize,
+            },
+          ]}
+          numberOfLines={2}
+        >
           {item.message}
         </Text>
-        <Text style={styles.notifDate}>
+        <Text
+          style={[
+            styles.notifDate,
+            { color: theme.textMuted, fontSize: typography.small.fontSize },
+          ]}
+        >
           {new Date(item.createdAt).toLocaleString()}
         </Text>
       </View>
@@ -171,54 +214,216 @@ export default function ProfileScreen() {
 
   const ListHeader = () => (
     <>
-      {/* Profile Header */}
-      <View style={styles.profileHeader}>
+      {/* App Branding Header */}
+      <View
+        style={[
+          styles.brandingHeader,
+          { backgroundColor: theme.surface, borderBottomColor: theme.border },
+        ]}
+      >
+        <Text
+          style={[
+            styles.pageTitle,
+            { color: theme.textTitle, fontSize: typography.title.fontSize },
+          ]}
+        >
+          Profile
+        </Text>
+        <View style={styles.brandingRight}>
+          {/* Logout Button */}
+          <TouchableOpacity
+            style={[styles.logoutButton, { backgroundColor: theme.danger }]}
+            onPress={() => {
+              Alert.alert("Logout", "Are you sure you want to logout?", [
+                { text: "Cancel", style: "cancel" },
+                {
+                  text: "Logout",
+                  style: "destructive",
+                  onPress: handleLogout,
+                },
+              ]);
+            }}
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <ActivityIndicator size="small" color={theme.white} />
+            ) : (
+              <>
+                <AntDesign name="logout" size={14} color={theme.white} />
+                <Text
+                  style={[
+                    styles.logoutText,
+                    { color: theme.white, fontSize: typography.small.fontSize },
+                  ]}
+                >
+                  Logout
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          {/* App Logo and Name */}
+          <View style={styles.branding}>
+            <Image
+              source={require("../../../assets/images/Karwa.png")}
+              style={styles.logo}
+              contentFit="contain"
+            />
+            <Text
+              style={[
+                styles.appName,
+                { color: theme.primary, fontSize: typography.body.fontSize },
+              ]}
+            >
+              Karwa
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Profile Info */}
+      <View style={[styles.profileHeader, { backgroundColor: theme.surface }]}>
         <View style={styles.profileInfo}>
-          <Text style={styles.name}>{displayName}</Text>
-          <Text style={styles.rating}>
-            {userRating !== null ? `⭐ ${userRating.toFixed(1)}` : "⭐ No rating yet"}
+          <Text
+            style={[
+              styles.name,
+              {
+                color: "green",
+                fontSize: typography.title.fontSize,
+                fontWeight: "700",
+              },
+            ]}
+          >
+            {displayName}
+          </Text>
+          <Text
+            style={[
+              styles.rating,
+              {
+                color: theme.textSecondary,
+                fontSize: typography.caption.fontSize,
+              },
+            ]}
+          >
+            {userRating !== null
+              ? `⭐ ${userRating.toFixed(1)}`
+              : "⭐ No rating yet"}
           </Text>
         </View>
         {unreadCount > 0 && (
-          <View style={styles.unreadPill}>
-            <Text style={styles.unreadText}>{unreadCount}</Text>
+          <View style={[styles.unreadPill, { backgroundColor: theme.primary }]}>
+            <Text style={[styles.unreadText, { color: theme.white }]}>
+              {unreadCount}
+            </Text>
           </View>
         )}
       </View>
 
       {/* Stats */}
-      <View style={styles.stats}>
+      <View
+        style={[
+          styles.stats,
+          { backgroundColor: theme.surface, borderBottomColor: theme.border },
+        ]}
+      >
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.open}</Text>
-          <Text style={styles.statLabel}>Open</Text>
+          <Text
+            style={[
+              styles.statNumber,
+              { color: theme.primary, fontSize: typography.heading.fontSize },
+            ]}
+          >
+            {stats.open}
+          </Text>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: theme.textMuted, fontSize: typography.small.fontSize },
+            ]}
+          >
+            Open
+          </Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.inProgress}</Text>
-          <Text style={styles.statLabel}>Active</Text>
+          <Text
+            style={[
+              styles.statNumber,
+              { color: theme.primary, fontSize: typography.heading.fontSize },
+            ]}
+          >
+            {stats.inProgress}
+          </Text>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: theme.textMuted, fontSize: typography.small.fontSize },
+            ]}
+          >
+            Active
+          </Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.completed}</Text>
-          <Text style={styles.statLabel}>Done</Text>
+          <Text
+            style={[
+              styles.statNumber,
+              { color: theme.primary, fontSize: typography.heading.fontSize },
+            ]}
+          >
+            {stats.completed}
+          </Text>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: theme.textMuted, fontSize: typography.small.fontSize },
+            ]}
+          >
+            Done
+          </Text>
         </View>
-        <View style={styles.statDivider} />
+        <View style={[styles.statDivider, { backgroundColor: theme.border }]} />
         <View style={styles.statItem}>
-          <Text style={styles.statNumber}>{stats.cancelled}</Text>
-          <Text style={styles.statLabel}>Cancelled</Text>
+          <Text
+            style={[
+              styles.statNumber,
+              { color: theme.primary, fontSize: typography.heading.fontSize },
+            ]}
+          >
+            {stats.cancelled}
+          </Text>
+          <Text
+            style={[
+              styles.statLabel,
+              { color: theme.textMuted, fontSize: typography.small.fontSize },
+            ]}
+          >
+            Cancelled
+          </Text>
         </View>
       </View>
 
       {/* Notifications Header */}
-      <View style={styles.notifHeader}>
-        <Text style={styles.notifHeaderTitle}>Notifications</Text>
+      <View style={[styles.notifHeader, { backgroundColor: theme.background }]}>
+        <Text
+          style={[
+            styles.notifHeaderTitle,
+            { color: theme.textHeading, fontSize: typography.heading.fontSize },
+          ]}
+        >
+          Notifications
+        </Text>
         {unreadCount > 0 && (
           <TouchableOpacity
             onPress={handleMarkAllRead}
             disabled={markAllReadMutation.isPending}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.markReadText}>
+            <Text
+              style={[
+                styles.markReadText,
+                { color: theme.primary, fontSize: typography.caption.fontSize },
+              ]}
+            >
               {markAllReadMutation.isPending ? "..." : "Mark all read"}
             </Text>
           </TouchableOpacity>
@@ -226,7 +431,12 @@ export default function ProfileScreen() {
       </View>
 
       {tasksError && (
-        <Text style={styles.errorText}>
+        <Text
+          style={[
+            styles.errorText,
+            { color: theme.danger, fontSize: typography.caption.fontSize },
+          ]}
+        >
           {(tasksError as Error).message || "Failed to load"}
         </Text>
       )}
@@ -234,7 +444,9 @@ export default function ProfileScreen() {
   );
 
   return (
-    <WatermarkBackground style={styles.container}>
+    <WatermarkBackground
+      style={[styles.container, { backgroundColor: theme.background }]}
+    >
       <FlatList
         data={notifications}
         keyExtractor={(item) => item._id}
@@ -246,16 +458,29 @@ export default function ProfileScreen() {
           <RefreshControl
             refreshing={isRefreshing}
             onRefresh={handleRefresh}
-            colors={[colors.primary]}
-            tintColor={colors.primary}
+            colors={[theme.primary]}
+            tintColor={theme.primary}
           />
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>
+            <Text
+              style={[
+                styles.emptyTitle,
+                { color: theme.text, fontSize: typography.heading.fontSize },
+              ]}
+            >
               {isLoading ? "Loading..." : "No notifications"}
             </Text>
-            <Text style={styles.emptySub}>
+            <Text
+              style={[
+                styles.emptySub,
+                {
+                  color: theme.textSecondary,
+                  fontSize: typography.body.fontSize,
+                },
+              ]}
+            >
               {isLoading ? "Please wait" : "You're all caught up!"}
             </Text>
           </View>
@@ -273,51 +498,85 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
   },
 
-  // Profile Header
-  profileHeader: {
+  // Branding Header
+  brandingHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
-    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+  },
+  pageTitle: {
+    fontWeight: "700",
+  },
+  brandingRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+  },
+  branding: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+  },
+  logo: {
+    width: 28,
+    height: 28,
+  },
+  appName: {
+    fontWeight: "600",
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: 6,
+    gap: spacing.xs,
+  },
+  logoutText: {
+    fontWeight: "600",
+  },
+
+  // Profile Header
+  profileHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.sm,
   },
   profileInfo: {
     flex: 1,
   },
   name: {
-    ...typography.title,
-    color: colors.text,
+    fontWeight: "600",
   },
   rating: {
-    ...typography.caption,
-    color: colors.textSecondary,
     marginTop: 2,
   },
   unreadPill: {
     minWidth: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: colors.primary,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: spacing.sm,
   },
   unreadText: {
-    ...typography.small,
-    color: colors.white,
     fontWeight: "700",
+    fontSize: 11,
   },
 
   // Stats
   stats: {
     flexDirection: "row",
-    backgroundColor: colors.surface,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   statItem: {
     flex: 1,
@@ -325,15 +584,11 @@ const styles = StyleSheet.create({
   },
   statDivider: {
     width: 1,
-    backgroundColor: colors.border,
   },
   statNumber: {
-    ...typography.heading,
-    color: colors.primary,
+    fontWeight: "600",
   },
   statLabel: {
-    ...typography.small,
-    color: colors.textMuted,
     marginTop: 2,
   },
 
@@ -344,15 +599,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    backgroundColor: colors.background,
   },
   notifHeaderTitle: {
-    ...typography.heading,
-    color: colors.text,
+    fontWeight: "600",
   },
   markReadText: {
-    ...typography.caption,
-    color: colors.primary,
     fontWeight: "600",
   },
 
@@ -361,13 +612,10 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.md,
     marginBottom: spacing.sm,
     padding: spacing.md,
-    backgroundColor: colors.surface,
     borderRadius: spacing.sm,
     borderWidth: 1,
-    borderColor: colors.border,
   },
   notifUnread: {
-    borderColor: colors.primary,
     borderLeftWidth: 3,
   },
   notifTopRow: {
@@ -377,32 +625,23 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   notifTitle: {
-    ...typography.body,
-    color: colors.text,
     fontWeight: "600",
     flex: 1,
     marginRight: spacing.sm,
   },
   badge: {
-    ...typography.small,
-    color: colors.white,
-    backgroundColor: colors.primary,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
     borderRadius: 4,
     fontWeight: "700",
+    fontSize: 10,
     overflow: "hidden",
   },
   notifMsg: {
-    ...typography.caption,
-    color: colors.textSecondary,
     marginBottom: spacing.xs,
     lineHeight: 18,
   },
-  notifDate: {
-    ...typography.small,
-    color: colors.textMuted,
-  },
+  notifDate: {},
 
   // Empty State
   empty: {
@@ -411,19 +650,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
   },
   emptyTitle: {
-    ...typography.heading,
-    color: colors.text,
     marginBottom: spacing.xs,
   },
   emptySub: {
-    ...typography.body,
-    color: colors.textSecondary,
     textAlign: "center",
   },
 
   errorText: {
-    ...typography.caption,
-    color: colors.danger,
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,
   },

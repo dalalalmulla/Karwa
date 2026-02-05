@@ -11,10 +11,18 @@ export const getNotificationsApi = async (params?: {
   read?: boolean;
   limit?: number;
 }): Promise<GetNotificationsResponse> => {
+  try {
+    // console.log("params", params);
   const res = await api.get<GetNotificationsResponse>("/notifications", {
     params,
   });
+  // console.log("res.data", res);
   return res.data;
+  } catch (error) {
+    console.log("error", error);
+    throw error;
+  }
+  
 };
 
 // Get unread notification count

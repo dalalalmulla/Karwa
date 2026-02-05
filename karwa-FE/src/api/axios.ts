@@ -40,6 +40,7 @@ const instance = axios.create({
 // Request interceptor to add token
 instance.interceptors.request.use(
   async (config) => {
+    // console.log("first")
     try {
       const token = await getToken();
       if (token) {
@@ -77,4 +78,5 @@ instance.interceptors.response.use(
   }
 );
 
+export { getBaseURL };
 export default instance;
