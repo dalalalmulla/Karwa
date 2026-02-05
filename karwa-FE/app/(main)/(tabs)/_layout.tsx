@@ -4,11 +4,14 @@ import { Tabs } from "expo-router";
 import AntDesign from "@expo/vector-icons/AntDesign";
 
 import { HapticTab } from "@/components/haptic-tab";
-import { colors, spacing } from "@/constants/theme";
+import { useTheme } from "@/src/context/ThemeContext";
+import { spacing } from "@/constants/Karwa.theme";
 import { useQuery } from "@tanstack/react-query";
 import { getNotificationsApi } from "@/src/api/notificationCalls";
 
 export default function TabLayout() {
+  const { theme } = useTheme();
+  
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => getNotificationsApi({ limit: 50 }),
@@ -20,14 +23,28 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textMuted,
+        tabBarActiveTintColor: theme.primary,
+        tabBarInactiveTintColor: theme.textMuted,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [styles.tabBar, { backgroundColor: theme.surface, borderTopColor: theme.border }],
         tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
+      {/* Profile on the left */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <AntDesign name="profile" size={22} color={color} />
+          ),
+          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+          tabBarBadgeStyle: [styles.badge, { backgroundColor: theme.primary }],
+        }}
+      />
+
+      {/* Home in the middle */}
       <Tabs.Screen
         name="index"
         options={{
@@ -38,26 +55,14 @@ export default function TabLayout() {
         }}
       />
 
+      {/* Settings on the right */}
       <Tabs.Screen
-        name="explore"
+        name="settings"
         options={{
-          title: "Explore Tasks",
-          tabBarLabel: "Explore",
+          title: "Settings",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="chevron.right.forwardslash.chevron.right" color={color} />
+            <AntDesign name="setting" size={24} color={color} />
           ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <AntDesign name="profile" size={22} color={color} />
-          ),
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: styles.badge,
         }}
       />
     </Tabs>
@@ -66,8 +71,6 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.surface,
-    borderTopColor: colors.border,
     borderTopWidth: 1,
     paddingTop: spacing.xs,
     paddingBottom: spacing.xs,
@@ -79,8 +82,7 @@ const styles = StyleSheet.create({
     marginTop: -2,
   },
   badge: {
-    backgroundColor: colors.primary,
-    color: colors.white,
+    color: "#FDFCFD",
     fontSize: 10,
     minWidth: 16,
     height: 16,

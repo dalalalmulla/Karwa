@@ -1,7 +1,7 @@
 import { api } from "./client";
 
 export type TaskStatus = "OPEN" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
-export type TaskType = "indoor" | "outdoor" | "home_service" | "car_service";
+export type TaskType = "indoor" | "outdoor";
 
 export type Poster =
   | string
@@ -67,5 +67,26 @@ export type CreateTaskResponse = {
 
 export const createTask = async (data: CreateTaskData): Promise<CreateTaskResponse> => {
   const res = await api.post<CreateTaskResponse>("/tasks", data);
+  return res.data;
+};
+
+// Update task status
+export type UpdateTaskStatusData = {
+  status: TaskStatus;
+};
+
+export type UpdateTaskStatusResponse = {
+  success: boolean;
+  data?: {
+    task: Task;
+  };
+  error?: string;
+};
+
+export const updateTaskStatus = async (
+  taskId: string,
+  data: UpdateTaskStatusData
+): Promise<UpdateTaskStatusResponse> => {
+  const res = await api.patch<UpdateTaskStatusResponse>(`/tasks/${taskId}/status`, data);
   return res.data;
 };

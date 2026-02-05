@@ -20,8 +20,6 @@ import { createTask, CreateTaskData, TaskType } from '@/src/api/tasks';
 const TASK_TYPES: { label: string; value: TaskType }[] = [
   { label: 'Indoor', value: 'indoor' },
   { label: 'Outdoor', value: 'outdoor' },
-  { label: 'Home Service', value: 'home_service' },
-  { label: 'Car Service', value: 'car_service' },
 ];
 
 export default function CreateTaskScreen() {

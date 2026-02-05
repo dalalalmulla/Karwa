@@ -1,11 +1,11 @@
 import React from "react";
-import { View, StyleSheet, ViewStyle } from "react-native";
+import { View, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import { colors } from "@/constants/theme";
 
 interface WatermarkBackgroundProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 export default function WatermarkBackground({
