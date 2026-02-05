@@ -82,7 +82,7 @@ export const lightTheme: KarwaTheme = {
   text: palette.gray900,
   textSecondary: palette.gray700,
   textMuted: palette.gray500,
-  textTitle: palette.blueDark,    // #153871 - Page titles
+  textTitle: palette.blueMid,     // #1C5FA3 - Page titles
   textHeading: palette.blueMid,   // #1C5FA3 - Main headings
 
   primary: palette.blue,

@@ -232,7 +232,7 @@ export default function ProfileScreen() {
         <View style={styles.brandingRight}>
           {/* Logout Button */}
           <TouchableOpacity
-            style={[styles.logoutButton, { backgroundColor: theme.danger }]}
+            style={[styles.logoutButton]}
             onPress={() => {
               Alert.alert("Logout", "Are you sure you want to logout?", [
                 { text: "Cancel", style: "cancel" },
@@ -249,15 +249,7 @@ export default function ProfileScreen() {
               <ActivityIndicator size="small" color={theme.white} />
             ) : (
               <>
-                <AntDesign name="logout" size={14} color={theme.white} />
-                <Text
-                  style={[
-                    styles.logoutText,
-                    { color: theme.white, fontSize: typography.small.fontSize },
-                  ]}
-                >
-                  Logout
-                </Text>
+                <AntDesign name="logout" size={24} color="#4A9AD6" />
               </>
             )}
           </TouchableOpacity>
@@ -287,7 +279,7 @@ export default function ProfileScreen() {
             style={[
               styles.name,
               {
-                color: "green",
+                color: "#4A9AD6",
                 fontSize: typography.title.fontSize,
                 fontWeight: "700",
               },
