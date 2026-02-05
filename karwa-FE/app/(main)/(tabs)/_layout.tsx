@@ -11,7 +11,7 @@ import { getNotificationsApi } from "@/src/api/notificationCalls";
 
 export default function TabLayout() {
   const { theme } = useTheme();
-  
+
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => getNotificationsApi({ limit: 50 }),
@@ -27,7 +27,10 @@ export default function TabLayout() {
         tabBarInactiveTintColor: theme.textMuted,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: [styles.tabBar, { backgroundColor: theme.surface, borderTopColor: theme.border }],
+        tabBarStyle: [
+          styles.tabBar,
+          { backgroundColor: theme.surface, borderTopColor: theme.border },
+        ],
         tabBarLabelStyle: styles.tabBarLabel,
       }}
     >

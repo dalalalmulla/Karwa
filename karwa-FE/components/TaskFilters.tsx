@@ -57,7 +57,7 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
       <TouchableOpacity
         style={[
           styles.filterButton,
-          { backgroundColor: theme.surface, borderColor: theme.border },
+          { backgroundColor: '#7BBCE8', borderColor: '#7BBCE8' },
           activeFilterCount > 0 && { backgroundColor: theme.primary, borderColor: theme.primary },
         ]}
         onPress={handleOpen}
@@ -66,7 +66,7 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
         <Text
           style={[
             styles.filterButtonText,
-            { color: theme.text, fontSize: typography.caption.fontSize },
+            { color: theme.white, fontSize: typography.caption.fontSize },
             activeFilterCount > 0 && { color: theme.white },
           ]}
         >
