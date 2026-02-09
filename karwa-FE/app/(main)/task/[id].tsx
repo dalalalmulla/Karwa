@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
+  Dimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing, borderRadius, shadows } from "@/constants/Karwa.theme";
+import { getBaseURL } from "@/src/api/axios";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import StatusBadge from "@/components/ui/StatusBadge";
@@ -36,6 +39,17 @@ import StarRating from "@/components/ui/StarRating";
 import { ROLE_LABELS } from "@/src/constants/roles";
 
 /* ─── Helpers ─── */
+
+/** Build a full URL for an image path returned by the backend. */
+function getImageUrl(path: string): string {
+  if (path.startsWith("http")) return path; // Already a full URL
+  if (path.startsWith("file://")) return path; // Local file
+  // Backend serves uploads at /uploads/... (no /api prefix)
+  const serverUrl = getBaseURL().replace("/api", "");
+  return `${serverUrl}${path.startsWith("/") ? "" : "/"}${path}`;
+}
+
+const SCREEN_WIDTH = Dimensions.get("window").width;
 
 function getPosterId(task: Task): string {
   if (!task.posterId) return "";
@@ -442,6 +456,30 @@ export default function TaskDetailScreen() {
           >
             {task.description}
           </Text>
+
+          {/* Image Gallery */}
+          {task.pictures && task.pictures.length > 0 && (
+            <View style={styles.imageGallery}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.imageScroll}
+              >
+                {task.pictures.map((pic, idx) => (
+                  <Image
+                    key={idx}
+                    source={{ uri: getImageUrl(pic) }}
+                    style={[
+                      styles.galleryImage,
+                      { borderColor: theme.border },
+                    ]}
+                    contentFit="cover"
+                    transition={200}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
           {/* Meta Grid */}
           <View
@@ -986,6 +1024,20 @@ const styles = StyleSheet.create({
   description: {
     lineHeight: 22,
     marginBottom: spacing.md,
+  },
+
+  /* Image Gallery */
+  imageGallery: {
+    marginBottom: spacing.md,
+  },
+  imageScroll: {
+    gap: spacing.sm,
+  },
+  galleryImage: {
+    width: SCREEN_WIDTH * 0.55,
+    height: 180,
+    borderRadius: borderRadius.md,
+    borderWidth: 1,
   },
 
   /* Meta Grid */

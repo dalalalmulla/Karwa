@@ -48,17 +48,32 @@ export default function ProfileScreen() {
   const { logout, token } = useAuth();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
+  // Fetch tasks where user is the poster
   const {
-    data: tasksData,
-    isRefetching: isTasksRefetching,
-    refetch: refetchTasks,
-    isLoading: isTasksLoading,
-    error: tasksError,
+    data: postedTasksData,
+    isRefetching: isPostedTasksRefetching,
+    refetch: refetchPostedTasks,
+    isLoading: isPostedTasksLoading,
   } = useQuery<TasksResponse>({
-    queryKey: ["my-tasks"],
+    queryKey: ["my-posted-tasks"],
+    queryFn: () => getTasksApi({ posterId: "me" }) as unknown as Promise<TasksResponse>,
+    refetchInterval: 15000,
+    refetchIntervalInBackground: true,
+    enabled: !!token,
+  });
+
+  // Fetch all tasks to filter for assigned tasks
+  const {
+    data: allTasksData,
+    isRefetching: isAllTasksRefetching,
+    refetch: refetchAllTasks,
+    isLoading: isAllTasksLoading,
+  } = useQuery<TasksResponse>({
+    queryKey: ["all-tasks-for-profile"],
     queryFn: () => getTasksApi({}) as unknown as Promise<TasksResponse>,
     refetchInterval: 15000,
     refetchIntervalInBackground: true,
+    enabled: !!token,
   });
 
   const {
@@ -71,6 +86,7 @@ export default function ProfileScreen() {
     queryFn: () => getNotificationsApi({ limit: 50 }),
     refetchInterval: 15000,
     refetchIntervalInBackground: true,
+    enabled: !!token,
   });
 
   const notifications: Notification[] = useMemo(() => {
@@ -95,10 +111,10 @@ export default function ProfileScreen() {
   }, [token, router]);
 
   const {
-    data,
+    data: userData,
     isLoading: currentUserLoading,
     error,
-    refetch,
+    refetch : refetchUser,
   } = useQuery({
     queryKey: ["currentUser"],
     queryFn: getCurrentUser,
@@ -118,16 +134,52 @@ export default function ProfileScreen() {
     }
   };
 
+  // Combine tasks where user is poster or assigned worker
   const tasks: Task[] = useMemo(() => {
-    return tasksData?.success ? (tasksData.data?.tasks ?? []) : [];
-  }, [tasksData]);
+    const userId = user?._id ? String(user._id) : null;
+    if (!userId) return [];
+
+    const postedTasks = postedTasksData?.success ? (postedTasksData.data?.tasks ?? []) : [];
+    const allTasks = allTasksData?.success ? (allTasksData.data?.tasks ?? []) : [];
+
+    // Filter tasks where user is assigned worker
+    const assignedTasks = allTasks.filter((task) => {
+      if (!task.assignedWorkerId) return false;
+      const workerId = typeof task.assignedWorkerId === "string" 
+        ? task.assignedWorkerId 
+        : (task.assignedWorkerId as any)?._id || task.assignedWorkerId;
+      return String(workerId) === userId;
+    });
+
+    // Combine and deduplicate by task ID
+    const allUserTasks = [...postedTasks, ...assignedTasks];
+    const uniqueTasks = Array.from(
+      new Map(allUserTasks.map((task) => [task._id, task])).values()
+    );
+
+    // Debug logging
+    console.log("Profile tasks:", {
+      postedCount: postedTasks.length,
+      assignedCount: assignedTasks.length,
+      totalUnique: uniqueTasks.length,
+      statusBreakdown: uniqueTasks.reduce((acc, t) => {
+        const status = String(t.status || "").toUpperCase();
+        acc[status] = (acc[status] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>),
+    });
+
+    return uniqueTasks;
+  }, [postedTasksData, allTasksData, user]);
 
   const stats = tasks.reduce(
     (acc, task) => {
-      if (task.status === "COMPLETED") acc.completed += 1;
-      else if (task.status === "IN_PROGRESS") acc.inProgress += 1;
-      else if (task.status === "OPEN") acc.open += 1;
-      else if (task.status === "CANCELLED") acc.cancelled += 1;
+      // Normalize status to uppercase for case-insensitive comparison
+      const status = String(task.status || "").toUpperCase().trim();
+      if (status === "COMPLETED") acc.completed += 1;
+      else if (status === "IN_PROGRESS") acc.inProgress += 1;
+      else if (status === "OPEN") acc.open += 1;
+      else if (status === "CANCELLED") acc.cancelled += 1;
       return acc;
     },
     { completed: 0, inProgress: 0, open: 0, cancelled: 0 }
@@ -138,8 +190,10 @@ export default function ProfileScreen() {
   };
 
   const handleRefresh = () => {
-    refetchTasks();
+    refetchPostedTasks();
+    refetchAllTasks();
     refetchNotifications();
+    refetchUser();
   };
 
   const displayName = useMemo(() => {
@@ -156,15 +210,14 @@ export default function ProfileScreen() {
   }, [user]);
 
   const userRating = useMemo(() => {
-    const anyUser = user as { rating?: number };
-    return anyUser?.rating ?? null;
-  }, [user]);
+    return userData?.user?.ratingAverage ?? null;
+  }, [userData]);
 
   const renderNotification = ({ item }: { item: Notification }) => (
     <Card
       variant="outlined"
       padding="medium"
-      style={[!item.read && { borderLeftWidth: 3, borderLeftColor: theme.primary }]}
+      style={!item.read ? { borderLeftWidth: 3, borderLeftColor: theme.primary } : undefined}
     >
       <View style={styles.notifTopRow}>
         <Text
@@ -201,8 +254,8 @@ export default function ProfileScreen() {
     </Card>
   );
 
-  const isRefreshing = isTasksRefetching || isNotificationsRefetching;
-  const isLoading = isTasksLoading || isNotificationsLoading;
+  const isRefreshing = isPostedTasksRefetching || isAllTasksRefetching || isNotificationsRefetching;
+  const isLoading = isPostedTasksLoading || isAllTasksLoading || isNotificationsLoading;
 
   const ListHeader = () => (
     <>
@@ -275,7 +328,7 @@ export default function ProfileScreen() {
       {/* Stats Row */}
       <View style={styles.statsRow}>
         {[
-          { label: "Open", value: stats.open, variant: "info" as const },
+          { label: "My Open", value: stats.open, variant: "info" as const },
           { label: "Active", value: stats.inProgress, variant: "warning" as const },
           { label: "Done", value: stats.completed, variant: "success" as const },
           { label: "Cancelled", value: stats.cancelled, variant: "danger" as const },
@@ -338,16 +391,6 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {tasksError && (
-        <Text
-          style={[
-            styles.errorText,
-            { color: theme.danger, fontSize: typography.caption.fontSize },
-          ]}
-        >
-          {(tasksError as Error).message || "Failed to load"}
-        </Text>
-      )}
     </>
   );
 

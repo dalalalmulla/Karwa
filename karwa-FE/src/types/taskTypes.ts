@@ -17,6 +17,12 @@ export interface Task {
     lastName?: string;
     email: string;
   };
+  assignedWorkerId?: string | {
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

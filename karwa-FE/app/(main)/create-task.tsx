@@ -8,7 +8,11 @@ import {
   Platform,
   Alert,
   TouchableOpacity,
+  ActivityIndicator,
+  Linking
 } from "react-native";
+import { Image } from "expo-image";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTheme } from "@/src/context/ThemeContext";
@@ -16,13 +20,16 @@ import { spacing, borderRadius } from "@/constants/Karwa.theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   createTask,
   updateTask,
   getTaskById,
+  uploadImages,
   CreateTaskData,
   TaskType,
 } from "@/src/api/tasks";
+
 
 const TASK_TYPES: { label: string; value: TaskType }[] = [
   { label: "Indoor", value: "indoor" },
@@ -50,8 +57,6 @@ export default function CreateTaskScreen() {
   const [errors, setErrors] = useState<
     Partial<Record<keyof CreateTaskData, string>>
   >({});
-  const [pictureInput, setPictureInput] = useState("");
-
   // Fetch task data if in edit mode
   const { data: taskData, isLoading: isLoadingTask } = useQuery({
     queryKey: ["task", taskId],
@@ -99,27 +104,162 @@ export default function CreateTaskScreen() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleAddPicture = () => {
-    const trimmedUrl = pictureInput.trim();
-    if (!trimmedUrl) {
-      Alert.alert("Error", "Please enter an image URL");
-      return;
-    }
+  const pickImageFromGallery = async () => {
     try {
-      new URL(trimmedUrl);
-    } catch {
-      Alert.alert("Error", "Please enter a valid URL");
-      return;
+      console.log("Platform:", Platform.OS);
+      console.log("Checking media library permissions...");
+      
+      // Check current permission status first
+      const permissionResult = await ImagePicker.getMediaLibraryPermissionsAsync();
+      console.log("Current permission status:", permissionResult.status);
+      
+      let finalStatus = permissionResult.status;
+      
+      // Only request if not already granted
+      if (finalStatus !== "granted") {
+        console.log("Requesting media library permissions...");
+        const requestResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        finalStatus = requestResult.status;
+        console.log("Permission request result:", finalStatus);
+      }
+      
+      if (finalStatus !== "granted") {
+        const message = Platform.OS === "android"
+          ? "Photo access is required to select images. Please enable it in Settings."
+          : "Please allow access to your photo library to add images.";
+        
+        Alert.alert(
+          "Permission Required",
+          message,
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Open Settings",
+              onPress: () => {
+                if (Platform.OS === "android") {
+                  Linking.openSettings();
+                }
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      // Android-specific configuration
+      const options: ImagePicker.ImagePickerOptions = {
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.7,
+        allowsEditing: false,
+      };
+
+      if (Platform.OS === "android") {
+        options.selectionLimit = 5;
+      }
+
+      console.log("Launching image library with options:", options);
+      const result = await ImagePicker.launchImageLibraryAsync(options);
+      
+      console.log("Image picker result:", {
+        canceled: result.canceled,
+        assetsCount: result.assets?.length || 0,
+      });
+  
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const newUris = result.assets.map((asset) => asset.uri);
+        console.log("Selected images:", newUris.length);
+        setFormData((prev) => ({
+          ...prev,
+          pictures: [...(prev.pictures || []), ...newUris],
+        }));
+      }
+    } catch (error) {
+      console.error("Error picking image:", error);
+      Alert.alert(
+        "Error", 
+        `Failed to open image picker: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
-    if (formData.pictures?.includes(trimmedUrl)) {
-      Alert.alert("Error", "This image URL has already been added");
-      return;
+  };
+  
+  const takePhoto = async () => {
+    try {
+      console.log("Platform:", Platform.OS);
+      console.log("Checking camera permissions...");
+      
+      // Check current permission status first
+      const permissionResult = await ImagePicker.getCameraPermissionsAsync();
+      console.log("Current camera permission status:", permissionResult.status);
+      
+      let finalStatus = permissionResult.status;
+      
+      // Only request if not already granted
+      if (finalStatus !== "granted") {
+        console.log("Requesting camera permissions...");
+        const requestResult = await ImagePicker.requestCameraPermissionsAsync();
+        finalStatus = requestResult.status;
+        console.log("Camera permission request result:", finalStatus);
+      }
+      
+      if (finalStatus !== "granted") {
+        const message = Platform.OS === "android"
+          ? "Camera access is required to take photos. Please enable it in Settings."
+          : "Please allow access to your camera to take photos.";
+        
+        Alert.alert(
+          "Permission Required",
+          message,
+          [
+            { text: "Cancel", style: "cancel" },
+            {
+              text: "Open Settings",
+              onPress: () => {
+                if (Platform.OS === "android") {
+                  Linking.openSettings();
+                }
+              },
+            },
+          ]
+        );
+        return;
+      }
+  
+      console.log("Launching camera...");
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.7,
+        allowsEditing: false,
+      });
+      
+      console.log("Camera result:", {
+        canceled: result.canceled,
+        hasAsset: !!result.assets?.[0],
+      });
+  
+      if (!result.canceled && result.assets && result.assets[0]) {
+        const imageUri = result.assets[0].uri;
+        console.log("Photo taken:", imageUri);
+        setFormData((prev) => ({
+          ...prev,
+          pictures: [...(prev.pictures || []), imageUri],
+        }));
+      }
+    } catch (error) {
+      console.error("Error taking photo:", error);
+      Alert.alert(
+        "Error", 
+        `Failed to open camera: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
-    setFormData((prev) => ({
-      ...prev,
-      pictures: [...(prev.pictures || []), trimmedUrl],
-    }));
-    setPictureInput("");
+  };
+  
+
+  const handleAddPicture = () => {
+    Alert.alert("Add Picture", "Choose an option", [
+      { text: "Camera", onPress: takePhoto },
+      { text: "Gallery", onPress: pickImageFromGallery },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   const handleRemovePicture = (index: number) => {
@@ -156,12 +296,41 @@ export default function CreateTaskScreen() {
     },
   });
 
-  const handleSubmit = () => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleSubmit = async () => {
     if (!validateForm()) return;
-    if (isEditMode) {
-      updateTaskMutation.mutate(formData);
-    } else {
-      createTaskMutation.mutate(formData);
+
+    try {
+      setIsUploading(true);
+      let pictureUrls = formData.pictures || [];
+
+      // Separate local file URIs from already-uploaded server URLs
+      const localImages = pictureUrls.filter((p) => p.startsWith("file://"));
+      const remoteImages = pictureUrls.filter((p) => !p.startsWith("file://"));
+
+      // Upload local images to server via multer
+      if (localImages.length > 0) {
+        const uploaded = await uploadImages(localImages);
+        pictureUrls = [...remoteImages, ...uploaded];
+      }
+
+      const payload = { ...formData, pictures: pictureUrls };
+
+      if (isEditMode) {
+        updateTaskMutation.mutate(payload);
+      } else {
+        createTaskMutation.mutate(payload);
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to upload images. Please try again.";
+      console.error("Upload error:", error);
+      Alert.alert("Error", errorMessage);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -262,86 +431,66 @@ export default function CreateTaskScreen() {
                 >
                   Pictures (Optional)
                 </Text>
-                <View style={styles.pictureInputRow}>
-                  <Input
-                    placeholder="Enter image URL"
-                    value={pictureInput}
-                    onChangeText={setPictureInput}
-                    containerStyle={styles.pictureInput}
-                    onSubmitEditing={handleAddPicture}
-                    returnKeyType="done"
-                  />
-                  <TouchableOpacity
-                    onPress={handleAddPicture}
-                    style={[
-                      styles.addButtonTouchable,
-                      { backgroundColor: theme.primary },
-                      !pictureInput.trim() && {
-                        backgroundColor: theme.surfaceAlt,
-                        opacity: 0.5,
-                      },
-                    ]}
-                    disabled={!pictureInput.trim()}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[
-                        styles.addButtonText,
-                        { color: theme.white },
-                        !pictureInput.trim() && {
-                          color: theme.textSecondary,
-                        },
-                      ]}
-                    >
-                      Add
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                {formData.pictures && formData.pictures.length > 0 && (
-                  <View style={styles.pictureList}>
-                    {formData.pictures.map((pic, index) => (
-                      <View
-                        key={index}
-                        style={[
-                          styles.pictureItem,
-                          {
-                            backgroundColor: theme.surface,
-                            borderRadius: borderRadius.md,
-                          },
-                        ]}
-                      >
-                        <Text
+
+                {/* Image thumbnails grid */}
+                <View style={styles.imageGrid}>
+                  {formData.pictures &&
+                    formData.pictures.map((pic, index) => (
+                      <View key={index} style={styles.imageThumbContainer}>
+                        <Image
+                          source={{ uri: pic }}
                           style={[
-                            styles.pictureText,
-                            {
-                              color: theme.text,
-                              fontSize: typography.caption.fontSize,
-                            },
+                            styles.imageThumb,
+                            { borderColor: theme.border },
                           ]}
-                          numberOfLines={1}
-                        >
-                          {pic}
-                        </Text>
+                          contentFit="cover"
+                        />
                         <TouchableOpacity
                           onPress={() => handleRemovePicture(index)}
                           style={[
-                            styles.removeButton,
+                            styles.removeImageButton,
                             { backgroundColor: theme.danger },
                           ]}
                         >
-                          <Text
-                            style={[
-                              styles.removeButtonText,
-                              { color: theme.white },
-                            ]}
-                          >
-                            ×
-                          </Text>
+                          <MaterialIcons
+                            name="close"
+                            size={14}
+                            color={theme.white}
+                          />
                         </TouchableOpacity>
                       </View>
                     ))}
-                  </View>
-                )}
+
+                  {/* Add image button */}
+                  <TouchableOpacity
+                    onPress={handleAddPicture}
+                    style={[
+                      styles.addImageButton,
+                      {
+                        borderColor: theme.primary,
+                        backgroundColor: theme.surface,
+                      },
+                    ]}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialIcons
+                      name="add-a-photo"
+                      size={28}
+                      color={theme.primary}
+                    />
+                    <Text
+                      style={[
+                        styles.addImageText,
+                        {
+                          color: theme.primary,
+                          fontSize: typography.small.fontSize,
+                        },
+                      ]}
+                    >
+                      Add Photo
+                    </Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               <Input
@@ -450,7 +599,9 @@ export default function CreateTaskScreen() {
 
               <Button
                 title={
-                  isEditMode
+                  isUploading
+                    ? "Uploading images..."
+                    : isEditMode
                     ? updateTaskMutation.isPending
                       ? "Updating..."
                       : "Update Task"
@@ -460,14 +611,16 @@ export default function CreateTaskScreen() {
                 }
                 onPress={handleSubmit}
                 loading={
-                  isEditMode
+                  isUploading ||
+                  (isEditMode
                     ? updateTaskMutation.isPending
-                    : createTaskMutation.isPending
+                    : createTaskMutation.isPending)
                 }
                 disabled={
-                  isEditMode
+                  isUploading ||
+                  (isEditMode
                     ? updateTaskMutation.isPending
-                    : createTaskMutation.isPending
+                    : createTaskMutation.isPending)
                 }
                 style={styles.submitButton}
               />
@@ -514,52 +667,42 @@ const styles = StyleSheet.create({
   pictureSection: {
     marginBottom: spacing.md,
   },
-  pictureInputRow: {
+  imageGrid: {
     flexDirection: "row",
+    flexWrap: "wrap",
     gap: spacing.sm,
-    alignItems: "flex-start",
   },
-  pictureInput: {
-    flex: 1,
-    marginBottom: 0,
+  imageThumbContainer: {
+    position: "relative",
   },
-  addButtonTouchable: {
-    marginTop: 24,
-    minWidth: 80,
-    height: 44,
+  imageThumb: {
+    width: 90,
+    height: 90,
     borderRadius: borderRadius.md,
+    borderWidth: 1,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: spacing.md,
   },
-  addButtonText: {
-    fontWeight: "600",
-  },
-  pictureList: {
-    marginTop: spacing.sm,
+  addImageButton: {
+    width: 90,
+    height: 90,
+    borderRadius: borderRadius.md,
+    borderWidth: 2,
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
     gap: spacing.xs,
   },
-  pictureItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: spacing.sm,
-    marginBottom: spacing.xs,
-  },
-  pictureText: {
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  removeButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  removeButtonText: {
-    fontSize: 18,
-    fontWeight: "bold",
+  addImageText: {
+    fontWeight: "500",
   },
   pickerContainer: {
     marginBottom: spacing.lg,

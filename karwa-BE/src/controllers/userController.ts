@@ -219,9 +219,12 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
       // Calculate rating average from Rating model
       const ratings = await Rating.find({ ratedUserId: new mongoose.Types.ObjectId(userId) });
       if (ratings.length > 0) {
-        const sum = ratings.reduce((acc: number, r: any) => acc + r.score, 0);
+        const sum = ratings.reduce((acc: number, r: any) => acc + r.rate, 0);
         ratingAverage = sum / ratings.length;
       }
+
+      // console.log(ratingAverage)
+      // console.log(ratings)
 
       // Calculate completed tasks count from Application model
       // ACCEPTED status means the task was completed

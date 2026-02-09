@@ -10,6 +10,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "@/src/context/AuthContext";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing, shadows } from "@/constants/Karwa.theme";
 import Button from "@/components/ui/Button";
@@ -28,6 +29,7 @@ import {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { token } = useAuth();
   const { theme, typography } = useTheme();
   const [filters, setFilters] = useState<GetTasksParams>({});
 
@@ -39,6 +41,7 @@ export default function HomeScreen() {
         return await getTasksApi(params);
       },
       refetchOnMount: "always",
+      enabled: !!token, // Don't fetch when not logged in
     });
 
   const tasks: Task[] = useMemo(() => {

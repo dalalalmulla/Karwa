@@ -1,9 +1,16 @@
-import { Stack } from "expo-router";
+import { Stack, Redirect } from "expo-router";
 import React from "react";
 import { useTheme } from "@/src/context/ThemeContext";
+import { useAuth } from "@/src/context/AuthContext";
 
 export default function MainLayout() {
   const { theme } = useTheme();
+  const { token } = useAuth();
+
+  // Auth guard: redirect to login if not authenticated
+  if (!token) {
+    return <Redirect href="/(auth)/login" />;
+  }
 
   return (
     <Stack

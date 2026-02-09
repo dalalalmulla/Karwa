@@ -17,8 +17,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import Logo from "@/components/ui/Logo";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
-import { register, RegisterData, UserRole } from "@/src/api/auth";
-import { ROLE_LABELS } from "@/src/constants/roles";
+import { register, RegisterData } from "@/src/api/auth";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -87,27 +86,13 @@ export default function RegisterScreen() {
 
   const handleChange = (
     field: keyof RegisterData,
-    value: string | UserRole
+    value: string
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
-
-  const roleOptions: { label: string; value: UserRole; desc: string }[] = [
-    {
-      label: ROLE_LABELS.POSTER.singular,
-      value: "poster",
-      desc: "Create tasks",
-    },
-    {
-      label: ROLE_LABELS.WORKER.singular,
-      value: "worker",
-      desc: "Complete tasks",
-    },
-    { label: "Both", value: "both", desc: "Create & complete" },
-  ];
 
   return (
     <WatermarkBackground>
@@ -208,68 +193,6 @@ export default function RegisterScreen() {
                 autoCapitalize="none"
               />
 
-              {/* Role Selection */}
-              <View style={styles.roleSection}>
-                <Text
-                  style={[
-                    styles.roleLabel,
-                    {
-                      color: theme.text,
-                      fontSize: typography.body.fontSize,
-                    },
-                  ]}
-                >
-                  I want to be a:
-                </Text>
-                <View style={styles.roleOptions}>
-                  {roleOptions.map((opt) => {
-                    const isSelected = formData.role === opt.value;
-                    return (
-                      <TouchableOpacity
-                        key={opt.value}
-                        style={[
-                          styles.roleOption,
-                          {
-                            borderColor: isSelected
-                              ? theme.primary
-                              : theme.border,
-                            backgroundColor: isSelected
-                              ? theme.primary
-                              : theme.surface,
-                          },
-                        ]}
-                        onPress={() => handleChange("role", opt.value)}
-                      >
-                        <Text
-                          style={[
-                            styles.roleOptionText,
-                            {
-                              color: isSelected ? theme.white : theme.text,
-                              fontSize: typography.body.fontSize,
-                            },
-                          ]}
-                        >
-                          {opt.label}
-                        </Text>
-                        <Text
-                          style={[
-                            styles.roleOptionSubtext,
-                            {
-                              color: isSelected
-                                ? theme.white
-                                : theme.textSecondary,
-                              fontSize: typography.small.fontSize,
-                            },
-                          ]}
-                        >
-                          {opt.desc}
-                        </Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
               <Button
                 title="Register"
                 onPress={handleSubmit}
@@ -351,36 +274,6 @@ const styles = StyleSheet.create({
   },
   form: {
     flex: 1,
-  },
-  roleSection: {
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  roleLabel: {
-    fontWeight: "500",
-    marginBottom: spacing.sm,
-  },
-  roleOptions: {
-    flexDirection: "row",
-    gap: spacing.sm,
-    justifyContent: "space-between",
-  },
-  roleOption: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.md,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 72,
-  },
-  roleOptionText: {
-    fontWeight: "600",
-    marginBottom: spacing.xs,
-  },
-  roleOptionSubtext: {
-    opacity: 0.8,
   },
   submitButton: {
     marginTop: spacing.lg,
