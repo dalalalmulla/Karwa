@@ -5,7 +5,8 @@ import { AuthContext } from "../src/context/AuthContext";
 import { ThemeContext } from "../src/context/ThemeContext";
 import type { User } from "../src/types/userTypes";
 import { getToken, clearToken } from "../src/utils/token";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { onForceLogout } from "../src/utils/authEvents";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   getProcessedTheme,
@@ -43,6 +44,16 @@ export default function RootLayout() {
     };
 
     void loadToken();
+  }, []);
+
+  // Listen for forced-logout events from the axios 401 interceptor
+  useEffect(() => {
+    const unsubscribe = onForceLogout(() => {
+      setToken(null);
+      setUser(null);
+      queryClient.clear(); // Clear all cached queries to stop refetch loops
+    });
+    return unsubscribe;
   }, []);
 
   // Load theme settings from storage
@@ -141,14 +152,19 @@ export default function RootLayout() {
   const currentTheme = isThemeLoaded ? themeValue.theme : lightTheme;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: currentTheme.background }}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeContext.Provider value={themeValue}>
-          <AuthContext.Provider value={authValue}>
-            <Stack screenOptions={{ headerShown: false }} />
-          </AuthContext.Provider>
-        </ThemeContext.Provider>
-      </QueryClientProvider>
-    </SafeAreaView>
+    <SafeAreaProvider>
+      <SafeAreaView 
+        style={{ flex: 1, backgroundColor: "white" }}
+        edges={['top', 'left', 'right', "bottom"]}
+      >
+        <QueryClientProvider client={queryClient}>
+          <ThemeContext.Provider value={themeValue}>
+            <AuthContext.Provider value={authValue}>
+              <Stack screenOptions={{ headerShown: false }} />
+            </AuthContext.Provider>
+          </ThemeContext.Provider>
+        </QueryClientProvider>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }

@@ -72,8 +72,21 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
     return response.data.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const errorData = error.response?.data;
       const errorMessage =
-        error.response?.data?.error || error.message || 'Registration failed';
+        errorData?.error || error.message || 'Registration failed';
+
+      // Log detailed error for debugging
+      console.error('Registration error:', {
+        status,
+        message: errorMessage,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: `${error.config?.baseURL}${error.config?.url}`,
+        errorData,
+      });
+
       throw new Error(errorMessage);
     }
     throw error;
@@ -82,14 +95,10 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
 
 export const loginUser = async (data: LoginData): Promise<LoginResponse['data']> => {
   try {
-    // console.log("first")
-    // console.log(data)
     const response = await instance.post<LoginResponse>('/auth/login', {
       email: data.email,
       password: data.password,
     });
-
-    console.log(response)
 
     if (response.data.success && response.data.data.token) {
       // Store token in SecureStore
@@ -99,8 +108,21 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse['data']>
     return response.data.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const errorData = error.response?.data;
       const errorMessage =
-        error.response?.data?.error || error.message || 'Login failed';
+        errorData?.error || error.message || 'Login failed';
+
+      // Log detailed error for debugging
+      console.error('Login error:', {
+        status,
+        message: errorMessage,
+        url: error.config?.url,
+        baseURL: error.config?.baseURL,
+        fullURL: `${error.config?.baseURL}${error.config?.url}`,
+        errorData,
+      });
+
       throw new Error(errorMessage);
     }
     throw error;

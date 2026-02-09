@@ -57,6 +57,7 @@ export default function TabLayout() {
           ),
         }}
       />
+      
 
       {/* Settings on the right */}
       <Tabs.Screen
@@ -78,11 +79,12 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xs,
     paddingBottom: spacing.xs,
     height: 56,
+    // backgroundColor:"red"
   },
   tabBarLabel: {
     fontSize: 11,
     fontWeight: "500",
-    marginTop: -2,
+    // marginTop: -2,
   },
   badge: {
     color: "#FDFCFD",

@@ -2,6 +2,7 @@ import React from "react";
 import { View, StyleSheet, StyleProp, ViewStyle } from "react-native";
 import { Image } from "expo-image";
 import { useTheme } from "@/src/context/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface WatermarkBackgroundProps {
   children: React.ReactNode;

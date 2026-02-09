@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-  Alert,
 } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
@@ -16,19 +15,21 @@ import Card from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import WatermarkBackground from '@/components/ui/WatermarkBackground';
 import { getTasks } from '@/src/api/tasks';
-import { useAuth } from '@/src/context/AuthContext';
 import type { TaskType, TaskStatus } from '@/src/types/taskTypes';
 
 const TASK_TYPES: { value: TaskType; label: string }[] = [
   { value: 'indoor', label: 'Indoor' },
   { value: 'outdoor', label: 'Outdoor' },
-  { value: 'home_service', label: 'Home Service' },
-  { value: 'car_service', label: 'Car Service' },
 ];
+const hexToRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
 
 export default function TasksListScreen() {
   const router = useRouter();
-  const { token } = useAuth();
   const [selectedType, setSelectedType] = useState<TaskType | undefined>();
   const [status] = useState<TaskStatus>('OPEN');
 
@@ -41,16 +42,13 @@ export default function TasksListScreen() {
     isRefetching,
   } = useQuery({
     queryKey: ['tasks', status, selectedType],
-    queryFn: () => getTasks(status, selectedType),
+    queryFn: () => getTasks({status, type: selectedType}),
   });
 
-  const tasks = tasksData?.tasks || [];
+  const tasks = tasksData || [];
 
   const handleTaskPress = (taskId: string) => {
-    router.push({
-      pathname: '/task-details',
-      params: { taskId },
-    });
+    router.push(`/(main)/task/${taskId}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -67,10 +65,7 @@ export default function TasksListScreen() {
         return colors.primary;
       case 'outdoor':
         return colors.success;
-      case 'home_service':
-        return colors.warning;
-      case 'car_service':
-        return colors.danger;
+      
       default:
         return colors.secondary;
     }
@@ -167,7 +162,10 @@ export default function TasksListScreen() {
         ) : (
           tasks.map((task) => {
             const posterName =
-              typeof task.posterId === 'object' && task.posterId.firstName
+              typeof task.posterId === 'object' && 
+              task.posterId !== null && 
+              'firstName' in task.posterId &&
+              task.posterId.firstName
                 ? `${task.posterId.firstName} ${task.posterId.lastName || ''}`.trim()
                 : 'Anonymous';
 
@@ -185,12 +183,12 @@ export default function TasksListScreen() {
                       <View
                         style={[
                           styles.typeBadge,
-                          { backgroundColor: getTypeColor(task.type) + '20' },
+                          { backgroundColor: hexToRgba(getTypeColor(task.type as TaskType), 0.2) },
                         ]}>
                         <Text
                           style={[
                             styles.typeText,
-                            { color: getTypeColor(task.type) },
+                            { color: getTypeColor(task.type as TaskType) as string },
                           ]}>
                           {task.type.replace('_', ' ').toUpperCase()}
                         </Text>

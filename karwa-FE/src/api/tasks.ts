@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Platform } from 'react-native';
 import instance from './axios';
 
 export type TaskType = 'indoor' | 'outdoor';
@@ -203,6 +204,7 @@ export const updateTask = async (
   try {
     const response = await instance.put<UpdateTaskResponse>(`/tasks/${taskId}`, data);
     if (!response.data.success) {
+      console.log("test -----------", response)
       throw new Error(response.data.error || 'Failed to update task');
     }
     return response.data.data;
@@ -223,6 +225,125 @@ export interface DeleteTaskResponse {
   };
   error?: string;
 }
+
+export const uploadImages = async (uris: string[]): Promise<string[]> => {
+  const formData = new FormData();
+
+  // Map file extensions to correct MIME types (matching backend expectations)
+  const getMimeType = (uri: string): string => {
+    // Extract extension from URI
+    const filename = uri.split('/').pop() || uri.split('\\').pop() || 'photo.jpg';
+    const ext = filename.toLowerCase().split('.').pop() || '';
+
+    const mimeMap: Record<string, string> = {
+      jpg: 'image/jpeg',   // Backend expects 'image/jpeg', not 'image/jpg'
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+    };
+
+    const mimeType = mimeMap[ext];
+    if (!mimeType) {
+      console.warn(`Unknown file extension: ${ext}, defaulting to image/jpeg`);
+    }
+    return mimeType || 'image/jpeg';
+  };
+
+  for (const uri of uris) {
+    const filename = uri.split('/').pop() || uri.split('\\').pop() || 'photo.jpg';
+    const type = getMimeType(uri);
+
+    console.log(`Uploading image: ${filename}, MIME type: ${type}, URI: ${uri}`);
+
+    // Android-specific FormData structure
+    if (Platform.OS === 'android') {
+      // For Android, ensure URI is properly formatted
+      const fileUri = uri.startsWith('file://') ? uri : `file://${uri}`;
+      formData.append('images', {
+        uri: fileUri,
+        name: filename,
+        type,
+      } as any);
+    } else {
+      // iOS/Web
+      formData.append('images', {
+        uri,
+        name: filename,
+        type,
+      } as any);
+    }
+  }
+
+  console.log(formData)
+
+  try {
+    // Don't set Content-Type - let axios handle it automatically with boundary
+    // The interceptor will remove it if needed
+    const response = await instance.post<{
+      success: boolean;
+      data?: { urls: string[] };
+      error?: string;
+    }>(
+      '/uploads',
+      formData
+    );
+
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to upload images');
+    }
+
+    if (!response.data.data?.urls) {
+
+      throw new Error('No image URLs returned from server');
+    }
+
+    return response.data.data.urls;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      // Network errors don't have response.data
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        const baseURL = instance.defaults.baseURL;
+        const errorMessage = `Network error on ${Platform.OS}: Cannot reach server at ${baseURL}/uploads. 
+        
+Possible causes:
+1. Backend server not running (port 8000)
+2. Phone and Mac not on same WiFi network
+3. Mac's IP address changed
+4. Firewall blocking connection
+5. Android network security blocking HTTP
+
+Error details: ${error.message || error.code}`;
+
+        console.error('Network error details:', {
+          platform: Platform.OS,
+          message: error.message,
+          code: error.code,
+          baseURL,
+          config: {
+            url: error.config?.url,
+            method: error.config?.method,
+            headers: error.config?.headers,
+          },
+        });
+
+        throw new Error(errorMessage);
+      }
+
+      const errorMessage =
+        (error.response?.data as any)?.error ||
+        error.message ||
+        'Failed to upload images';
+      console.error('Upload error:', errorMessage, {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+      });
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
+};
 
 export const deleteTask = async (taskId: string): Promise<void> => {
   try {

@@ -1,13 +1,16 @@
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
 import { connectDatabase } from './src/config/database';
 import { errorHandler } from './src/middleware/errorHandler';
 import authRoutes from './src/routes/auth';
 import taskRoutes from './src/routes/tasks';
 import notificationRoutes from './src/routes/notifications';
-import ratingRoutes from './src/routes/ratings'
-import applicationRoutes from './src/routes/applications'
+import ratingRoutes from './src/routes/ratings';
+import applicationRoutes from './src/routes/applications';
+import uploadRoutes from './src/routes/uploads';
+import morgan from "morgan";
 
 
 // Load environment variables
@@ -21,8 +24,13 @@ app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true,
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+app.use(morgan("dev"))
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check route
 app.get('/health', (_req: Request, res: Response) => {
@@ -41,7 +49,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/applications', applicationRoutes);
-
+app.use('/api/uploads', uploadRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

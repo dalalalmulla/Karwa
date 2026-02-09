@@ -18,7 +18,7 @@ import { getToken } from "../utils/token";
 
 export const api = axios.create({
   baseURL: getBaseURL(),
-  timeout: 10000,
+  timeout: 30000, // Increased to 30 seconds to match axios.ts
   headers: {
     "Content-Type": "application/json",
   },

@@ -6,11 +6,11 @@ export type TaskType = "indoor" | "outdoor";
 export type Poster =
   | string
   | {
-      _id: string;
-      firstName?: string;
-      lastName?: string;
-      email: string;
-    };
+    _id: string;
+    firstName?: string;
+    lastName?: string;
+    email: string;
+  };
 
 export type Task = {
   _id: string;
@@ -23,6 +23,7 @@ export type Task = {
   points: number;
   status: TaskStatus;
   posterId: Poster;
+  assignedWorkerId?: string | Poster; // User assigned to work on this task
   createdAt?: string;
   updatedAt?: string;
 };
@@ -41,6 +42,7 @@ export type GetTasksParams = {
   location?: string;
   minMoney?: number;
   maxMoney?: number;
+  posterId?: string; // Use "me" to get current user's tasks as poster
 };
 
 export const getTasksApi = async (params?: GetTasksParams) => {
