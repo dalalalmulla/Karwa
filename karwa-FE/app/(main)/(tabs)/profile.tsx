@@ -21,12 +21,7 @@ import { useAuth } from "@/src/context/AuthContext";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing, borderRadius, shadows } from "@/constants/Karwa.theme";
 import { getTasksApi } from "@/src/api/taskCalls";
-import {
-  getNotificationsApi,
-  markAllNotificationsReadApi,
-} from "@/src/api/notificationCalls";
 import type { Task } from "@/src/types/taskTypes";
-import type { Notification } from "@/src/types/notificationTypes";
 import WatermarkBackground from "@/components/ui/WatermarkBackground";
 import AppHeader from "@/components/ui/AppHeader";
 import Card from "@/components/ui/Card";
@@ -76,33 +71,6 @@ export default function ProfileScreen() {
     enabled: !!token,
   });
 
-  const {
-    data: notificationsData,
-    isRefetching: isNotificationsRefetching,
-    refetch: refetchNotifications,
-    isLoading: isNotificationsLoading,
-  } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => getNotificationsApi({ limit: 50 }),
-    refetchInterval: 15000,
-    refetchIntervalInBackground: true,
-    enabled: !!token,
-  });
-
-  const notifications: Notification[] = useMemo(() => {
-    return notificationsData?.success
-      ? (notificationsData.data?.notifications ?? [])
-      : [];
-  }, [notificationsData]);
-
-  const unreadCount = notificationsData?.data?.unreadCount ?? 0;
-
-  const markAllReadMutation = useMutation({
-    mutationFn: markAllNotificationsReadApi,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
-    },
-  });
 
   useEffect(() => {
     if (!token) {
@@ -185,14 +153,9 @@ export default function ProfileScreen() {
     { completed: 0, inProgress: 0, open: 0, cancelled: 0 }
   );
 
-  const handleMarkAllRead = () => {
-    markAllReadMutation.mutate();
-  };
-
   const handleRefresh = () => {
     refetchPostedTasks();
     refetchAllTasks();
-    refetchNotifications();
     refetchUser();
   };
 
@@ -213,56 +176,15 @@ export default function ProfileScreen() {
     return userData?.user?.ratingAverage ?? null;
   }, [userData]);
 
-  const renderNotification = ({ item }: { item: Notification }) => (
-    <Card
-      variant="outlined"
-      padding="medium"
-      style={!item.read ? { borderLeftWidth: 3, borderLeftColor: theme.primary } : undefined}
-    >
-      <View style={styles.notifTopRow}>
-        <Text
-          style={[
-            styles.notifTitle,
-            { color: theme.text, fontSize: typography.body.fontSize },
-          ]}
-          numberOfLines={1}
-        >
-          {item.title}
-        </Text>
-        {!item.read && <Badge label="NEW" variant="primary" size="small" />}
-      </View>
-      <Text
-        style={[
-          styles.notifMsg,
-          {
-            color: theme.textSecondary,
-            fontSize: typography.caption.fontSize,
-          },
-        ]}
-        numberOfLines={2}
-      >
-        {item.message}
-      </Text>
-      <Text
-        style={[
-          styles.notifDate,
-          { color: theme.textMuted, fontSize: typography.small.fontSize },
-        ]}
-      >
-        {new Date(item.createdAt).toLocaleString()}
-      </Text>
-    </Card>
-  );
-
-  const isRefreshing = isPostedTasksRefetching || isAllTasksRefetching || isNotificationsRefetching;
-  const isLoading = isPostedTasksLoading || isAllTasksLoading || isNotificationsLoading;
+  const isRefreshing = isPostedTasksRefetching || isAllTasksRefetching;
+  const isLoading = isPostedTasksLoading || isAllTasksLoading;
 
   const ListHeader = () => (
     <>
       {/* Header Row */}
       <AppHeader
         title="Profile"
-        showBranding
+        showBranding={false}
         rightElement={
           <TouchableOpacity
             style={styles.logoutButton}
@@ -314,14 +236,6 @@ export default function ProfileScreen() {
               ? `⭐ ${userRating.toFixed(1)}`
               : "⭐ No rating yet"}
           </Text>
-          {unreadCount > 0 && (
-            <Badge
-              label={`${unreadCount} unread`}
-              variant="primary"
-              size="small"
-              style={styles.unreadBadge}
-            />
-          )}
         </Card>
       </View>
 
@@ -359,47 +273,15 @@ export default function ProfileScreen() {
           </Card>
         ))}
       </View>
-
-      {/* Notifications Header */}
-      <View style={styles.notifHeader}>
-        <Text
-          style={[
-            styles.notifHeaderTitle,
-            {
-              color: theme.textHeading,
-              fontSize: typography.heading.fontSize,
-            },
-          ]}
-        >
-          Notifications
-        </Text>
-        {unreadCount > 0 && (
-          <TouchableOpacity
-            onPress={handleMarkAllRead}
-            disabled={markAllReadMutation.isPending}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Text
-              style={[
-                styles.markReadText,
-                { color: theme.primary, fontSize: typography.caption.fontSize },
-              ]}
-            >
-              {markAllReadMutation.isPending ? "..." : "Mark all read"}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
     </>
   );
 
   return (
     <WatermarkBackground>
       <FlatList
-        data={notifications}
-        keyExtractor={(item) => item._id}
-        renderItem={renderNotification}
+        data={[]}
+        keyExtractor={() => ""}
+        renderItem={() => null}
         ListHeaderComponent={ListHeader}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -409,14 +291,6 @@ export default function ProfileScreen() {
             onRefresh={handleRefresh}
             colors={[theme.primary]}
             tintColor={theme.primary}
-          />
-        }
-        ListEmptyComponent={
-          <EmptyState
-            title={isLoading ? "Loading..." : "No notifications"}
-            message={
-              isLoading ? "Please wait" : "You're all caught up!"
-            }
           />
         }
       />
@@ -444,9 +318,6 @@ const styles = StyleSheet.create({
   ratingText: {
     marginBottom: spacing.xs,
   },
-  unreadBadge: {
-    marginTop: spacing.sm,
-  },
 
   /* Stats */
   statsRow: {
@@ -466,38 +337,6 @@ const styles = StyleSheet.create({
   statLabel: {
     marginTop: spacing.xs,
   },
-
-  /* Notifications */
-  notifHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.md,
-    marginTop: spacing.sm,
-  },
-  notifHeaderTitle: {
-    fontWeight: "600",
-  },
-  markReadText: {
-    fontWeight: "600",
-  },
-  notifTopRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.xs,
-  },
-  notifTitle: {
-    fontWeight: "600",
-    flex: 1,
-    marginRight: spacing.sm,
-  },
-  notifMsg: {
-    marginBottom: spacing.xs,
-    lineHeight: 18,
-  },
-  notifDate: {},
   errorText: {
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,

@@ -13,13 +13,16 @@ import {
     deleteTask,
 } from '../controllers/taskController';
 import { authenticate } from '../middleware/authenticate';
+import { optionalAuthenticate } from '../middleware/optionalAuthenticate';
 
 const router = Router();
 
-// Protected routes
+// Public routes (optional authentication - can view without login)
+router.get('/', optionalAuthenticate, getTasks);
+router.get('/:id', optionalAuthenticate, getTaskById);
+
+// Protected routes (require authentication)
 router.post('/', authenticate, createTask);
-router.get('/', authenticate, getTasks);
-router.get('/:id', authenticate, getTaskById);
 router.post('/:id/apply', authenticate, applyToTask);
 router.patch('/:id/assign', authenticate, assignWorker);
 router.patch('/:id/mark-complete', authenticate, markCompleteByWorker);

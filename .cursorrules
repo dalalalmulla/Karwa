@@ -1,0 +1,13 @@
+# Cursor Rules for Karwa Project
+
+## Location Data
+- Always refer to `karwa-FE/src/data/kuwait_regions.ts` for any location-based logic related to Kuwait governorates and areas.
+- The file contains structured data for all 6 Kuwait governorates with their respective areas.
+- When working with location selection, address forms, or location-related features, use the data from `kuwait_regions.ts` as the source of truth.
+- Import using: `import kuwaitRegionsData from "@/src/data/kuwait_regions"`
+
+## Project Structure
+- Frontend: `karwa-FE/` - React Native/Expo app
+- Backend: `karwa-BE/` - Node.js/Express API
+- Location data: `kuwait_regions.json` - Kuwait governorates and areas database
+

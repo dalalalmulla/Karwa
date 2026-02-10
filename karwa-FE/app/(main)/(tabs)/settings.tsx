@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,12 +6,18 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/context/ThemeContext';
+import { useAuth } from '@/src/context/AuthContext';
+import { AntDesign } from '@expo/vector-icons';
 import type { FontSizeScale } from '@/constants/Karwa.theme';
 import { spacing, borderRadius, shadows } from '@/constants/Karwa.theme';
 import WatermarkBackground from '@/components/ui/WatermarkBackground';
+import Button from '@/components/ui/Button';
 
 interface SettingItemProps {
   title: string;
@@ -94,6 +100,9 @@ export default function SettingsScreen() {
     fontSizeScale,
     setFontSizeScale,
   } = useTheme();
+  const { logout } = useAuth();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const fontSizeOptions: { label: string; value: FontSizeScale }[] = [
     { label: 'Small', value: 'small' },
@@ -101,6 +110,31 @@ export default function SettingsScreen() {
     { label: 'Large', value: 'large' },
     { label: 'X-Large', value: 'xlarge' },
   ];
+
+  const handleLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setIsLoggingOut(true);
+              await logout();
+              router.replace('/(auth)/login');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            } finally {
+              setIsLoggingOut(false);
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <WatermarkBackground style={[styles.container, { backgroundColor: theme.background }]}>
@@ -203,6 +237,26 @@ export default function SettingsScreen() {
               Version 1.0.0
             </Text>
           </View>
+        </View>
+
+        {/* Logout Section */}
+        <View style={styles.section}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary, fontSize: typography.caption.fontSize }]}>
+            ACCOUNT
+          </Text>
+          <SettingItem
+            title="Logout"
+            subtitle="Sign out of your account"
+            icon={<AntDesign name="logout" size={20} color={theme.danger} />}
+            onPress={handleLogout}
+            rightElement={
+              isLoggingOut ? (
+                <ActivityIndicator size="small" color={theme.danger} />
+              ) : (
+                <AntDesign name="right" size={16} color={theme.textMuted} />
+              )
+            }
+          />
         </View>
 
         {/* Bottom spacing */}

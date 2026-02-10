@@ -93,3 +93,530 @@
 {"location":"_layout.tsx:tabBarStyle","message":"TabBar style padding calculation - post fix","data":{"spacingXs":4,"insetBottom":34,"currentPaddingBottom":4},"timestamp":1770575360652,"hypothesisId":"D","runId":"post-fix"}
 {"location":"_layout.tsx:useEffect","message":"SafeArea insets measurement - post fix","data":{"top":47,"bottom":34,"left":0,"right":0},"timestamp":1770575360672,"hypothesisId":"A","runId":"post-fix"}
 {"location":"_layout.tsx:tabBarStyle","message":"TabBar style padding calculation - post fix","data":{"spacingXs":4,"insetBottom":34,"currentPaddingBottom":4},"timestamp":1770575360674,"hypothesisId":"D","runId":"post-fix"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626057655,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626057656,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626057656,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626058743,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626058744,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626066357,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626066358,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626066358,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626066358,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626066358,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626066358,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770626067364,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626067364,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626067365,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770626083663,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626083664,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626083664,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626083664,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626083664,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626083664,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626083664,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770626098984,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626098984,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626098986,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770626104714,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770626104771,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770626104941,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770626105516,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770626105517,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626105517,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626105517,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626105517,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626105517,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626105518,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626105518,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770626106288,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626106288,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626106290,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770626112401,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770626112457,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770626113004,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770626113604,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770626113604,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626113605,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626113605,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626113605,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626113605,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626113605,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626113605,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770626114328,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770626114356,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770626114448,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770626114996,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770626114996,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626114997,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626114997,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626114997,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626114997,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626114997,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626114997,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770626115675,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626115676,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626115677,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770626356824,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770626356900,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770626357174,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770626358144,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770626358144,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626358145,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626358145,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626358145,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626358145,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626358145,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626358145,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770626359191,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626359193,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626359196,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770626826153,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770626826216,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770626826391,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770626826958,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770626826959,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770626826959,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770626826959,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770626826959,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770626826959,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770626826959,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770626826959,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770626827771,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770626827773,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770626827776,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627399048,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627399107,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627399275,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627399779,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627399779,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627399780,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627399780,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627399780,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627399780,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627399780,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627399780,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627400833,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627400835,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770627400838,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627688832,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627688899,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627689074,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627689226,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627689226,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627689227,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627689227,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627689227,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627689227,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627689227,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627689227,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627690253,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627690253,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627833211,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627833277,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627833445,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627833966,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627833966,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627833967,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627833967,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627833967,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627833967,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627833967,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627833968,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627834896,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627834899,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627886705,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627886717,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627886786,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627886786,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627886978,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627886979,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627887691,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627887691,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627887691,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627887691,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627887692,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627887692,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627887692,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627887692,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627887692,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627887692,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627887692,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627887692,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627887692,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627887692,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627887692,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627887692,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627894835,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627894836,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627894837,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627894837,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770627894838,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:uncaughtException","message":"Uncaught exception","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","hasStack":true},"timestamp":1770627894843,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627899391,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627899403,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627899448,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627899448,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627899614,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627899614,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627900836,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627900836,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627900837,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627900837,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627900837,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627900838,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627900838,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627900838,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627900844,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627900844,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627900845,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627900846,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627900846,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627900846,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627900846,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627900846,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627901741,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627901741,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627901741,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627901741,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770627901742,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:uncaughtException","message":"Uncaught exception","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","hasStack":true},"timestamp":1770627901744,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627903889,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627903894,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627903936,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627903941,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627904042,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627904047,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627904651,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627904651,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627904652,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627904652,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627904652,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627904652,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627904652,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627904652,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627904662,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627904662,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627904663,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627904663,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627904663,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627904663,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627904663,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627904663,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627905270,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627905271,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770627905272,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627905374,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627905374,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:uncaughtException","message":"Uncaught exception","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","hasStack":true},"timestamp":1770627905381,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627951393,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627951397,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627951505,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627951505,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627951718,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627951718,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627952401,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627952401,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627952401,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627952401,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627952402,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627952402,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627952402,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627952402,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627952402,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627952402,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627952402,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627952402,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627952402,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627952402,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627952402,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627952402,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627953042,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627953043,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770627953045,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627953092,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627953092,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:error","message":"Server error event","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","errorCode":"EADDRINUSE"},"timestamp":1770627953094,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627962536,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770627962536,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627962577,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770627962577,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627962724,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770627962724,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627963878,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627963878,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627963879,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627963879,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627963879,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627963879,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627963879,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627963879,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770627963895,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770627963895,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770627963896,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770627963896,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770627963896,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770627963896,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770627963896,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770627963896,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627964663,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770627964663,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627964663,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770627964663,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770627964664,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:error","message":"Server error event","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","errorCode":"EADDRINUSE"},"timestamp":1770627964664,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628026020,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628026021,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628026095,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628026095,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628026344,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628026344,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628027095,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628027095,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628027095,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628027095,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628027096,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628027096,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628027097,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628027097,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628027097,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628027097,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628027097,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628027097,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628027097,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628027097,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628027097,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628027097,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628028209,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628028209,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628028209,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628028209,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:error","message":"Server error event","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","errorCode":"EADDRINUSE"},"timestamp":1770628028211,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770628028211,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628118144,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628118153,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628118257,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628118257,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628118457,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628118457,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628119129,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628119129,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628119129,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628119129,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628119130,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628119130,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628119130,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628119130,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628119130,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628119131,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628119131,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628119131,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:portCheck","message":"Port not available","data":{"port":"8000"},"timestamp":1770628119131,"runId":"run1","hypothesisId":"C"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628120006,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628120007,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770628120009,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628126326,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628126367,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628126372,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628126410,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628126518,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628126544,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628127241,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628127241,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628127242,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628127242,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628127243,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628127243,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628127243,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628127243,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628127265,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628127266,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628127267,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628127267,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628127268,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628127268,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628127268,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628127268,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628128107,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628128107,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770628128108,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628128151,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628128151,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:error","message":"Server error event","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","errorCode":"EADDRINUSE"},"timestamp":1770628128152,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628129260,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628129310,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628129311,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628129338,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628129390,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628129421,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628130708,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628130708,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628130709,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628130709,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628130710,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628130710,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628130710,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628130710,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628130759,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628130759,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628130760,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628130760,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628130760,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628130761,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628130761,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628130761,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628140793,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628140796,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770628140796,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628140797,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628140797,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:error","message":"Server error event","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","errorCode":"EADDRINUSE"},"timestamp":1770628140798,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628146935,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628146944,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628146994,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628146994,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628147151,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628147151,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628148328,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628148328,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628148328,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628148328,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628148329,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628148329,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628148329,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628148329,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628148330,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628148330,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628148330,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628148330,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:portCheck","message":"Port not available","data":{"port":"8000"},"timestamp":1770628148330,"runId":"run1","hypothesisId":"C"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628149053,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628149054,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770628149054,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628152513,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770628152527,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628152554,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770628152568,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628152671,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770628152677,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628153267,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628153267,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628153268,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628153268,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628153269,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628153269,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628153269,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628153269,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770628153280,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770628153280,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770628153281,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770628153281,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770628153281,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770628153282,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770628153282,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770628153282,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628178978,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628178979,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770628178980,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770628179681,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770628179681,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:error","message":"Server error event","data":{"errorType":"Error","errorMessage":"listen EADDRINUSE: address already in use :::8000","errorCode":"EADDRINUSE"},"timestamp":1770628179682,"runId":"run1","hypothesisId":"C"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770629721101,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770629721188,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770629721385,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770629721969,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770629721969,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770629721969,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770629721970,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770629721970,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770629721970,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770629721970,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770629721970,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:17","message":"MongoDB connection error","data":{"errorType":"MongoNetworkTimeoutError","errorMessage":"connection 1 to 159.41.64.228:27017 timed out","hasStack":true},"timestamp":1770629775658,"runId":"run1","hypothesisId":"D"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770630016518,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770630016593,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770630017149,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770630017893,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770630017893,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770630017894,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770630017894,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770630017895,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770630017895,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770630017895,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770630017895,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770630025028,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770630025030,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000"},"timestamp":1770630025031,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770630054906,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770630054999,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770630055160,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770630055742,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770630055742,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770630055743,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770630055743,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770630055744,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770630055744,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770630055744,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770630055744,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770630060344,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770630060345,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000","host":"0.0.0.0"},"timestamp":1770630060346,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770630064651,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770630064702,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770630064863,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770630065431,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770630065431,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770630065432,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770630065432,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770630065433,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770630065433,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770630065433,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770630065433,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770630066269,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770630066271,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000","host":"0.0.0.0"},"timestamp":1770630066272,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770630073493,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770630073550,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770630073681,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770630074268,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770630074268,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770630074269,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770630074269,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770630074269,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770630074269,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770630074269,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770630074270,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770630074984,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770630074985,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000","host":"0.0.0.0"},"timestamp":1770630074985,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770630589355,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770630589442,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770630589603,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770630590199,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770630590199,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770630590199,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770630590200,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770630590200,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770630590200,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770630590200,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770630590200,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770630591362,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770630591362,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000","host":"0.0.0.0"},"timestamp":1770630591363,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:1","message":"Starting imports","data":{},"timestamp":1770642103537,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:5","message":"Before database import","data":{},"timestamp":1770642103608,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:6","message":"Before route imports","data":{},"timestamp":1770642103767,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:13","message":"All imports successful","data":{},"timestamp":1770642104326,"runId":"run1","hypothesisId":"E"}
+{"location":"server.ts:17","message":"After dotenv.config","data":{"hasMongoUri":true,"hasJwtSecret":true,"port":"8000","nodeEnv":"development"},"timestamp":1770642104326,"runId":"run1","hypothesisId":"B"}
+{"location":"server.ts:79","message":"startServer called","data":{},"timestamp":1770642104327,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:66","message":"startServer entry","data":{"port":"8000","hasMongoUri":true,"nodeEnv":"development"},"timestamp":1770642104327,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:68","message":"Before connectDatabase","data":{"mongoUriExists":true},"timestamp":1770642104328,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770642104328,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770642104328,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770642104328,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770642105588,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:69","message":"After connectDatabase success","data":{},"timestamp":1770642105589,"runId":"run1","hypothesisId":"A"}
+{"location":"server.ts:72","message":"Server listening","data":{"port":"8000","host":"0.0.0.0"},"timestamp":1770642105591,"runId":"run1","hypothesisId":"A"}
+{"location":"database.ts:6","message":"connectDatabase entry","data":{"hasMongoUri":true},"timestamp":1770642206718,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:8","message":"MongoDB URI check","data":{"hasMongoUri":true},"timestamp":1770642206720,"runId":"run1","hypothesisId":"B"}
+{"location":"database.ts:14","message":"Before mongoose.connect","data":{"uriLength":93},"timestamp":1770642206720,"runId":"run1","hypothesisId":"D"}
+{"location":"database.ts:15","message":"MongoDB connected successfully","data":{},"timestamp":1770642207998,"runId":"run1","hypothesisId":"A"}

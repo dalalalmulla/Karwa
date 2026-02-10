@@ -80,6 +80,15 @@ export interface GetTasksResponse {
 
 export const createTask = async (data: CreateTaskData): Promise<CreateTaskResponse['data']> => {
   try {
+    console.log('Creating task with data:', {
+      title: data.title,
+      description: data.description?.substring(0, 50) + '...',
+      money: data.money,
+      location: data.location,
+      type: data.type,
+      picturesCount: data.pictures?.length || 0,
+    });
+
     const response = await instance.post<CreateTaskResponse>('/tasks', {
       title: data.title,
       description: data.description,
@@ -93,11 +102,37 @@ export const createTask = async (data: CreateTaskData): Promise<CreateTaskRespon
       throw new Error(response.data.error || 'Failed to create task');
     }
 
+    console.log('Task created successfully:', response.data.data?.task?._id);
     return response.data.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
+      const status = error.response?.status;
+      const errorData = error.response?.data;
+
+      // Handle timeout errors
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        throw new Error('Connection timeout. Please check if the server is running and try again.');
+      }
+
+      // Handle network errors
+      if (error.code === 'ERR_NETWORK' || !error.response) {
+        throw new Error('Network error. Please check your connection and ensure the server is running.');
+      }
+
+      // Handle specific HTTP status codes
+      if (status === 401) {
+        throw new Error('Authentication required. Please log in again.');
+      }
+      if (status === 400) {
+        const errorMessage = errorData?.error || 'Invalid task data. Please check all fields.';
+        throw new Error(errorMessage);
+      }
+      if (status === 500) {
+        throw new Error('Server error. Please try again later.');
+      }
+
       const errorMessage =
-        error.response?.data?.error || error.message || 'Failed to create task';
+        errorData?.error || error.message || 'Failed to create task';
       throw new Error(errorMessage);
     }
     throw error;

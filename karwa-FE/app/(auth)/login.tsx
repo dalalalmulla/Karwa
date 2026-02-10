@@ -1,240 +1,101 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   StyleSheet,
   View,
-  Text,
-  TouchableOpacity,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  useWindowDimensions,
+  StatusBar,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { useAuth } from "../../src/context/AuthContext";
-import { useMutation } from "@tanstack/react-query";
-import type { LoginPayload } from "../../src/api/authCalls";
 import { useTheme } from "@/src/context/ThemeContext";
-import { spacing } from "@/constants/Karwa.theme";
-import Input from "@/components/ui/Input";
+import { spacing, borderRadius } from "@/constants/Karwa.theme";
 import Button from "@/components/ui/Button";
-import Logo from "@/components/ui/Logo";
-import WatermarkBackground from "@/components/ui/WatermarkBackground";
-import { loginUser } from "@/src/api/auth";
+import GradientBackground from "@/components/ui/GradientBackground";
 
 export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [visiblePassword, setVisiblePassword] = useState(false);
-  const [errors, setErrors] = useState<
-    Partial<Record<keyof LoginPayload, string>>
-  >({});
-
-  const { setToken, setUser } = useAuth();
   const router = useRouter();
   const { theme, typography } = useTheme();
-
-  const loginMutation = useMutation({
-    mutationFn: (data: LoginPayload) => loginUser(data),
-    onSuccess: (res) => {
-      if (res && res.token) {
-        setToken(res.token);
-        setUser(res.user);
-        router.replace("/(main)/(tabs)");
-      } else {
-        Alert.alert("Login Failed", "Invalid response from server");
-      }
-    },
-    onError: (error: unknown) => {
-      const message =
-        error instanceof Error ? error.message : "An error occurred";
-      Alert.alert("Login Failed", message);
-    },
-  });
-
-  const handleLogin = () => {
-    const newErrors: Partial<Record<keyof LoginPayload, string>> = {};
-    if (!email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^\S+@\S+\.\S+$/.test(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-    if (!password) {
-      newErrors.password = "Password is required";
-    }
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length === 0) {
-      loginMutation.mutate({ email: email.toLowerCase(), password });
-    }
-  };
-
-  const handleChange = (field: keyof LoginPayload, value: string) => {
-    if (field === "email") setEmail(value);
-    if (field === "password") setPassword(value);
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: undefined }));
-    }
-  };
+  const { width } = useWindowDimensions();
 
   return (
-    <WatermarkBackground>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={styles.flex}
-      >
-        <View style={styles.contentContainer}>
+    <View style={styles.rootContainer}>
+      <GradientBackground>
+        <StatusBar hidden={false} translucent backgroundColor="transparent" />
+        <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={styles.flex}
+          >
+            <View style={styles.contentContainer}>
+          {/* Logo image centered in the middle - text only, no frame */}
           <View style={styles.logoContainer}>
-            <Logo size={120} />
+            <Image
+              source={require("../../assets/images/karwaTitle.png")}
+              style={[styles.logoImage, { width: width + 100 }]}
+              contentFit="cover"
+            />
           </View>
 
-          <Text
-            style={[
-              styles.headerTitle,
-              {
-                color: theme.textTitle,
-                fontSize: typography.title.fontSize,
-              },
-            ]}
-          >
-            Welcome Back
-          </Text>
-          <Text
-            style={[
-              styles.headerSubtitle,
-              {
-                color: theme.textSecondary,
-                fontSize: typography.body.fontSize,
-              },
-            ]}
-          >
-            Sign in to continue to Karwa
-          </Text>
-
-          <View style={styles.formSection}>
-            <Input
-              label="Email"
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={(value) => handleChange("email", value)}
-              error={errors.email}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoComplete="email"
-            />
-
-            <Input
-              label="Password"
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={(value) => handleChange("password", value)}
-              error={errors.password}
-              secureTextEntry={!visiblePassword}
-              autoCapitalize="none"
-            />
-
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setVisiblePassword((v) => !v)}
-            >
-              <Text
-                style={[
-                  styles.eyeButtonText,
-                  {
-                    color: theme.primary,
-                    fontSize: typography.small.fontSize,
-                  },
-                ]}
-              >
-                {visiblePassword ? "Hide" : "Show"} Password
-              </Text>
-            </TouchableOpacity>
-
+          {/* Buttons at the bottom */}
+          <View style={[styles.buttonsContainer, { paddingHorizontal: spacing.lg }]}>
             <Button
-              title="Sign In"
-              onPress={handleLogin}
-              loading={loginMutation.isPending}
-              disabled={loginMutation.isPending}
-              style={styles.button}
+              title="Login"
+              onPress={() => router.push("/(auth)/login-form")}
+              style={{ ...styles.button, backgroundColor: '#FFFFFF' }}
+              textStyle={{ color: '#1E3A5F', fontSize: typography.body.fontSize, fontWeight: '600' }}
             />
-
-            <View style={styles.footer}>
-              <Text
-                style={[
-                  styles.footerText,
-                  {
-                    color: theme.textSecondary,
-                    fontSize: typography.body.fontSize,
-                  },
-                ]}
-              >
-                Don&apos;t have an account?
-              </Text>
-              <TouchableOpacity
-                onPress={() => router.push("/(auth)/register")}
-              >
-                <Text
-                  style={[
-                    styles.linkText,
-                    {
-                      color: theme.primary,
-                      fontSize: typography.body.fontSize,
-                    },
-                  ]}
-                >
-                  Create Account
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <Button
+              title="Sign Up"
+              onPress={() => router.push("/(auth)/register")}
+              style={{ ...styles.button, backgroundColor: '#FFFFFF', marginTop: spacing.md }}
+              textStyle={{ color: '#1E3A5F', fontSize: typography.body.fontSize, fontWeight: '600' }}
+            />
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </WatermarkBackground>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </GradientBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+  },
   flex: {
     flex: 1,
   },
   contentContainer: {
     flex: 1,
-    paddingHorizontal: spacing.lg,
-    justifyContent: "center",
+    paddingHorizontal: 0, // Remove horizontal padding to allow full width image
+    justifyContent: "space-between",
+    paddingTop: spacing.xl * 2,
+    paddingBottom: spacing.xl * 2,
   },
   logoContainer: {
     alignItems: "center",
-    marginBottom: spacing.xl,
+    justifyContent: "center",
+    flex: 1,
+    paddingTop: spacing.xl * 1.5, // Moved up from center
+    width: '100%',
+    paddingHorizontal: 0, // No padding for full width
+    backgroundColor: 'transparent',
   },
-  headerTitle: {
-    fontWeight: "700",
-    marginBottom: spacing.xs,
-    textAlign: "center",
+  logoImage: {
+    height: 120,
+    backgroundColor: 'transparent',
   },
-  headerSubtitle: {
-    marginBottom: spacing.xl,
-    textAlign: "center",
-  },
-  formSection: {
+  buttonsContainer: {
     width: "100%",
-  },
-  eyeButton: {
-    alignSelf: "flex-end",
-    marginBottom: spacing.md,
-    paddingVertical: spacing.xs,
-  },
-  eyeButtonText: {
-    fontWeight: "500",
+    paddingBottom: spacing.lg,
   },
   button: {
-    marginTop: spacing.sm,
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: spacing.xl,
-    alignItems: "center",
-    gap: spacing.xs,
-  },
-  footerText: {},
-  linkText: {
-    fontWeight: "600",
+    width: "100%",
+    borderRadius: borderRadius.lg,
+    paddingVertical: spacing.md + 4,
   },
 });
