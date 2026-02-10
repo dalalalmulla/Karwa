@@ -21,15 +21,14 @@ export default function Login() {
   const { width } = useWindowDimensions();
 
   return (
-    <View style={styles.rootContainer}>
-      <GradientBackground>
-        <StatusBar hidden={false} translucent backgroundColor="transparent" />
-        <SafeAreaView style={styles.flex} edges={['top', 'bottom']}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.flex}
-          >
-            <View style={styles.contentContainer}>
+    <GradientBackground style={styles.rootContainer}>
+      <StatusBar hidden={false} translucent backgroundColor="transparent" barStyle="light-content" />
+      <SafeAreaView style={styles.flex} edges={[]}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.flex}
+        >
+          <View style={styles.contentContainer}>
           {/* Logo image centered in the middle - text only, no frame */}
           <View style={styles.logoContainer}>
             <Image
@@ -58,13 +57,13 @@ export default function Login() {
         </KeyboardAvoidingView>
       </SafeAreaView>
     </GradientBackground>
-    </View>
   );
 }
 
 const styles = StyleSheet.create({
   rootContainer: {
     flex: 1,
+    backgroundColor: 'transparent',
   },
   flex: {
     flex: 1,

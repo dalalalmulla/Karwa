@@ -180,11 +180,18 @@ export default function TaskDetailScreen() {
     onSuccess: () => {
       Alert.alert("Success", "Your application has been submitted!");
       queryClient.invalidateQueries({ queryKey: ["task", id] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
     onError: (err: Error & { response?: { data?: { error?: string } } }) => {
+      const errorMessage = err.response?.data?.error || err.message || "Could not apply";
+      console.error('Apply error:', {
+        message: errorMessage,
+        fullError: err,
+        taskId: id,
+      });
       Alert.alert(
         "Apply failed",
-        err.response?.data?.error || err.message || "Could not apply"
+        errorMessage
       );
     },
   });
@@ -297,9 +304,11 @@ export default function TaskDetailScreen() {
     setShowRatingModal(true);
   };
 
-  const handleContactWhatsApp = () => {
-    if (!id) return;
-    const message = `Task reference - Karwa\nTask ID: ${id}`;
+  const handleContactWhatsApp = (workerName?: string, workerEmail?: string) => {
+    if (!id || !data?.task) return;
+    const task = data.task;
+    const workerInfo = workerName ? `\nWorker: ${workerName}` : workerEmail ? `\nWorker: ${workerEmail}` : '';
+    const message = `Hello! I'm contacting you about the task on Karwa.\n\nTask: ${task.title}\nTask ID: ${id}${workerInfo}\n\nLet's discuss the details.`;
     Linking.openURL(
       `https://wa.me/?text=${encodeURIComponent(message)}`
     ).catch(() =>
@@ -370,7 +379,7 @@ export default function TaskDetailScreen() {
 
   /* ─── Derived State ─── */
 
-  const { task, applicants, hasApplied } = data;
+  const { task, applicants, hasApplied, hasRatedByPoster, hasRatedByWorker } = data;
   const userIdStr = user?._id ? String(user._id).trim() : "";
   const posterIdStr = getPosterId(task).trim();
   const workerIdStr = (getAssignedWorkerId(task) || "").trim();
@@ -399,10 +408,10 @@ export default function TaskDetailScreen() {
       task.status === "PENDING_CONFIRMATION") &&
     !!task.assignedWorkerId;
 
-  const canRate = isCompleted;
-  const showWorkerRatePoster = isWorker && canRate && !!task.posterId;
+  const canRate = isCompleted && !!user; // User must be authenticated to rate
+  const showWorkerRatePoster = isWorker && canRate && !!getPosterId(task) && !hasRatedByWorker;
   const showPosterRateWorker =
-    isPoster && canRate && !!task.assignedWorkerId;
+    isPoster && canRate && !!getAssignedWorkerId(task) && !hasRatedByPoster;
 
   const canApply = !isPoster && !isWorker && isOpen && !hasApplied;
   const canModify = isPoster && isOpen;
@@ -675,22 +684,42 @@ export default function TaskDetailScreen() {
                   "_id" in applicant
                     ? (applicant as TaskUser)._id
                     : "";
+                
+                const isAccepted = app.status === 'ACCEPTED';
+                const isRejected = app.status === 'REJECTED';
+                const isPending = app.status === 'PENDING';
 
                 return (
                   <Card key={app._id} variant="outlined" padding="medium">
                     <View style={styles.applicantRow}>
                       <View style={styles.applicantInfo}>
-                        <Text
-                          style={[
-                            styles.applicantName,
-                            {
-                              color: theme.text,
-                              fontSize: typography.body.fontSize,
-                            },
-                          ]}
-                        >
-                          {name}
-                        </Text>
+                        <View style={styles.applicantNameRow}>
+                          <Text
+                            style={[
+                              styles.applicantName,
+                              {
+                                color: theme.text,
+                                fontSize: typography.body.fontSize,
+                              },
+                            ]}
+                          >
+                            {name}
+                          </Text>
+                          {isAccepted && (
+                            <View style={[styles.statusBadge, { backgroundColor: theme.success + '20' }]}>
+                              <Text style={[styles.statusBadgeText, { color: theme.success }]}>
+                                Assigned
+                              </Text>
+                            </View>
+                          )}
+                          {isRejected && (
+                            <View style={[styles.statusBadge, { backgroundColor: theme.danger + '20' }]}>
+                              <Text style={[styles.statusBadgeText, { color: theme.danger }]}>
+                                Rejected
+                              </Text>
+                            </View>
+                          )}
+                        </View>
                         <Text
                           style={[
                             styles.applicantRating,
@@ -705,7 +734,7 @@ export default function TaskDetailScreen() {
                             : "No rating"}
                         </Text>
                       </View>
-                      {canAssign && (
+                      {canAssign && isPending && (
                         <Button
                           title="Assign"
                           onPress={() => handleAssign(applicantUserId)}
@@ -765,6 +794,18 @@ export default function TaskDetailScreen() {
                       ).toFixed(1)}`
                     : "No rating"}
                 </Text>
+                {isPoster && (
+                  <Button
+                    title="Contact via WhatsApp"
+                    onPress={() => {
+                      const workerName = getApplicantName(task.assignedWorkerId as TaskUser);
+                      const workerEmail = (task.assignedWorkerId as TaskUser).email;
+                      handleContactWhatsApp(workerName, workerEmail);
+                    }}
+                    style={styles.mt}
+                    variant="secondary"
+                  />
+                )}
               </View>
             ) : (
               <Text
@@ -1122,8 +1163,24 @@ const styles = StyleSheet.create({
   applicantInfo: {
     flex: 1,
   },
+  applicantNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    flexWrap: "wrap",
+  },
   applicantName: {
     fontWeight: "600",
+  },
+  statusBadge: {
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
+    borderRadius: borderRadius.sm,
+  },
+  statusBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    textTransform: "uppercase",
   },
   applicantRating: {
     marginTop: spacing.xs,

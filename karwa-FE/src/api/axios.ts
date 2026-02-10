@@ -19,15 +19,22 @@ import { emitForceLogout } from '../utils/authEvents';
 // For localhost: use localhost (only works for web)
 const getBaseURL = () => {
   if (__DEV__) {
-    // For physical devices (iOS/Android), use Mac's IP address
-    // For Android Emulator, use 10.0.2.2
-    // For iOS Simulator, can use localhost but IP works too
-    // Default to Mac's IP for all physical devices
-    const macIP = '192.168.13.180'; // Update this with your Mac's current IP if needed
-    return `http://${macIP}:8000/api`;
+    // IMPORTANT: Update this IP address to match your Mac's current IP
+    // To find your Mac's IP address, run in terminal: ipconfig getifaddr en0
+    // Or check System Preferences > Network > Wi-Fi > Advanced > TCP/IP
+    // For Android Emulator, use: '10.0.2.2'
+    // For iOS Simulator, you can use: 'localhost' or your Mac's IP
+    // For Physical Devices, use your Mac's IP address (both devices must be on same WiFi)
+    const macIP = '192.168.13.180'; // ⚠️ UPDATE THIS with your current Mac IP address
+
+    // Alternative: Use environment variable if set
+    const envIP = process.env.EXPO_PUBLIC_API_IP;
+    const ipToUse = envIP || macIP;
+
+    return `http://${ipToUse}:8000/api`;
   }
-  // Production URL
-  return 'http://192.168.13.180:8000/api';
+  // Production URL - update this for production deployment
+  return process.env.EXPO_PUBLIC_API_URL || 'http://192.168.13.180:8000/api';
 };
 
 const instance = axios.create({
@@ -60,10 +67,11 @@ instance.interceptors.request.use(
       const token = await getToken();
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Token added to request:', token.substring(0, 20) + '...');
-      } else {
-        console.warn('No token found in SecureStore');
+        if (__DEV__) {
+          console.log('Token added to request:', token.substring(0, 20) + '...');
+        }
       }
+      // No token is expected for public routes, so we don't warn
     } catch (error) {
       console.error('Error getting token:', error);
     }

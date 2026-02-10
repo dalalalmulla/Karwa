@@ -35,13 +35,8 @@ function getTypeLabel(type: string): string {
   return type.replace('_', ' ').toUpperCase();
 }
 
-function formatLocation(location: string, showFullAddress: boolean = false): string {
+function formatLocation(location: string): string {
   if (!location) return '';
-  
-  // If task is accepted, show full address
-  if (showFullAddress) {
-    return location;
-  }
   
   // Handle custom location (if it doesn't contain ">")
   if (!location.includes('>')) {
@@ -81,9 +76,6 @@ export default function TaskCard({ task, onPress }: TaskCardProps) {
   const posterName = getPosterName(task);
   const hasImage = task.pictures && task.pictures.length > 0;
   const firstImage = hasImage ? getImageUrl(task.pictures[0]) : null;
-  
-  // Check if task is accepted (has assigned worker or is in progress)
-  const isAccepted = !!task.assignedWorkerId || task.status === 'IN_PROGRESS';
 
   return (
     <View
@@ -228,14 +220,16 @@ export default function TaskCard({ task, onPress }: TaskCardProps) {
             <Text
               style={[
                 styles.infoText,
+                styles.locationText,
                 {
                   color: theme.textSecondary,
                   fontSize: typography.caption.fontSize,
                 },
               ]}
               numberOfLines={1}
+              ellipsizeMode="tail"
             >
-              {formatLocation(task.location, isAccepted)}
+              {formatLocation(task.location)}
             </Text>
           </View>
           </View>
@@ -279,6 +273,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     justifyContent: 'flex-start',
+    minWidth: 0,
   },
   category: {
     fontWeight: '500',
@@ -300,9 +295,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: spacing.xs,
     gap: spacing.xs,
+    flexWrap: 'nowrap',
   },
   infoText: {
     fontWeight: '500',
+  },
+  locationText: {
+    flex: 1,
+    flexShrink: 1,
+    minWidth: 0,
   },
   infoSeparator: {
     fontWeight: '400',

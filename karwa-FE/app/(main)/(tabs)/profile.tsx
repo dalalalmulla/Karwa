@@ -27,6 +27,7 @@ import AppHeader from "@/components/ui/AppHeader";
 import Card from "@/components/ui/Card";
 import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
+import TaskCard from "@/components/TaskCard";
 import { getCurrentUser } from "@/src/api/auth";
 
 type TasksResponse = {
@@ -57,15 +58,15 @@ export default function ProfileScreen() {
     enabled: !!token,
   });
 
-  // Fetch all tasks to filter for assigned tasks
+  // Fetch tasks where user is the assigned worker
   const {
-    data: allTasksData,
-    isRefetching: isAllTasksRefetching,
-    refetch: refetchAllTasks,
-    isLoading: isAllTasksLoading,
+    data: assignedTasksData,
+    isRefetching: isAssignedTasksRefetching,
+    refetch: refetchAssignedTasks,
+    isLoading: isAssignedTasksLoading,
   } = useQuery<TasksResponse>({
-    queryKey: ["all-tasks-for-profile"],
-    queryFn: () => getTasksApi({}) as unknown as Promise<TasksResponse>,
+    queryKey: ["my-assigned-tasks"],
+    queryFn: () => getTasksApi({ assignedWorkerId: "me" }) as unknown as Promise<TasksResponse>,
     refetchInterval: 15000,
     refetchIntervalInBackground: true,
     enabled: !!token,
@@ -104,20 +105,8 @@ export default function ProfileScreen() {
 
   // Combine tasks where user is poster or assigned worker
   const tasks: Task[] = useMemo(() => {
-    const userId = user?._id ? String(user._id) : null;
-    if (!userId) return [];
-
     const postedTasks = postedTasksData?.success ? (postedTasksData.data?.tasks ?? []) : [];
-    const allTasks = allTasksData?.success ? (allTasksData.data?.tasks ?? []) : [];
-
-    // Filter tasks where user is assigned worker
-    const assignedTasks = allTasks.filter((task) => {
-      if (!task.assignedWorkerId) return false;
-      const workerId = typeof task.assignedWorkerId === "string" 
-        ? task.assignedWorkerId 
-        : (task.assignedWorkerId as any)?._id || task.assignedWorkerId;
-      return String(workerId) === userId;
-    });
+    const assignedTasks = assignedTasksData?.success ? (assignedTasksData.data?.tasks ?? []) : [];
 
     // Combine and deduplicate by task ID
     const allUserTasks = [...postedTasks, ...assignedTasks];
@@ -135,10 +124,16 @@ export default function ProfileScreen() {
         acc[status] = (acc[status] || 0) + 1;
         return acc;
       }, {} as Record<string, number>),
+      allTasks: uniqueTasks.map(t => ({
+        id: t._id,
+        title: t.title,
+        status: t.status,
+        assignedWorkerId: t.assignedWorkerId,
+      })),
     });
 
     return uniqueTasks;
-  }, [postedTasksData, allTasksData, user]);
+  }, [postedTasksData, assignedTasksData]);
 
   const stats = tasks.reduce(
     (acc, task) => {
@@ -155,7 +150,7 @@ export default function ProfileScreen() {
 
   const handleRefresh = () => {
     refetchPostedTasks();
-    refetchAllTasks();
+    refetchAssignedTasks();
     refetchUser();
   };
 
@@ -176,8 +171,16 @@ export default function ProfileScreen() {
     return userData?.user?.ratingAverage ?? null;
   }, [userData]);
 
-  const isRefreshing = isPostedTasksRefetching || isAllTasksRefetching;
-  const isLoading = isPostedTasksLoading || isAllTasksLoading;
+  const isRefreshing = isPostedTasksRefetching || isAssignedTasksRefetching;
+  const isLoading = isPostedTasksLoading || isAssignedTasksLoading;
+
+  // Filter completed tasks
+  const completedTasks = useMemo(() => {
+    return tasks.filter((task) => {
+      const status = String(task.status || "").toUpperCase().trim();
+      return status === "COMPLETED";
+    });
+  }, [tasks]);
 
   const ListHeader = () => (
     <>
@@ -273,15 +276,50 @@ export default function ProfileScreen() {
           </Card>
         ))}
       </View>
+
+      {/* Completed Tasks Section */}
+      {completedTasks.length > 0 && (
+        <View style={styles.completedSection}>
+          <Card variant="default" padding="medium">
+            <Text
+              style={[
+                styles.completedTitle,
+                {
+                  color: theme.textTitle,
+                  fontSize: typography.heading.fontSize,
+                },
+              ]}
+            >
+              Completed Tasks ({completedTasks.length})
+            </Text>
+            <Text
+              style={[
+                styles.completedSubtitle,
+                {
+                  color: theme.textSecondary,
+                  fontSize: typography.body.fontSize,
+                },
+              ]}
+            >
+              Tap on a task to view details and rate
+            </Text>
+          </Card>
+        </View>
+      )}
     </>
   );
 
   return (
     <WatermarkBackground>
       <FlatList
-        data={[]}
-        keyExtractor={() => ""}
-        renderItem={() => null}
+        data={completedTasks}
+        keyExtractor={(item) => String(item._id)}
+        renderItem={({ item }) => (
+          <TaskCard
+            task={item}
+            onPress={() => router.push(`/(main)/task/${item._id}`)}
+          />
+        )}
         ListHeaderComponent={ListHeader}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -292,6 +330,14 @@ export default function ProfileScreen() {
             colors={[theme.primary]}
             tintColor={theme.primary}
           />
+        }
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <EmptyState
+              title="No completed tasks"
+              message="Tasks you complete will appear here"
+            />
+          </View>
         }
       />
     </WatermarkBackground>
@@ -340,5 +386,21 @@ const styles = StyleSheet.create({
   errorText: {
     paddingHorizontal: spacing.md,
     marginBottom: spacing.sm,
+  },
+  completedSection: {
+    paddingHorizontal: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
+  },
+  completedTitle: {
+    fontWeight: "600",
+    marginBottom: spacing.xs,
+  },
+  completedSubtitle: {
+    marginTop: spacing.xs,
+  },
+  emptyContainer: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
   },
 });

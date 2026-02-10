@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "@/src/context/ThemeContext";
 import { useAuth } from "@/src/context/AuthContext";
 import { spacing, borderRadius } from "@/constants/Karwa.theme";
@@ -193,6 +194,8 @@ export default function CreateTaskScreen() {
         location: task.location || "",
         type: (task.type as TaskType) || "indoor",
       });
+      // Set money input display value
+      setMoneyInput(task.money ? task.money.toString() : "");
       // Parse location to set governorate, area, and address details
       if (task.location) {
         parseLocation(task.location);
@@ -412,6 +415,8 @@ export default function CreateTaskScreen() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["tasks", "open"] });
+      // Reset form after successful creation
+      resetForm();
       Alert.alert("Success", "Task created successfully!", [
         { 
           text: "OK", 
@@ -456,6 +461,32 @@ export default function CreateTaskScreen() {
     avenue: "",
     houseFlatNumber: "",
   });
+  // Separate state for money input to allow free typing
+  const [moneyInput, setMoneyInput] = useState<string>("");
+
+  // Refs for address input fields to enable navigation
+  const blockNumberRef = useRef<any>(null);
+  const streetNumberRef = useRef<any>(null);
+  const avenueRef = useRef<any>(null);
+  const houseFlatNumberRef = useRef<any>(null);
+
+  // Helper function to convert non-English numerals to English
+  const convertToEnglishNumerals = (value: string): string => {
+    // Arabic-Indic numerals (٠١٢٣٤٥٦٧٨٩) to English (0123456789)
+    const arabicIndic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+    // Eastern Arabic-Indic numerals (۰۱۲۳۴۵۶۷۸۹) to English
+    const easternArabic = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+    
+    let result = value;
+    arabicIndic.forEach((char, index) => {
+      result = result.replace(new RegExp(char, 'g'), index.toString());
+    });
+    easternArabic.forEach((char, index) => {
+      result = result.replace(new RegExp(char, 'g'), index.toString());
+    });
+    
+    return result;
+  };
 
   const handleSubmit = async () => {
     if (!validateForm()) return;
@@ -503,6 +534,40 @@ export default function CreateTaskScreen() {
     }
   };
 
+  // Reset form to initial state
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      pictures: [],
+      money: 0,
+      location: "",
+      type: "indoor",
+    });
+    setErrors({});
+    setMoneyInput("");
+    setSelectedGovernorate(null);
+    setSelectedArea(null);
+    setCustomLocation("");
+    setAddressDetails({
+      blockNumber: "",
+      streetNumber: "",
+      avenue: "",
+      houseFlatNumber: "",
+    });
+    setIsLocationModalVisible(false);
+  };
+
+  // Reset form when screen comes into focus (only if not in edit mode)
+  // This ensures a fresh form when navigating back to create task screen
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!isEditMode && !taskId) {
+        resetForm();
+      }
+    }, [isEditMode, taskId])
+  );
+
   if (isEditMode && isLoadingTask) {
     return (
       <WatermarkBackground style={styles.center}>
@@ -529,6 +594,8 @@ export default function CreateTaskScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardDismissMode="on-drag"
         >
           <View style={styles.content}>
             <Text
@@ -655,13 +722,31 @@ export default function CreateTaskScreen() {
               <Input
                 label="Money (KWD) *"
                 placeholder="Enter amount in Kuwaiti Dinar"
-                value={formData.money.toString()}
+                value={moneyInput}
                 onChangeText={(value) => {
-                  const numValue = parseFloat(value) || 0;
-                  handleChange("money", numValue);
+                  // Convert non-English numerals to English first
+                  const englishValue = convertToEnglishNumerals(value);
+                  // Allow typing freely - only keep numbers and one decimal point
+                  const cleanedValue = englishValue.replace(/[^0-9.]/g, "");
+                  // Only allow one decimal point
+                  const parts = cleanedValue.split(".");
+                  const finalValue = parts.length > 2 
+                    ? parts[0] + "." + parts.slice(1).join("")
+                    : cleanedValue;
+                  
+                  // Update the display value (string)
+                  setMoneyInput(finalValue);
+                  
+                  // Convert to number and update formData
+                  const numValue = finalValue === "" || finalValue === "." ? 0 : parseFloat(finalValue);
+                  if (!isNaN(numValue)) {
+                    handleChange("money", numValue);
+                  } else {
+                    handleChange("money", 0);
+                  }
                 }}
                 error={errors.money}
-                keyboardType="numeric"
+                keyboardType="decimal-pad"
               />
 
               <View style={styles.pickerContainer}>
@@ -778,6 +863,7 @@ export default function CreateTaskScreen() {
                         { backgroundColor: theme.surface },
                       ]}
                       onStartShouldSetResponder={() => true}
+                      onMoveShouldSetResponder={() => false}
                     >
                       <View style={styles.modalHeader}>
                         <TouchableOpacity
@@ -848,6 +934,8 @@ export default function CreateTaskScreen() {
                       <ScrollView
                         style={styles.modalScrollView}
                         showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                        nestedScrollEnabled={true}
                       >
                         {!selectedGovernorate ? (
                           // Show governorates
@@ -939,44 +1027,63 @@ export default function CreateTaskScreen() {
                             </Text>
 
                             <Input
+                              ref={blockNumberRef}
                               label="Block Number *"
                               placeholder="Enter block number"
                               value={addressDetails.blockNumber}
                               onChangeText={(value) => {
+                                // Convert non-English numerals to English
+                                const englishValue = convertToEnglishNumerals(value);
+                                // Only allow numbers
+                                const cleanedValue = englishValue.replace(/[^0-9]/g, "");
                                 setAddressDetails((prev) => ({
                                   ...prev,
-                                  blockNumber: value,
+                                  blockNumber: cleanedValue,
                                 }));
                                 const newLocation = buildLocationString(
                                   selectedGovernorate!,
                                   selectedArea,
-                                  { ...addressDetails, blockNumber: value }
+                                  { ...addressDetails, blockNumber: cleanedValue }
                                 );
                                 handleChange("location", newLocation);
                               }}
-                              keyboardType="numeric"
+                              keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "numeric"}
+                              returnKeyType="next"
+                              onSubmitEditing={() => {
+                                streetNumberRef.current?.focus();
+                              }}
                             />
 
                             <Input
+                              ref={streetNumberRef}
                               label="Street Number *"
                               placeholder="Enter street number"
                               value={addressDetails.streetNumber}
                               onChangeText={(value) => {
+                                // Convert non-English numerals to English
+                                const englishValue = convertToEnglishNumerals(value);
+                                // Only allow numbers
+                                const cleanedValue = englishValue.replace(/[^0-9]/g, "");
                                 setAddressDetails((prev) => ({
                                   ...prev,
-                                  streetNumber: value,
+                                  streetNumber: cleanedValue,
                                 }));
                                 const newLocation = buildLocationString(
                                   selectedGovernorate!,
                                   selectedArea,
-                                  { ...addressDetails, streetNumber: value }
+                                  { ...addressDetails, streetNumber: cleanedValue }
                                 );
                                 handleChange("location", newLocation);
                               }}
-                              keyboardType="numeric"
+                              keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "numeric"}
+                              returnKeyType="next"
+                              onSubmitEditing={() => {
+                                avenueRef.current?.focus();
+                              }}
                             />
 
                             <Input
+                              ref={avenueRef}
                               label="Avenue (Optional)"
                               placeholder="Enter avenue name"
                               value={addressDetails.avenue}
@@ -992,23 +1099,37 @@ export default function CreateTaskScreen() {
                                 );
                                 handleChange("location", newLocation);
                               }}
+                              returnKeyType="next"
+                              onSubmitEditing={() => {
+                                houseFlatNumberRef.current?.focus();
+                              }}
                             />
 
                             <Input
+                              ref={houseFlatNumberRef}
                               label="House/Flat Number *"
                               placeholder="Enter house or flat number"
                               value={addressDetails.houseFlatNumber}
                               onChangeText={(value) => {
+                                // Convert non-English numerals to English
+                                const englishValue = convertToEnglishNumerals(value);
+                                // Only allow numbers
+                                const cleanedValue = englishValue.replace(/[^0-9]/g, "");
                                 setAddressDetails((prev) => ({
                                   ...prev,
-                                  houseFlatNumber: value,
+                                  houseFlatNumber: cleanedValue,
                                 }));
                                 const newLocation = buildLocationString(
                                   selectedGovernorate!,
                                   selectedArea,
-                                  { ...addressDetails, houseFlatNumber: value }
+                                  { ...addressDetails, houseFlatNumber: cleanedValue }
                                 );
                                 handleChange("location", newLocation);
+                              }}
+                              keyboardType={Platform.OS === "ios" ? "numbers-and-punctuation" : "numeric"}
+                              returnKeyType="done"
+                              onSubmitEditing={() => {
+                                houseFlatNumberRef.current?.blur();
                               }}
                             />
 

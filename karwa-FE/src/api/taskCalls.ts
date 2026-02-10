@@ -43,6 +43,7 @@ export type GetTasksParams = {
   minMoney?: number;
   maxMoney?: number;
   posterId?: string; // Use "me" to get current user's tasks as poster
+  assignedWorkerId?: string; // Use "me" to get current user's tasks as assigned worker
 };
 
 export const getTasksApi = async (params?: GetTasksParams) => {
