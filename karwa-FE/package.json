@@ -3,7 +3,9 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start -c",
+    "start": "expo start -c --host lan",
+    "start:tunnel": "expo start -c --host tunnel",
+    "start:localhost": "expo start -c --host localhost",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
@@ -22,6 +24,7 @@
     "expo-haptics": "~15.0.8",
     "expo-image": "~3.0.11",
     "expo-image-picker": "~17.0.10",
+    "expo-linear-gradient": "~15.0.8",
     "expo-linking": "~8.0.11",
     "expo-router": "~6.0.23",
     "expo-secure-store": "~15.0.8",

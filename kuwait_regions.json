@@ -1,0 +1,362 @@
+{
+  "Capital Governorate (Al-Asimah)": {
+    "label": "Al Asimah",
+    "value": "Al Asimah",
+    "areas": [
+      {
+        "label": "Kuwait City (Sharq, Jibla, Mirqab, Dasman)",
+        "value": "Kuwait City"
+      },
+      {
+        "label": "Sharq",
+        "value": "Sharq"
+      },
+      {
+        "label": "Jibla",
+        "value": "Jibla"
+      },
+      {
+        "label": "Mirqab",
+        "value": "Mirqab"
+      },
+      {
+        "label": "Dasman",
+        "value": "Dasman"
+      },
+      {
+        "label": "Bneid Al-Gar",
+        "value": "Bneid Al-Gar"
+      },
+      {
+        "label": "Abdullah Al-Salem",
+        "value": "Abdullah Al-Salem"
+      },
+      {
+        "label": "Adailiya",
+        "value": "Adailiya"
+      },
+      {
+        "label": "Daiya",
+        "value": "Daiya"
+      },
+      {
+        "label": "Dasma",
+        "value": "Dasma"
+      },
+      {
+        "label": "Doha",
+        "value": "Doha"
+      },
+      {
+        "label": "Faiha",
+        "value": "Faiha"
+      },
+      {
+        "label": "Kaifan",
+        "value": "Kaifan"
+      },
+      {
+        "label": "Khaldiya",
+        "value": "Khaldiya"
+      },
+      {
+        "label": "Mansouriya",
+        "value": "Mansouriya"
+      },
+      {
+        "label": "Nuzha",
+        "value": "Nuzha"
+      },
+      {
+        "label": "Qadsiya",
+        "value": "Qadsiya"
+      },
+      {
+        "label": "Qortuba",
+        "value": "Qortuba"
+      },
+      {
+        "label": "Rawda",
+        "value": "Rawda"
+      },
+      {
+        "label": "Shamiya",
+        "value": "Shamiya"
+      },
+      {
+        "label": "Shuwaikh",
+        "value": "Shuwaikh"
+      },
+      {
+        "label": "Sulaibikhat",
+        "value": "Sulaibikhat"
+      },
+      {
+        "label": "Surra",
+        "value": "Surra"
+      },
+      {
+        "label": "Yarmouk",
+        "value": "Yarmouk"
+      }
+    ]
+  },
+  "Hawalli Governorate": {
+    "label": "Hawalli",
+    "value": "Hawalli",
+    "areas": [
+      {
+        "label": "Hawalli",
+        "value": "Hawalli"
+      },
+      {
+        "label": "Bayan",
+        "value": "Bayan"
+      },
+      {
+        "label": "Mishref",
+        "value": "Mishref"
+      },
+      {
+        "label": "Jabriya",
+        "value": "Jabriya"
+      },
+      {
+        "label": "Rumaithiya",
+        "value": "Rumaithiya"
+      },
+      {
+        "label": "Salmiya",
+        "value": "Salmiya"
+      },
+      {
+        "label": "Salwa",
+        "value": "Salwa"
+      },
+      {
+        "label": "Shaab",
+        "value": "Shaab"
+      },
+      {
+        "label": "Mubarak Al-Abdullah (West Mishref)",
+        "value": "Mubarak Al-Abdullah"
+      },
+      {
+        "label": "Salam",
+        "value": "Salam"
+      },
+      {
+        "label": "Hattin",
+        "value": "Hattin"
+      },
+      {
+        "label": "Al-Zahra",
+        "value": "Al-Zahra"
+      },
+      {
+        "label": "Al-Shuhada",
+        "value": "Al-Shuhada"
+      },
+      {
+        "label": "Al-Siddiq",
+        "value": "Al-Siddiq"
+      }
+    ]
+  },
+  "Farwaniya Governorate": {
+    "label": "Al Farwaniyah",
+    "value": "Al Farwaniyah",
+    "areas": [
+      {
+        "label": "Farwaniyah",
+        "value": "Farwaniyah"
+      },
+      {
+        "label": "Khaitan",
+        "value": "Khaitan"
+      },
+      {
+        "label": "Ardiya",
+        "value": "Ardiya"
+      },
+      {
+        "label": "Reggai",
+        "value": "Reggai"
+      },
+      {
+        "label": "Jaleeb Al-Shuyoukh",
+        "value": "Jaleeb Al-Shuyoukh"
+      },
+      {
+        "label": "Andalus",
+        "value": "Andalus"
+      },
+      {
+        "label": "Rabiya",
+        "value": "Rabiya"
+      },
+      {
+        "label": "Omariya",
+        "value": "Omariya"
+      },
+      {
+        "label": "Abraq Khaitan",
+        "value": "Abraq Khaitan"
+      },
+      {
+        "label": "Rehab",
+        "value": "Rehab"
+      },
+      {
+        "label": "Ishbiliya",
+        "value": "Ishbiliya"
+      },
+      {
+        "label": "Sabah Al-Nasser",
+        "value": "Sabah Al-Nasser"
+      },
+      {
+        "label": "Abdullah Al-Mubarak",
+        "value": "Abdullah Al-Mubarak"
+      }
+    ]
+  },
+  "Ahmadi Governorate": {
+    "label": "Al Ahmadi",
+    "value": "Al Ahmadi",
+    "areas": [
+      {
+        "label": "Ahmadi",
+        "value": "Ahmadi"
+      },
+      {
+        "label": "Fintas",
+        "value": "Fintas"
+      },
+      {
+        "label": "Egaila",
+        "value": "Egaila"
+      },
+      {
+        "label": "Mangaf",
+        "value": "Mangaf"
+      },
+      {
+        "label": "Fahaheel",
+        "value": "Fahaheel"
+      },
+      {
+        "label": "Sabahiya",
+        "value": "Sabahiya"
+      },
+      {
+        "label": "Mahboula",
+        "value": "Mahboula"
+      },
+      {
+        "label": "Abu Halifa",
+        "value": "Abu Halifa"
+      },
+      {
+        "label": "Riqqa",
+        "value": "Riqqa"
+      },
+      {
+        "label": "Hadiya",
+        "value": "Hadiya"
+      },
+      {
+        "label": "Jaber Al-Ali",
+        "value": "Jaber Al-Ali"
+      },
+      {
+        "label": "Sabah Al-Ahmad City",
+        "value": "Sabah Al-Ahmad City"
+      }
+    ]
+  },
+  "Jahra Governorate": {
+    "label": "Al Jahra",
+    "value": "Al Jahra",
+    "areas": [
+      {
+        "label": "Jahra",
+        "value": "Jahra"
+      },
+      {
+        "label": "Sulaibiya",
+        "value": "Sulaibiya"
+      },
+      {
+        "label": "Saad Al-Abdullah City",
+        "value": "Saad Al-Abdullah City"
+      },
+      {
+        "label": "Qairawan",
+        "value": "Qairawan"
+      },
+      {
+        "label": "Oyoun",
+        "value": "Oyoun"
+      },
+      {
+        "label": "Waha",
+        "value": "Waha"
+      },
+      {
+        "label": "Nasseem",
+        "value": "Nasseem"
+      },
+      {
+        "label": "Naeem",
+        "value": "Naeem"
+      },
+      {
+        "label": "Taima",
+        "value": "Taima"
+      },
+      {
+        "label": "Qasr",
+        "value": "Qasr"
+      }
+    ]
+  },
+  "Mubarak Al-Kabeer Governorate": {
+    "label": "Mubarak Al-Kabeer",
+    "value": "Mubarak Al-Kabeer",
+    "areas": [
+      {
+        "label": "Mubarak Al-Kabeer",
+        "value": "Mubarak Al-Kabeer"
+      },
+      {
+        "label": "Adan",
+        "value": "Adan"
+      },
+      {
+        "label": "Qurain",
+        "value": "Qurain"
+      },
+      {
+        "label": "Qusour",
+        "value": "Qusour"
+      },
+      {
+        "label": "Sabah Al-Salem",
+        "value": "Sabah Al-Salem"
+      },
+      {
+        "label": "Abu Fatira",
+        "value": "Abu Fatira"
+      },
+      {
+        "label": "Messila",
+        "value": "Messila"
+      },
+      {
+        "label": "Abu Al Hasaniya",
+        "value": "Abu Al Hasaniya"
+      }
+    ]
+  }
+}

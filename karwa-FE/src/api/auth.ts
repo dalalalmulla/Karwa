@@ -110,6 +110,23 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse['data']>
     if (axios.isAxiosError(error)) {
       const status = error.response?.status;
       const errorData = error.response?.data;
+      
+      // Handle timeout specifically
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        const timeoutMessage = `Connection timeout. Please verify:
+1. The backend server is running at ${error.config?.baseURL}
+2. Your device/emulator can reach the server
+3. Check your network connection`;
+        
+        console.error('Login timeout:', {
+          baseURL: error.config?.baseURL,
+          url: error.config?.url,
+          timeout: error.config?.timeout,
+        });
+        
+        throw new Error(timeoutMessage);
+      }
+      
       const errorMessage =
         errorData?.error || error.message || 'Login failed';
 
@@ -117,6 +134,7 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse['data']>
       console.error('Login error:', {
         status,
         message: errorMessage,
+        code: error.code,
         url: error.config?.url,
         baseURL: error.config?.baseURL,
         fullURL: `${error.config?.baseURL}${error.config?.url}`,

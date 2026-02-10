@@ -15,8 +15,7 @@ import { useTheme } from "@/src/context/ThemeContext";
 import { spacing, borderRadius } from "@/constants/Karwa.theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import Logo from "@/components/ui/Logo";
-import WatermarkBackground from "@/components/ui/WatermarkBackground";
+import GradientBackground from "@/components/ui/GradientBackground";
 import { register, RegisterData } from "@/src/api/auth";
 
 export default function RegisterScreen() {
@@ -95,7 +94,7 @@ export default function RegisterScreen() {
   };
 
   return (
-    <WatermarkBackground>
+    <GradientBackground>
       {showToast && (
         <View style={[styles.toast, { backgroundColor: theme.success }]}>
           <Text style={[styles.toastText, { color: theme.white }]}>
@@ -113,15 +112,11 @@ export default function RegisterScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.content}>
-            <View style={styles.logoContainer}>
-              <Logo size={100} />
-            </View>
-
             <Text
               style={[
                 styles.title,
                 {
-                  color: theme.textTitle,
+                  color: '#FFFFFF',
                   fontSize: typography.title.fontSize,
                 },
               ]}
@@ -132,7 +127,7 @@ export default function RegisterScreen() {
               style={[
                 styles.subtitle,
                 {
-                  color: theme.textSecondary,
+                  color: '#FFFFFF',
                   fontSize: typography.body.fontSize,
                 },
               ]}
@@ -148,6 +143,9 @@ export default function RegisterScreen() {
                 onChangeText={(value) => handleChange("name", value)}
                 error={errors.name}
                 autoCapitalize="words"
+                labelColor="#FFFFFF"
+                textColor="#FFFFFF"
+                placeholderColor="#FFFFFF"
               />
 
               <Input
@@ -159,6 +157,9 @@ export default function RegisterScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoComplete="email"
+                labelColor="#FFFFFF"
+                textColor="#FFFFFF"
+                placeholderColor="#FFFFFF"
               />
 
               <Input
@@ -169,6 +170,9 @@ export default function RegisterScreen() {
                 error={errors.civilId}
                 keyboardType="numeric"
                 maxLength={12}
+                labelColor="#FFFFFF"
+                textColor="#FFFFFF"
+                placeholderColor="#FFFFFF"
               />
 
               <Input
@@ -179,6 +183,9 @@ export default function RegisterScreen() {
                 error={errors.password}
                 secureTextEntry
                 autoCapitalize="none"
+                labelColor="#FFFFFF"
+                textColor="#FFFFFF"
+                placeholderColor="#FFFFFF"
               />
 
               <Input
@@ -191,6 +198,9 @@ export default function RegisterScreen() {
                 error={errors.confirmPassword}
                 secureTextEntry
                 autoCapitalize="none"
+                labelColor="#FFFFFF"
+                textColor="#FFFFFF"
+                placeholderColor="#FFFFFF"
               />
 
               <Button
@@ -205,7 +215,7 @@ export default function RegisterScreen() {
                   style={[
                     styles.footerText,
                     {
-                      color: theme.textSecondary,
+                      color: '#FFFFFF',
                       fontSize: typography.body.fontSize,
                     },
                   ]}
@@ -219,7 +229,7 @@ export default function RegisterScreen() {
                     style={[
                       styles.footerLink,
                       {
-                        color: theme.primary,
+                        color: '#FFFFFF',
                         fontSize: typography.body.fontSize,
                       },
                     ]}
@@ -232,7 +242,7 @@ export default function RegisterScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </WatermarkBackground>
+    </GradientBackground>
   );
 }
 

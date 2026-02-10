@@ -6,13 +6,13 @@ import {
   FlatList,
   RefreshControl,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useFocusEffect } from "@react-navigation/native";
-import { useAuth } from "@/src/context/AuthContext";
 import { useTheme } from "@/src/context/ThemeContext";
-import { spacing, shadows } from "@/constants/Karwa.theme";
+import { spacing } from "@/constants/Karwa.theme";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import TaskCard from "@/components/TaskCard";
@@ -29,7 +29,6 @@ import {
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { token } = useAuth();
   const { theme, typography } = useTheme();
   const [filters, setFilters] = useState<GetTasksParams>({});
 
@@ -37,11 +36,44 @@ export default function HomeScreen() {
     useQuery<GetTasksResponse>({
       queryKey: ["tasks", "open", filters],
       queryFn: async () => {
-        const params: GetTasksParams = { ...filters, status: "OPEN" };
-        return await getTasksApi(params);
+        try {
+          const params: GetTasksParams = { ...filters, status: "OPEN" };
+          const result = await getTasksApi(params);
+          if (Platform.OS === "android") {
+            console.log("Tasks fetched successfully on Android:", result?.data?.tasks?.length || 0);
+          }
+          return result;
+        } catch (err: any) {
+          // Better error handling for Android
+          console.error(`Error fetching tasks on ${Platform.OS}:`, err);
+          
+          // If it's a 401 error, return empty result instead of throwing (tasks endpoint should work without auth now)
+          if (err?.response?.status === 401) {
+            console.warn("Got 401 but tasks should be public - returning empty result");
+            return { success: true, data: { tasks: [] } } as GetTasksResponse;
+          }
+          
+          if (Platform.OS === "android") {
+            console.error("Android error details:", {
+              message: err?.message,
+              status: err?.response?.status,
+              statusText: err?.response?.statusText,
+              data: err?.response?.data,
+            });
+          }
+          throw err;
+        }
       },
       refetchOnMount: "always",
-      enabled: !!token, // Don't fetch when not logged in
+      retry: (failureCount, error) => {
+        // Retry up to 2 times, but not for 401 errors (shouldn't happen now, but just in case)
+        if (failureCount < 2 && (error as any)?.response?.status !== 401) {
+          return true;
+        }
+        return false;
+      },
+      retryDelay: 1000, // Wait 1 second between retries
+      // Allow fetching tasks even without authentication
     });
 
   const tasks: Task[] = useMemo(() => {
@@ -67,7 +99,7 @@ export default function HomeScreen() {
         rightElement={
           <TaskFilters filters={filters} onApply={handleFiltersChange} />
         }
-        showBranding
+        showBranding={false}
       />
 
       {error ? (
@@ -113,15 +145,10 @@ export default function HomeScreen() {
             </TouchableOpacity>
             <View style={styles.buttonRow}>
               <Button
-                title="Create Task"
-                onPress={() => router.push("/(main)/create-task")}
-                style={styles.buttonHalf}
-              />
-              <Button
                 title="Refresh"
                 onPress={() => refetch()}
                 variant="secondary"
-                style={styles.buttonHalf}
+                style={styles.buttonFull}
               />
             </View>
           </Card>
@@ -160,28 +187,11 @@ export default function HomeScreen() {
                 ? "Please wait while we fetch tasks."
                 : "There are no tasks right now. Pull down to refresh or create one!"
             }
-            actionLabel={isLoading ? undefined : "Create New Task"}
-            onAction={
-              isLoading
-                ? undefined
-                : () => router.push("/(main)/create-task")
-            }
+            actionLabel={undefined}
+            onAction={undefined}
           />
         }
       />
-
-      {/* FAB */}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          { backgroundColor: theme.primary, ...shadows.medium },
-        ]}
-        onPress={() => router.push("/(main)/create-task")}
-        activeOpacity={0.8}
-        accessibilityLabel="Create new task"
-      >
-        <Text style={[styles.fabText, { color: theme.white }]}>+</Text>
-      </TouchableOpacity>
     </WatermarkBackground>
   );
 }
@@ -191,21 +201,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     paddingBottom: spacing.xl,
-  },
-  fab: {
-    position: "absolute",
-    right: spacing.md,
-    bottom: spacing.xl + 56,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  fabText: {
-    fontSize: 32,
-    fontWeight: "300",
-    lineHeight: 32,
   },
   errorContainer: {
     paddingHorizontal: spacing.md,
@@ -229,7 +224,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     marginTop: spacing.sm,
   },
-  buttonHalf: {
+  buttonFull: {
     flex: 1,
   },
 });

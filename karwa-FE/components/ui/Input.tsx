@@ -14,6 +14,9 @@ interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
   containerStyle?: ViewStyle;
+  labelColor?: string;
+  textColor?: string;
+  placeholderColor?: string;
 }
 
 export default function Input({
@@ -23,6 +26,9 @@ export default function Input({
   style,
   onFocus,
   onBlur,
+  labelColor,
+  textColor,
+  placeholderColor,
   ...props
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -45,7 +51,7 @@ export default function Input({
         <Text
           style={[
             styles.label,
-            { color: theme.text, fontSize: typography.caption.fontSize },
+            { color: labelColor || theme.text, fontSize: typography.caption.fontSize },
           ]}
         >
           {label}
@@ -62,13 +68,13 @@ export default function Input({
               ? theme.primary
               : theme.border,
             borderWidth: isFocused || hasError ? 2 : 1.5,
-            color: theme.text,
+            color: textColor || theme.text,
             fontSize: typography.body.fontSize,
             borderRadius: borderRadius.lg,
           },
           style,
         ]}
-        placeholderTextColor={theme.textMuted}
+        placeholderTextColor={placeholderColor || theme.textMuted}
         onFocus={handleFocus}
         onBlur={handleBlur}
         {...props}

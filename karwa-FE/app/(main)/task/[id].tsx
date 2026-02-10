@@ -113,7 +113,7 @@ function formatDate(dateString: string): string {
 export default function TaskDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const { theme, typography } = useTheme();
   const queryClient = useQueryClient();
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -250,6 +250,18 @@ export default function TaskDetailScreen() {
 
   const handleApply = () => {
     if (!id) return;
+    // Check if user is authenticated
+    if (!token) {
+      Alert.alert(
+        "Login Required",
+        "You need to login to apply for tasks. Would you like to login now?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Login", onPress: () => router.push("/(auth)/login") },
+        ]
+      );
+      return;
+    }
     Alert.alert("Apply to Task", "Are you sure you want to apply?", [
       { text: "Cancel", style: "cancel" },
       { text: "Apply", onPress: () => applyMutation.mutate() },
@@ -430,6 +442,7 @@ export default function TaskDetailScreen() {
               label={`${task.points} pts`}
               variant="primary"
               size="small"
+              textStyle={{ color: '#FFFFFF' }}
             />
           </View>
 

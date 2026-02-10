@@ -6,19 +6,9 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import { HapticTab } from "@/components/haptic-tab";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing } from "@/constants/Karwa.theme";
-import { useQuery } from "@tanstack/react-query";
-import { getNotificationsApi } from "@/src/api/notificationCalls";
 
 export default function TabLayout() {
   const { theme } = useTheme();
-
-  const { data: notificationsData } = useQuery({
-    queryKey: ["notifications"],
-    queryFn: () => getNotificationsApi({ limit: 50 }),
-    refetchInterval: 15000,
-  });
-
-  const unreadCount = notificationsData?.data?.unreadCount ?? 0;
 
   return (
     <Tabs
@@ -34,20 +24,7 @@ export default function TabLayout() {
         tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
-      {/* Profile on the left */}
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: "Profile",
-          tabBarIcon: ({ color }) => (
-            <AntDesign name="profile" size={22} color={color} />
-          ),
-          tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
-          tabBarBadgeStyle: [styles.badge, { backgroundColor: theme.primary }],
-        }}
-      />
-
-      {/* Home in the middle */}
+      {/* Home on the left */}
       <Tabs.Screen
         name="index"
         options={{
@@ -57,9 +34,36 @@ export default function TabLayout() {
           ),
         }}
       />
-      
 
-      {/* Settings on the right */}
+      {/* Create Task in the middle */}
+      <Tabs.Screen
+        name="create-task"
+        options={{
+          title: "Create Task",
+          tabBarIcon: ({ color, focused }) => (
+            <AntDesign 
+              name="plus" 
+              size={focused ? 22 : 22} 
+              color={color} 
+            />
+          ),
+          tabBarActiveTintColor: theme.primary,
+          tabBarInactiveTintColor: theme.textMuted,
+        }}
+      />
+
+      {/* Profile next */}
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <AntDesign name="user" size={22} color={color} />
+          ),
+        }}
+      />
+
+      {/* Settings last */}
       <Tabs.Screen
         name="settings"
         options={{

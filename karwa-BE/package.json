@@ -7,7 +7,8 @@
     "dev": "ts-node-dev --respawn --transpile-only server.ts",
     "build": "tsc",
     "start": "nodemon server.ts",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "clear-tasks": "ts-node scripts/clearTasks.ts"
   },
   "keywords": [
     "karwa",
@@ -38,6 +39,7 @@
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "eslint": "^8.56.0",
+    "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
   }

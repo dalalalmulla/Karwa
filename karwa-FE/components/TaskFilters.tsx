@@ -8,6 +8,7 @@ import {
   ScrollView,
   Modal,
 } from "react-native";
+import AntDesign from "@expo/vector-icons/AntDesign";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing, borderRadius } from "@/constants/Karwa.theme";
 import { TaskType, GetTasksParams } from "@/src/api/taskCalls";
@@ -57,21 +58,21 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
       <TouchableOpacity
         style={[
           styles.filterButton,
-          { backgroundColor: '#7BBCE8', borderColor: '#7BBCE8' },
-          activeFilterCount > 0 && { backgroundColor: theme.primary, borderColor: theme.primary },
+          { backgroundColor: 'transparent' },
         ]}
         onPress={handleOpen}
         accessibilityLabel="Open filters"
       >
-        <Text
-          style={[
-            styles.filterButtonText,
-            { color: theme.white, fontSize: typography.caption.fontSize },
-            activeFilterCount > 0 && { color: theme.white },
-          ]}
-        >
-          {activeFilterCount > 0 ? `Filters (${activeFilterCount})` : "Filters"}
-        </Text>
+        <AntDesign 
+          name="filter" 
+          size={24} 
+          color="#1C5FA3" 
+        />
+        {activeFilterCount > 0 && (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{activeFilterCount}</Text>
+          </View>
+        )}
       </TouchableOpacity>
 
       <Modal
@@ -240,13 +241,28 @@ export default function TaskFilters({ filters, onApply }: TaskFiltersProps) {
 
 const styles = StyleSheet.create({
   filterButton: {
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
   },
-  filterButtonText: {
-    fontWeight: "500",
+  badge: {
+    position: "absolute",
+    top: -4,
+    right: -4,
+    backgroundColor: "#FF4444",
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontWeight: "700",
   },
   modalOverlay: {
     flex: 1,
