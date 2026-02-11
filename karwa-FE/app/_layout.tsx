@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { AuthContext } from "../src/context/AuthContext";
 import { ThemeContext } from "../src/context/ThemeContext";
 import type { User } from "../src/types/userTypes";
@@ -152,19 +153,21 @@ export default function RootLayout() {
   const currentTheme = isThemeLoaded ? themeValue.theme : lightTheme;
 
   return (
-    <SafeAreaProvider>
-      <SafeAreaView 
-        style={{ flex: 1, backgroundColor: "white" }}
-        edges={['top', 'left', 'right', "bottom"]}
-      >
-        <QueryClientProvider client={queryClient}>
-          <ThemeContext.Provider value={themeValue}>
-            <AuthContext.Provider value={authValue}>
-              <Stack screenOptions={{ headerShown: false }} />
-            </AuthContext.Provider>
-          </ThemeContext.Provider>
-        </QueryClientProvider>
-      </SafeAreaView>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider>
+        <SafeAreaView 
+          style={{ flex: 1, backgroundColor: "transparent" }}
+          edges={['top', 'bottom']}
+        >
+          <QueryClientProvider client={queryClient}>
+            <ThemeContext.Provider value={themeValue}>
+              <AuthContext.Provider value={authValue}>
+                <Stack screenOptions={{ headerShown: false }} />
+              </AuthContext.Provider>
+            </ThemeContext.Provider>
+          </QueryClientProvider>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 }

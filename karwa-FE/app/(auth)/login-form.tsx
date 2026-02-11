@@ -12,13 +12,12 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../src/context/AuthContext";
 import { useMutation } from "@tanstack/react-query";
-import type { LoginPayload } from "../../src/api/authCalls";
 import { useTheme } from "@/src/context/ThemeContext";
 import { spacing, borderRadius } from "@/constants/Karwa.theme";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 import GradientBackground from "@/components/ui/GradientBackground";
-import { loginUser } from "@/src/api/auth";
+import { loginUser, type LoginData } from "@/src/api/auth";
 import { AntDesign } from "@expo/vector-icons";
 
 export default function LoginForm() {
@@ -26,7 +25,7 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [visiblePassword, setVisiblePassword] = useState(false);
   const [errors, setErrors] = useState<
-    Partial<Record<keyof LoginPayload, string>>
+    Partial<Record<keyof LoginData, string>>
   >({});
 
   const { setToken, setUser } = useAuth();
@@ -34,7 +33,7 @@ export default function LoginForm() {
   const { theme, typography } = useTheme();
 
   const loginMutation = useMutation({
-    mutationFn: (data: LoginPayload) => loginUser(data),
+    mutationFn: (data: LoginData) => loginUser(data),
     onSuccess: (res) => {
       if (res && res.token) {
         setToken(res.token);
@@ -52,7 +51,7 @@ export default function LoginForm() {
   });
 
   const handleLogin = () => {
-    const newErrors: Partial<Record<keyof LoginPayload, string>> = {};
+    const newErrors: Partial<Record<keyof LoginData, string>> = {};
     if (!email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^\S+@\S+\.\S+$/.test(email)) {
@@ -67,7 +66,7 @@ export default function LoginForm() {
     }
   };
 
-  const handleChange = (field: keyof LoginPayload, value: string) => {
+  const handleChange = (field: keyof LoginData, value: string) => {
     if (field === "email") setEmail(value);
     if (field === "password") setPassword(value);
     if (errors[field]) {

@@ -144,8 +144,8 @@ export default function RegisterScreen() {
                 error={errors.name}
                 autoCapitalize="words"
                 labelColor="#FFFFFF"
-                textColor="#FFFFFF"
-                placeholderColor="#FFFFFF"
+                textColor="#000000"
+                placeholderColor="#999999"
               />
 
               <Input
@@ -158,8 +158,8 @@ export default function RegisterScreen() {
                 autoCapitalize="none"
                 autoComplete="email"
                 labelColor="#FFFFFF"
-                textColor="#FFFFFF"
-                placeholderColor="#FFFFFF"
+                textColor="#000000"
+                placeholderColor="#999999"
               />
 
               <Input
@@ -171,8 +171,8 @@ export default function RegisterScreen() {
                 keyboardType="numeric"
                 maxLength={12}
                 labelColor="#FFFFFF"
-                textColor="#FFFFFF"
-                placeholderColor="#FFFFFF"
+                textColor="#000000"
+                placeholderColor="#999999"
               />
 
               <Input
@@ -184,8 +184,8 @@ export default function RegisterScreen() {
                 secureTextEntry
                 autoCapitalize="none"
                 labelColor="#FFFFFF"
-                textColor="#FFFFFF"
-                placeholderColor="#FFFFFF"
+                textColor="#000000"
+                placeholderColor="#999999"
               />
 
               <Input
@@ -199,8 +199,8 @@ export default function RegisterScreen() {
                 secureTextEntry
                 autoCapitalize="none"
                 labelColor="#FFFFFF"
-                textColor="#FFFFFF"
-                placeholderColor="#FFFFFF"
+                textColor="#000000"
+                placeholderColor="#999999"
               />
 
               <Button

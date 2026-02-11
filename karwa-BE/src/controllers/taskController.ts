@@ -119,7 +119,7 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
 export const getTasks = async (req: Request, res: Response): Promise<void> => {
   try {
     const q = req as CustomeRequest;
-    const { status, type, location, minMoney, maxMoney, posterId: posterIdParam } = req.query;
+    const { status, type, location, minMoney, maxMoney, posterId: posterIdParam, assignedWorkerId: assignedWorkerIdParam } = req.query;
 
     // Build query
     const query: Record<string, unknown> = {};
@@ -129,11 +129,16 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
       query.posterId = q.user._id;
     }
 
-    // Filter by status (default to OPEN for marketplace when no posterId=me)
+    // Filter by assigned worker (e.g. ?assignedWorkerId=me for current user's tasks as worker)
+    if (assignedWorkerIdParam === 'me' && q.user?._id) {
+      query.assignedWorkerId = q.user._id;
+    }
+
+    // Filter by status (default to OPEN for marketplace when no posterId=me or assignedWorkerId=me)
     if (status) {
       query.status = status;
-    } else if (!query.posterId) {
-      query.status = 'OPEN'; // Default to showing open tasks in marketplace
+    } else if (!query.posterId && !query.assignedWorkerId) {
+      query.status = 'OPEN'; // Default to showing open tasks in marketplace only
     }
 
     // Filter by type if provided
@@ -160,6 +165,7 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
     // Get tasks, sorted by newest first
     const tasks = await Task.find(query)
       .populate('posterId', 'firstName lastName email')
+      .populate('assignedWorkerId', 'firstName lastName email rating')
       .sort({ createdAt: -1 })
       .limit(100); // Limit to prevent performance issues
 
@@ -184,9 +190,22 @@ export const getTasks = async (req: Request, res: Response): Promise<void> => {
             posterId = task.posterId.toString();
           }
 
-          const assignedWorkerId = task.assignedWorkerId
-            ? (task.assignedWorkerId as mongoose.Types.ObjectId).toString()
-            : undefined;
+          // Handle populated assignedWorkerId (could be ObjectId or populated object)
+          let assignedWorkerId: string | { _id: string; firstName?: string; lastName?: string; email: string } | undefined;
+
+          if (task.assignedWorkerId && typeof task.assignedWorkerId === 'object' && 'email' in task.assignedWorkerId) {
+            // Populated user object
+            const worker = task.assignedWorkerId as unknown as { _id: mongoose.Types.ObjectId; firstName?: string; lastName?: string; email: string };
+            assignedWorkerId = {
+              _id: worker._id.toString(),
+              firstName: worker.firstName,
+              lastName: worker.lastName,
+              email: worker.email,
+            };
+          } else if (task.assignedWorkerId) {
+            // Just ObjectId - convert to string
+            assignedWorkerId = (task.assignedWorkerId as mongoose.Types.ObjectId).toString();
+          }
 
           return {
             _id: task._id,
@@ -247,18 +266,29 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
-    let hasRatedByPoster = false;
+    let hasRatedByPoster = false; // Poster has rated the worker
+    let hasRatedByWorker = false; // Worker has rated the poster
     let hasApplied = false;
     if (q.user?._id) {
-      const ratingExists = await Rating.exists({ taskId: id, raterId: q.user._id });
-      hasRatedByPoster = !!ratingExists;
+      // Check if poster has rated the worker
+      if (task.posterId && task.posterId.toString() === q.user._id.toString()) {
+        const posterRatingExists = await Rating.exists({ taskId: id, raterId: task.posterId });
+        hasRatedByPoster = !!posterRatingExists;
+      }
+      
+      // Check if worker has rated the poster
+      if (task.assignedWorkerId && task.assignedWorkerId.toString() === q.user._id.toString()) {
+        const workerRatingExists = await Rating.exists({ taskId: id, raterId: task.assignedWorkerId });
+        hasRatedByWorker = !!workerRatingExists;
+      }
 
       // Check if current user has applied to this task
       const applicationExists = await Application.exists({ taskId: id, applicantId: q.user._id });
       hasApplied = !!applicationExists;
     }
 
-    const applications = await Application.find({ taskId: id, status: 'PENDING' })
+    // Fetch all applications (PENDING, ACCEPTED, REJECTED) so poster can see who applied
+    const applications = await Application.find({ taskId: id })
       .populate('applicantId', 'firstName lastName email rating')
       .sort({ createdAt: -1 });
 
@@ -305,6 +335,7 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
         },
         applicants: applicantsFormatted,
         hasRatedByPoster,
+        hasRatedByWorker,
         hasApplied,
       },
     });
@@ -346,16 +377,33 @@ export const applyToTask = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+    // Check if this user has already applied to this task
     const existing = await Application.findOne({ taskId, applicantId: userId });
     if (existing) {
-      res.status(400).json({ success: false, error: 'You have already applied to this task' });
+      res.status(409).json({ success: false, error: 'You have already applied to this task' });
       return;
     }
+
+    // Log for debugging
+    console.log('Creating application:', {
+      taskId,
+      applicantId: userId,
+      taskStatus: task.status,
+      taskPosterId: task.posterId.toString(),
+    });
 
     const application = await Application.create({
       taskId,
       applicantId: userId,
       status: 'PENDING',
+    });
+
+    // Log success
+    console.log('Application created successfully:', {
+      applicationId: application._id,
+      taskId: application.taskId.toString(),
+      applicantId: application.applicantId.toString(),
+      status: application.status,
     });
 
     res.status(201).json({
@@ -372,14 +420,32 @@ export const applyToTask = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error) {
     console.error('Apply to task error:', error);
+    
+    // Handle duplicate key error (unique constraint violation)
+    if ((error as { code?: number }).code === 11000) {
+      res.status(409).json({
+        success: false,
+        error: 'You have already applied to this task',
+      });
+      return;
+    }
+    
     if (error instanceof mongoose.Error.ValidationError) {
       const errors = Object.values(error.errors).map((e) => e.message);
       res.status(400).json({ success: false, error: errors.join(', ') });
       return;
     }
+    
+    // Log full error for debugging
+    console.error('Full apply error:', {
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+      code: (error as { code?: number }).code,
+    });
+    
     res.status(500).json({
       success: false,
-      error: 'Failed to apply to task',
+      error: 'Failed to apply to task. Please try again.',
     });
     return;
   }

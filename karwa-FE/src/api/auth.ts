@@ -77,15 +77,17 @@ export const register = async (data: RegisterData): Promise<RegisterResponse['da
       const errorMessage =
         errorData?.error || error.message || 'Registration failed';
 
-      // Log detailed error for debugging
-      console.error('Registration error:', {
-        status,
-        message: errorMessage,
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        fullURL: `${error.config?.baseURL}${error.config?.url}`,
-        errorData,
-      });
+      // Log detailed error for debugging (development only)
+      if (__DEV__) {
+        console.error('Registration error:', {
+          status,
+          message: errorMessage,
+          url: error.config?.url,
+          baseURL: error.config?.baseURL,
+          fullURL: `${error.config?.baseURL}${error.config?.url}`,
+          errorData,
+        });
+      }
 
       throw new Error(errorMessage);
     }
@@ -130,16 +132,18 @@ export const loginUser = async (data: LoginData): Promise<LoginResponse['data']>
       const errorMessage =
         errorData?.error || error.message || 'Login failed';
 
-      // Log detailed error for debugging
-      console.error('Login error:', {
-        status,
-        message: errorMessage,
-        code: error.code,
-        url: error.config?.url,
-        baseURL: error.config?.baseURL,
-        fullURL: `${error.config?.baseURL}${error.config?.url}`,
-        errorData,
-      });
+      // Log detailed error for debugging (development only)
+      if (__DEV__) {
+        console.error('Login error:', {
+          status,
+          message: errorMessage,
+          code: error.code,
+          url: error.config?.url,
+          baseURL: error.config?.baseURL,
+          fullURL: `${error.config?.baseURL}${error.config?.url}`,
+          errorData,
+        });
+      }
 
       throw new Error(errorMessage);
     }

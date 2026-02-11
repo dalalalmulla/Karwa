@@ -68,7 +68,7 @@ export const applyToTask = async (req: Request, res: Response): Promise<void> =>
 
         // Check if application already exists (unique constraint will also catch this)
         const existingApplication = await Application.findOne({
-            workerId,
+            applicantId: workerId,
             taskId,
         });
 
@@ -82,24 +82,25 @@ export const applyToTask = async (req: Request, res: Response): Promise<void> =>
 
         // Create application
         const application = await Application.create({
-            workerId,
+            applicantId: workerId,
             taskId,
             status: 'PENDING',
         });
 
-        // Populate worker info
-        await application.populate('workerId', 'firstName lastName email');
+        // Populate applicant info
+        await application.populate('applicantId', 'firstName lastName email rating');
 
         res.status(201).json({
             success: true,
             data: {
                 application: {
                     _id: application._id,
-                    workerId: {
+                    applicantId: {
                         _id: (application.applicantId as unknown as { _id: mongoose.Types.ObjectId })._id.toString(),
                         firstName: (application.applicantId as unknown as { firstName?: string }).firstName,
                         lastName: (application.applicantId as unknown as { lastName?: string }).lastName,
                         email: (application.applicantId as unknown as { email: string }).email,
+                        rating: (application.applicantId as unknown as { rating?: number }).rating,
                     },
                     taskId: application.taskId.toString(),
                     status: application.status,
@@ -182,7 +183,7 @@ export const getTaskApplications = async (req: Request, res: Response): Promise<
 
         // Get all applications for this task
         const applications = await Application.find({ taskId })
-            .populate('workerId', 'firstName lastName email')
+            .populate('applicantId', 'firstName lastName email rating')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -190,11 +191,12 @@ export const getTaskApplications = async (req: Request, res: Response): Promise<
             data: {
                 applications: applications.map((app) => ({
                     _id: app._id,
-                    workerId: {
+                    applicantId: {
                         _id: (app.applicantId as unknown as { _id: mongoose.Types.ObjectId })._id.toString(),
                         firstName: (app.applicantId as unknown as { firstName?: string }).firstName,
                         lastName: (app.applicantId as unknown as { lastName?: string }).lastName,
                         email: (app.applicantId as unknown as { email: string }).email,
+                        rating: (app.applicantId as unknown as { rating?: number }).rating,
                     },
                     taskId: app.taskId.toString(),
                     status: app.status,
@@ -230,7 +232,7 @@ export const getMyApplications = async (req: Request, res: Response): Promise<vo
         const { status } = req.query;
 
         // Build query
-        const query: Record<string, unknown> = { workerId };
+        const query: Record<string, unknown> = { applicantId: workerId };
 
         // Filter by status if provided
         if (status && ['PENDING', 'ACCEPTED', 'REJECTED'].includes(status as string)) {
@@ -240,7 +242,7 @@ export const getMyApplications = async (req: Request, res: Response): Promise<vo
         // Get applications with task details
         const applications = await Application.find(query)
             .populate('taskId')
-            .populate('workerId', 'firstName lastName email')
+            .populate('applicantId', 'firstName lastName email rating')
             .sort({ createdAt: -1 });
 
         res.status(200).json({
@@ -260,20 +262,22 @@ export const getMyApplications = async (req: Request, res: Response): Promise<vo
                         updatedAt: Date;
                     };
 
-                    const worker = app.applicantId as unknown as {
+                    const applicant = app.applicantId as unknown as {
                         _id: mongoose.Types.ObjectId;
                         firstName?: string;
                         lastName?: string;
                         email: string;
+                        rating?: number;
                     };
 
                     return {
                         _id: app._id,
-                        workerId: {
-                            _id: worker._id.toString(),
-                            firstName: worker.firstName,
-                            lastName: worker.lastName,
-                            email: worker.email,
+                        applicantId: {
+                            _id: applicant._id.toString(),
+                            firstName: applicant.firstName,
+                            lastName: applicant.lastName,
+                            email: applicant.email,
+                            rating: applicant.rating,
                         },
                         taskId: app.taskId.toString(),
                         task: {

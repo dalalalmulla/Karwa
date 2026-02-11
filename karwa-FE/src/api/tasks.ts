@@ -50,7 +50,8 @@ export interface GetTaskByIdResponse {
   data: {
     task: Task;
     applicants: Applicant[];
-    hasRatedByPoster?: boolean;
+    hasRatedByPoster?: boolean; // Poster has rated the worker
+    hasRatedByWorker?: boolean; // Worker has rated the poster
     hasApplied?: boolean;
   };
 }
@@ -172,8 +173,19 @@ export const assignWorker = async (
 };
 
 export const applyToTask = async (taskId: string): Promise<void> => {
-  const response = await instance.post<{ success: boolean }>(`/tasks/${taskId}/apply`);
-  if (!response.data.success) throw new Error('Failed to apply to task');
+  try {
+    const response = await instance.post<{ success: boolean; error?: string }>(`/tasks/${taskId}/apply`);
+    if (!response.data.success) {
+      throw new Error(response.data.error || 'Failed to apply to task');
+    }
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      const errorMessage =
+        error.response?.data?.error || error.message || 'Failed to apply to task';
+      throw new Error(errorMessage);
+    }
+    throw error;
+  }
 };
 
 export const markCompleteByWorker = async (

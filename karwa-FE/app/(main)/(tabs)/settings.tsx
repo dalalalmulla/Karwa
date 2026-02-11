@@ -9,7 +9,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/src/context/ThemeContext';
 import { useAuth } from '@/src/context/AuthContext';
@@ -143,7 +142,7 @@ export default function SettingsScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header with App Branding */}
+        {/* Header */}
         <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
           <View>
             <Text style={[styles.headerTitle, { color: theme.textTitle, fontSize: typography.title.fontSize }]}>
@@ -151,17 +150,6 @@ export default function SettingsScreen() {
             </Text>
             <Text style={[styles.headerSubtitle, { color: theme.textSecondary, fontSize: typography.caption.fontSize }]}>
               Customize your app experience
-            </Text>
-          </View>
-          {/* App Logo and Name */}
-          <View style={styles.branding}>
-            <Image
-              source={require('../../../assets/images/Karwa.png')}
-              style={styles.logo}
-              contentFit="contain"
-            />
-            <Text style={[styles.appName, { color: theme.primary, fontSize: typography.body.fontSize }]}>
-              Karwa
             </Text>
           </View>
         </View>
@@ -292,18 +280,6 @@ const styles = StyleSheet.create({
   },
   headerSubtitle: {
     marginTop: spacing.xs,
-  },
-  branding: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  logo: {
-    width: 28,
-    height: 28,
-  },
-  appName: {
-    fontWeight: '600',
   },
 
   // Section

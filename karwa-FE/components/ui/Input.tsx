@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, forwardRef } from "react";
 import {
   TextInput,
   View,
@@ -19,7 +19,7 @@ interface InputProps extends TextInputProps {
   placeholderColor?: string;
 }
 
-export default function Input({
+const Input = forwardRef<TextInput, InputProps>(({
   label,
   error,
   containerStyle,
@@ -30,7 +30,7 @@ export default function Input({
   textColor,
   placeholderColor,
   ...props
-}: InputProps) {
+}, ref) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasError = !!error;
   const { theme, typography } = useTheme();
@@ -58,6 +58,7 @@ export default function Input({
         </Text>
       )}
       <TextInput
+        ref={ref}
         style={[
           styles.input,
           {
@@ -77,6 +78,7 @@ export default function Input({
         placeholderTextColor={placeholderColor || theme.textMuted}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        editable={props.editable !== false}
         {...props}
       />
       {hasError && (
@@ -91,7 +93,11 @@ export default function Input({
       )}
     </View>
   );
-}
+});
+
+Input.displayName = 'Input';
+
+export default Input;
 
 const styles = StyleSheet.create({
   container: {

@@ -8,7 +8,10 @@
     "build": "tsc",
     "start": "nodemon server.ts",
     "lint": "eslint src --ext .ts",
-    "clear-tasks": "ts-node scripts/clearTasks.ts"
+    "clear-tasks": "ts-node scripts/clearTasks.ts",
+    "check-user": "ts-node scripts/checkUser.ts",
+    "list-users": "ts-node scripts/listUsers.ts",
+    "test-applications": "ts-node scripts/testApplications.ts"
   },
   "keywords": [
     "karwa",

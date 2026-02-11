@@ -33,12 +33,24 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Normalize email (trim and lowercase)
+    const normalizedEmail = email.trim().toLowerCase();
+    
     // Check if user already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
+      // Log for debugging (development only)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Registration attempt with existing email:', {
+          providedEmail: email,
+          normalizedEmail,
+          existingUserId: existingUser._id,
+          existingUserEmail: existingUser.email,
+        });
+      }
       res.status(409).json({
         success: false,
-        error: 'User with this email already exists',
+        error: `User with email "${normalizedEmail}" already exists. Please use a different email or try logging in.`,
       });
       return;
     }
@@ -51,9 +63,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const validRoles = ['poster', 'worker', 'both'];
     const userRole = role && validRoles.includes(role) ? role : 'both';
 
-    // Create user
+    // Create user with normalized email
     const user = await User.create({
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
       firstName: finalFirstName,
       lastName: finalLastName,
